@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalTracker Home Gauge Compare</title>
+  <style>
+    :root {
+      --shell: #120f0d;
+      --bg: #1a1814;
+      --bg-2: #15131a;
+      --card: rgba(255, 255, 255, 0.035);
+      --card-strong: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.08);
+      --copy: rgba(232, 224, 212, 0.94);
+      --muted: rgba(255, 255, 255, 0.44);
+      --teal: #5ebaa9;
+      --gold: #c4a46c;
+      --blue: #78a0c8;
+      --sand: #d8c49a;
+      --danger: #cf7d72;
+      --shadow: rgba(0, 0, 0, 0.38);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--copy);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(196, 164, 108, 0.12), transparent 22%),
+        radial-gradient(circle at 90% 22%, rgba(94, 186, 169, 0.1), transparent 18%),
+        radial-gradient(circle at 80% 82%, rgba(120, 160, 200, 0.1), transparent 18%),
+        linear-gradient(180deg, #0f0d0c, #151110 34%, #110f14 72%, #100e0d);
+    }
+
+    main {
+      padding: 40px 28px 64px;
+    }
+
+    .intro {
+      max-width: 1160px;
+      margin: 0 auto 32px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      font: 600 12px/1.1 system-ui, sans-serif;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 11ch;
+      font-size: clamp(2.4rem, 5vw, 4.7rem);
+      line-height: 0.92;
+      letter-spacing: -0.05em;
+    }
+
+    .summary {
+      max-width: 70ch;
+      margin: 16px 0 0;
+      font: 400 1rem/1.7 system-ui, sans-serif;
+      color: var(--muted);
+    }
+
+    .compare-board {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(3, minmax(300px, 1fr));
+    }
+
+    .device-column {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .column-label {
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 18px 48px var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .column-label strong {
+      display: block;
+      margin-bottom: 6px;
+      font: 600 14px/1 system-ui, sans-serif;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .column-label p {
+      margin: 0;
+      font: 400 14px/1.6 system-ui, sans-serif;
+      color: var(--muted);
+    }
+
+    .device {
+      position: relative;
+      min-height: 860px;
+      border-radius: 38px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(circle at 50% 18%, rgba(196, 164, 108, 0.07), transparent 28%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 34%, #171518 68%, #1b1715 100%);
+      box-shadow: 0 26px 88px rgba(0, 0, 0, 0.45);
+      isolation: isolate;
+    }
+
+    .device::before,
+    .device::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .device::before {
+      background:
+        radial-gradient(circle at 50% 23%, transparent 0 100px, rgba(255, 255, 255, 0.025) 101px 102px, transparent 103px),
+        radial-gradient(circle at 50% 23%, transparent 0 134px, rgba(255, 255, 255, 0.018) 135px 136px, transparent 137px);
+    }
+
+    .device::after {
+      background:
+        linear-gradient(transparent, rgba(255, 255, 255, 0.018)),
+        radial-gradient(circle at 50% 88%, rgba(0, 0, 0, 0.22), transparent 40%);
+      mix-blend-mode: screen;
+      opacity: 0.35;
+    }
+
+    .screen {
+      position: relative;
+      z-index: 1;
+      padding: 26px 18px 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: 100%;
+    }
+
+    .top-line,
+    .summary-row,
+    .status-row,
+    .meal-row,
+    .legend-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      font-family: system-ui, sans-serif;
+    }
+
+    .top-line {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+    }
+
+    .dot-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--gold);
+    }
+
+    .dot-tag i {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .hero-title h2 {
+      margin: 0;
+      font-size: 2rem;
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-title p {
+      margin: 8px 0 0;
+      font: 400 13px/1.6 system-ui, sans-serif;
+      color: var(--muted);
+    }
+
+    .gauge-stage {
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .gauge-wrap {
+      position: relative;
+      width: 232px;
+      height: 232px;
+      display: grid;
+      place-items: center;
+    }
+
+    .gauge-svg {
+      width: 232px;
+      height: 232px;
+      transform: rotate(-90deg);
+      overflow: visible;
+    }
+
+    .track {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.05);
+      stroke-linecap: round;
+    }
+
+    .fill {
+      fill: none;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.12));
+    }
+
+    .teal { stroke: var(--teal); }
+    .gold { stroke: var(--gold); }
+    .blue { stroke: var(--blue); }
+    .sand { stroke: var(--sand); }
+
+    .center-readout {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      text-align: center;
+    }
+
+    .center-readout strong {
+      display: block;
+      font-size: 3.2rem;
+      line-height: 0.9;
+      letter-spacing: -0.07em;
+    }
+
+    .center-readout span {
+      margin-top: 8px;
+      font: 600 10px/1 system-ui, sans-serif;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: color-mix(in srgb, var(--gold) 70%, transparent);
+    }
+
+    .legend-row {
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .legend-row span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend-row i {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+    }
+
+    .metric-card,
+    .status-card,
+    .scan-card,
+    .meal-card {
+      border-radius: 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+    }
+
+    .summary-row {
+      padding: 0 2px;
+      font-size: 14px;
+      color: var(--copy);
+    }
+
+    .summary-row em {
+      font-style: normal;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .summary-row strong {
+      color: var(--teal);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .metric-card {
+      padding: 14px 14px 8px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      text-align: center;
+      font-family: system-ui, sans-serif;
+    }
+
+    .metric-grid article {
+      padding: 10px 8px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .metric-grid i {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .metric-grid strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .metric-grid small,
+    .metric-grid span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .readiness-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .readiness-row {
+      display: grid;
+      gap: 7px;
+      font-family: system-ui, sans-serif;
+    }
+
+    .readiness-copy {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .readiness-copy strong {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--copy);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .bar {
+      position: relative;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .status-card,
+    .scan-card,
+    .meal-card {
+      padding: 15px 16px;
+      font-family: system-ui, sans-serif;
+    }
+
+    .status-card strong,
+    .scan-card strong,
+    .meal-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--copy);
+    }
+
+    .status-card p,
+    .scan-card p,
+    .meal-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .cta {
+      flex: 1;
+      border: 1px solid rgba(94, 186, 169, 0.22);
+      border-radius: 14px;
+      padding: 13px 14px;
+      background: linear-gradient(135deg, rgba(94, 186, 169, 0.16), rgba(94, 186, 169, 0.06));
+      color: #9ce2d5;
+      font: 600 12px/1 system-ui, sans-serif;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .cta.secondary {
+      background: rgba(255, 255, 255, 0.025);
+      border-color: rgba(255, 255, 255, 0.08);
+      color: var(--copy-muted);
+    }
+
+    .meal-card {
+      display: grid;
+      gap: 1px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .meal-card > strong {
+      padding: 14px 16px 0;
+      margin-bottom: 0;
+    }
+
+    .meal-row {
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.015);
+      align-items: start;
+    }
+
+    .meal-row div span {
+      display: block;
+      margin-top: 4px;
+      font: 400 11px/1.5 system-ui, sans-serif;
+      color: var(--muted);
+    }
+
+    .meal-row b {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--copy);
+    }
+
+    .tab-bar {
+      position: absolute;
+      inset: auto 0 0;
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 16px 26px;
+      background: linear-gradient(transparent, rgba(20, 18, 16, 0.96));
+      font: 600 10px/1 system-ui, sans-serif;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .tab-bar .active {
+      color: var(--teal);
+    }
+
+    @media (max-width: 1180px) {
+      .compare-board {
+        grid-template-columns: 1fr;
+      }
+
+      .device {
+        min-height: 820px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="intro">
+      <p class="eyebrow">Home Gauge Compare</p>
+      <h1>Current home versus two readiness-first hero systems.</h1>
+      <p class="summary">
+        This board mirrors the actual Home screen structure you have now, then swaps in two different
+        four-ring hero languages. Both new options keep the approved warm sci-fi palette and replace
+        the old macro-dot card with line-based readiness rows for calories, protein, hydration, and
+        nutrition coverage.
+      </p>
+    </section>
+
+    <section class="compare-board">
+      <article class="device-column">
+        <div class="column-label">
+          <strong>Current App Mirror</strong>
+          <p>Baseline reference. Concentric macro rings, calorie center, macro card with dot clusters.</p>
+        </div>
+
+        <div class="device">
+          <div class="screen">
+            <div class="top-line">
+              <span>2026-03-29</span>
+              <span class="dot-tag"><i></i> Pacific/Honolulu</span>
+            </div>
+
+            <div class="hero-title">
+              <h2>Good afternoon</h2>
+              <p>The current Home structure as it exists in the app today.</p>
+            </div>
+
+            <section class="gauge-stage">
+              <div class="gauge-wrap">
+                <svg class="gauge-svg" viewBox="0 0 232 232" aria-hidden="true">
+                  <circle class="track" cx="116" cy="116" r="94" stroke-width="8"></circle>
+                  <circle class="fill teal" cx="116" cy="116" r="94" stroke-width="8" stroke-dasharray="590" stroke-dashoffset="206"></circle>
+
+                  <circle class="track" cx="116" cy="116" r="78" stroke-width="8"></circle>
+                  <circle class="fill gold" cx="116" cy="116" r="78" stroke-width="8" stroke-dasharray="490" stroke-dashoffset="220"></circle>
+
+                  <circle class="track" cx="116" cy="116" r="62" stroke-width="8"></circle>
+                  <circle class="fill blue" cx="116" cy="116" r="62" stroke-width="8" stroke-dasharray="390" stroke-dashoffset="148"></circle>
+                </svg>
+                <div class="center-readout">
+                  <strong>1420</strong>
+                  <span>Calories Today</span>
+                </div>
+              </div>
+
+              <div class="legend-row">
+                <span><i style="background: var(--teal)"></i>Protein</span>
+                <span><i style="background: var(--gold)"></i>Carbs</span>
+                <span><i style="background: var(--blue)"></i>Fat</span>
+              </div>
+            </section>
+
+            <div class="summary-row">
+              <span>1,420 <em>/ 2,100 cal</em></span>
+              <strong>68%</strong>
+            </div>
+
+            <section class="metric-card">
+              <div class="metric-grid">
+                <article>
+                  <i style="background: var(--teal)"></i>
+                  <strong>98g</strong>
+                  <small>Protein</small>
+                  <span>65% of 150</span>
+                </article>
+                <article>
+                  <i style="background: var(--gold)"></i>
+                  <strong>145g</strong>
+                  <small>Carbs</small>
+                  <span>56% of 260</span>
+                </article>
+                <article>
+                  <i style="background: var(--blue)"></i>
+                  <strong>49g</strong>
+                  <small>Fat</small>
+                  <span>70% of 70</span>
+                </article>
+              </div>
+            </section>
+
+            <section class="status-card">
+              <strong>Calorie runway</strong>
+              <p>680 left based on your current calorie target. 3 meals logged so far.</p>
+            </section>
+
+            <section class="scan-card">
+              <strong>Scan a meal</strong>
+              <p>Use camera or gallery to estimate a meal, review it, and save it to your day.</p>
+              <div class="cta-row">
+                <div class="cta">Use camera</div>
+                <div class="cta secondary">Choose photo</div>
+              </div>
+            </section>
+
+            <section class="meal-card">
+              <strong>Today&rsquo;s meals</strong>
+              <div class="meal-row">
+                <div>
+                  <b>Bacon and eggs</b>
+                  <span>Breakfast · 9:12 AM</span>
+                </div>
+                <b>420 cal</b>
+              </div>
+              <div class="meal-row">
+                <div>
+                  <b>Greek yogurt bowl</b>
+                  <span>Snack · 11:42 AM</span>
+                </div>
+                <b>280 cal</b>
+              </div>
+            </section>
+
+            <nav class="tab-bar">
+              <span class="active">Home</span>
+              <span>Log</span>
+              <span>Trends</span>
+              <span>Profile</span>
+            </nav>
+          </div>
+        </div>
+      </article>
+
+      <article class="device-column">
+        <div class="column-label">
+          <strong>Option A: Tactical Arc HUD</strong>
+          <p>Partial arcs with visible gaps and a stronger instrument-panel read. Feels more game-native.</p>
+        </div>
+
+        <div class="device">
+          <div class="screen">
+            <div class="top-line">
+              <span>2026-03-29</span>
+              <span class="dot-tag"><i></i> Readiness mode</span>
+            </div>
+
+            <div class="hero-title">
+              <h2>Daily readiness</h2>
+              <p>Calories, protein, hydration, and nutrition coverage become the hero instead of macro math.</p>
+            </div>
+
+            <section class="gauge-stage">
+              <div class="gauge-wrap">
+                <svg class="gauge-svg" viewBox="0 0 232 232" aria-hidden="true">
+                  <g transform="rotate(-32 116 116)">
+                    <circle class="track" cx="116" cy="116" r="96" stroke-width="7" stroke-dasharray="430 180"></circle>
+                    <circle class="fill sand" cx="116" cy="116" r="96" stroke-width="7" stroke-dasharray="332 278"></circle>
+                  </g>
+                  <g transform="rotate(24 116 116)">
+                    <circle class="track" cx="116" cy="116" r="80" stroke-width="7" stroke-dasharray="360 145"></circle>
+                    <circle class="fill teal" cx="116" cy="116" r="80" stroke-width="7" stroke-dasharray="265 240"></circle>
+                  </g>
+                  <g transform="rotate(76 116 116)">
+                    <circle class="track" cx="116" cy="116" r="64" stroke-width="7" stroke-dasharray="282 120"></circle>
+                    <circle class="fill blue" cx="116" cy="116" r="64" stroke-width="7" stroke-dasharray="210 192"></circle>
+                  </g>
+                  <g transform="rotate(128 116 116)">
+                    <circle class="track" cx="116" cy="116" r="48" stroke-width="7" stroke-dasharray="208 94"></circle>
+                    <circle class="fill gold" cx="116" cy="116" r="48" stroke-width="7" stroke-dasharray="156 146"></circle>
+                  </g>
+                </svg>
+                <div class="center-readout">
+                  <strong>74</strong>
+                  <span>Readiness</span>
+                </div>
+              </div>
+
+              <div class="legend-row">
+                <span><i style="background: var(--sand)"></i>Calories</span>
+                <span><i style="background: var(--teal)"></i>Protein</span>
+                <span><i style="background: var(--blue)"></i>Hydration</span>
+                <span><i style="background: var(--gold)"></i>Nutrition</span>
+              </div>
+            </section>
+
+            <div class="summary-row">
+              <span>Readiness score drifting upward</span>
+              <strong>3 meals</strong>
+            </div>
+
+            <section class="metric-card">
+              <div class="readiness-list">
+                <div class="readiness-row">
+                  <div class="readiness-copy">
+                    <span>Calories</span>
+                    <strong>1620 / 2200</strong>
+                  </div>
+                  <div class="bar"><i style="width: 74%; background: var(--sand)"></i></div>
+                </div>
+                <div class="readiness-row">
+                  <div class="readiness-copy">
+                    <span>Protein</span>
+                    <strong>112 / 150g</strong>
+                  </div>
+                  <div class="bar"><i style="width: 75%; background: var(--teal)"></i></div>
+                </div>
+                <div class="readiness-row">
+                  <div class="readiness-copy">
+                    <span>Hydration</span>
+                    <strong>5.6 / 8 cups</strong>
+                  </div>
+                  <div class="bar"><i style="width: 70%; background: var(--blue)"></i></div>
+                </div>
+                <div class="readiness-row">
+                  <div class="readiness-copy">
+                    <span>Nutrition</span>
+                    <strong>72% covered</strong>
+                  </div>
+                  <div class="bar"><i style="width: 72%; background: var(--gold)"></i></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="status-card">
+              <strong>Day read</strong>
+              <p>You are on track for calories and protein. Hydration is behind pace, but micronutrient coverage is strong for this time of day.</p>
+            </section>
+
+            <section class="scan-card">
+              <strong>Next move</strong>
+              <p>Scan lunch to push nutrition coverage and tighten the readiness readout before the afternoon dip.</p>
+              <div class="cta-row">
+                <div class="cta">Scan meal</div>
+                <div class="cta secondary">Log manually</div>
+              </div>
+            </section>
+
+            <section class="meal-card">
+              <strong>Today&rsquo;s meals</strong>
+              <div class="meal-row">
+                <div>
+                  <b>Eggs, bacon, toast</b>
+                  <span>Breakfast · 8:51 AM</span>
+                </div>
+                <b>510 cal</b>
+              </div>
+              <div class="meal-row">
+                <div>
+                  <b>Protein coffee</b>
+                  <span>Snack · 10:18 AM</span>
+                </div>
+                <b>210 cal</b>
+              </div>
+            </section>
+
+            <nav class="tab-bar">
+              <span class="active">Home</span>
+              <span>Log</span>
+              <span>Trends</span>
+              <span>Profile</span>
+            </nav>
+          </div>
+        </div>
+      </article>
+
+      <article class="device-column">
+        <div class="column-label">
+          <strong>Option B: Full Ring Core</strong>
+          <p>Cleaner and calmer. Still readiness-first, but less tactical and more premium-wellness.</p>
+        </div>
+
+        <div class="device">
+          <div class="screen">
+            <div class="top-line">
+              <span>2026-03-29</span>
+              <span class="dot-tag"><i></i> Readiness mode</span>
+            </div>
+
+            <div class="hero-title">
+              <h2>Daily readiness</h2>
+              <p>The same readiness inputs, but expressed as more complete rings with less HUD fragmentation.</p>
+            </div>
+
+            <section class="gauge-stage">
+              <div class="gauge-wrap">
+                <svg class="gauge-svg" viewBox="0 0 232 232" aria-hidden="true">
+                  <circle class="track" cx="116" cy="116" r="98" stroke-width="7"></circle>
+                  <circle class="fill sand" cx="116" cy="116" r="98" stroke-width="7" stroke-dasharray="616" stroke-dashoffset="160"></circle>
+
+                  <circle class="track" cx="116" cy="116" r="82" stroke-width="7"></circle>
+                  <circle class="fill teal" cx="116" cy="116" r="82" stroke-width="7" stroke-dasharray="515" stroke-dashoffset="132"></circle>
+
+                  <circle class="track" cx="116" cy="116" r="66" stroke-width="7"></circle>
+                  <circle class="fill blue" cx="116" cy="116" r="66" stroke-width="7" stroke-dasharray="415" stroke-dashoffset="125"></circle>
+
+                  <circle class="track" cx="116" cy="116" r="50" stroke-width="7"></circle>
+                  <circle class="fill gold" cx="116" cy="116" r="50" stroke-width="7" stroke-dasharray="314" stroke-dashoffset="86"></circle>
+                </svg>
+                <div class="center-readout">
+                  <strong>74</strong>
+                  <span>Readiness</span>
+                </div>
+              </div>
+
+              <div class="legend-row">
+                <span><i style="background: var(--sand)"></i>Calories</span>
+                <span><i style="background: var(--teal)"></i>Protein</span>
+                <span><i style="background: var(--blue)"></i>Hydration</span>
+                <span><i style="background: var(--gold)"></i>Nutrition</span>
+              </div>
+            </section>
+
+            <div class="summary-row">
+              <span>Balanced intake, but hydration still trailing</span>
+              <strong>74 ready</strong>
+            </div>
+
+            <section class="metric-card">
+              <div class="readiness-list">
+                <div class="readiness-row">
+                  <div class="readiness-copy">
+                    <span>Calories</span>
+                    <strong>1620 / 2200</strong>
+                  </div>
+                  <div class="bar"><i style="width: 74%; background: var(--sand)"></i></div>
+                </div>
+                <div class="readiness-row">
+                  <div class="readiness-copy">
+                    <span>Protein</span>
+                    <strong>112 / 150g</strong>
+                  </div>
+                  <div class="bar"><i style="width: 75%; background: var(--teal)"></i></div>
+                </div>
+                <div class="readiness-row">
+                  <div class="readiness-copy">
+                    <span>Hydration</span>
+                    <strong>5.6 / 8 cups</strong>
+                  </div>
+                  <div class="bar"><i style="width: 70%; background: var(--blue)"></i></div>
+                </div>
+                <div class="readiness-row">
+                  <div class="readiness-copy">
+                    <span>Nutrition</span>
+                    <strong>72% covered</strong>
+                  </div>
+                  <div class="bar"><i style="width: 72%; background: var(--gold)"></i></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="status-card">
+              <strong>Day read</strong>
+              <p>The readiness picture feels steadier here. You can read the whole day at a glance, then scan the four lines for what needs work.</p>
+            </section>
+
+            <section class="scan-card">
+              <strong>Next move</strong>
+              <p>Use the scan flow to improve nutrition coverage and hydration pacing without dropping back into a detail-heavy dashboard mood.</p>
+              <div class="cta-row">
+                <div class="cta">Scan meal</div>
+                <div class="cta secondary">Log manually</div>
+              </div>
+            </section>
+
+            <section class="meal-card">
+              <strong>Today&rsquo;s meals</strong>
+              <div class="meal-row">
+                <div>
+                  <b>Eggs, bacon, toast</b>
+                  <span>Breakfast · 8:51 AM</span>
+                </div>
+                <b>510 cal</b>
+              </div>
+              <div class="meal-row">
+                <div>
+                  <b>Greek yogurt bowl</b>
+                  <span>Snack · 11:12 AM</span>
+                </div>
+                <b>340 cal</b>
+              </div>
+            </section>
+
+            <nav class="tab-bar">
+              <span class="active">Home</span>
+              <span>Log</span>
+              <span>Trends</span>
+              <span>Profile</span>
+            </nav>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

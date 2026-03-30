@@ -221,16 +221,54 @@ Dashboard reads from dailySummaries via Convex reactive query. When a meal is lo
 ## 7. Game-Inspired Visual Design
 
 ### Design philosophy
-Borrow visual techniques from games (HUD elements, stat bars, completion rewards) while maintaining a clean wellness brand. No RPG terminology, fantasy art, or cartoonish aesthetics.
+Inspired by Destiny 2's character screen UI — warm, restrained, premium. Borrow visual techniques from games (HUD elements, stat bars, completion rewards) while maintaining a clean wellness brand. No RPG terminology, fantasy art, or cartoonish aesthetics. The Day Score is the app's "Power Level" — always the central hero element.
 
-### Visual references
-- Monument Valley — clean, geometric, satisfying
-- Alto's Odyssey — minimal, atmospheric, wellness feel
-- Apple Fitness rings — radial HUD concept
-- Genshin Impact stat screens — clean stat layouts
+### Visual direction
+
+**Style:** Warm, restrained, premium — charcoal backgrounds, geometric radial backdrops, restrained accent palette, thin-weight typography, information density without clutter.
+
+**Key principles:**
+- Warm neutrals instead of pure black/white — never cold or sterile
+- Subtle radial geometry (concentric circles, conic gradients) behind the Day Score hero
+- Three-accent color system used sparingly — color means something, not decoration
+- Thin font weights for large numbers, medium weights for labels
+- Frosted/translucent card surfaces with subtle borders
+- Glow effects on progress elements (drop-shadows matching accent colors)
+
+### Color System — Dark Mode (primary)
+
+| Role | Color | Hex |
+|------|-------|-----|
+| Background | Warm charcoal gradient | #1a1814 → #15131a → #1a1715 |
+| Primary text | Warm ivory | #e8e0d4 |
+| Secondary text | Muted ivory | rgba(255,255,255,0.3–0.45) |
+| Card surface | Glass dark | rgba(255,255,255,0.02), border rgba(255,255,255,0.04) |
+| Accent 1 — Calories/Protein | Teal | #5ebaa9 (gradient from #4db8a4) |
+| Accent 2 — Nutrients/Carbs | Muted gold | #c4a46c (gradient from #b8965a) |
+| Accent 3 — Hydration/Fat | Cool blue | #78a0c8 (gradient from #6a9ec0) |
+| Streak indicator | Gold | #c4a46c |
+| Geometric backdrop | Warm brown | rgba(120,100,80,0.02–0.04) |
+| Ring tracks | Faint white | rgba(255,255,255,0.025) |
+
+### Color System — Light Mode
+
+| Role | Color | Hex |
+|------|-------|-----|
+| Background | Warm parchment cream gradient | #f5f2ed → #f0eee8 → #f5f2ed |
+| Primary text | Warm dark brown | #2a2520 |
+| Secondary text | Muted brown | rgba(40,35,30,0.4–0.55) |
+| Card surface | Frosted white | rgba(255,255,255,0.7), border rgba(0,0,0,0.05), backdrop-blur |
+| Accent 1 — Calories/Protein | Deep teal | #4aab96 (gradient from #3a9e8a) |
+| Accent 2 — Nutrients/Carbs | Rich gold | #b8965a (gradient from #a8873e) |
+| Accent 3 — Hydration/Fat | Deep blue | #6090c0 (gradient from #5082b4) |
+| Streak indicator | Rich gold | #a8873e |
+| Geometric backdrop | Warm tan | rgba(180,160,130,0.03–0.06) |
+| Ring tracks | Faint dark | rgba(0,0,0,0.04) |
+
+**Mode behavior:** App defaults to system theme. User can override in Profile settings. Both modes share identical layout and hierarchy — only colors invert.
 
 ### Macro arc gauges
-Half-circle arc gauges for protein, carbs, fat. Gradient fill with glow effect (drop-shadow). Percentage displayed in center, gram count below. Each macro has a distinct color. When a macro goal is reached, arc transitions to green.
+Half-circle arc gauges for protein, carbs, fat. Gradient fill with glow effect (drop-shadow matching accent color). Percentage displayed in center, gram count below. Each macro uses its assigned accent color. When a macro goal is reached, arc transitions to success state with particle burst.
 
 ### Completion animations (React Native Reanimated)
 **Particle burst:** When a goal is reached (macro, hydration, nutrient), the arc/indicator:

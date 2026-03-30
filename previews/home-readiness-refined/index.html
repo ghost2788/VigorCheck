@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalTracker Home Refinement</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="page">
+    <section class="intro">
+      <p class="eyebrow">Home Refinement</p>
+      <h1>Full-ring wellness with accordion detail cards.</h1>
+      <p class="summary">
+        This keeps the preferred full-ring core hero, renames the score to daily wellness, removes
+        scan actions from Home, and turns the lower half into four single-purpose detail cards:
+        calories, protein, hydration, and nutrition. Cards start collapsed and open one at a time.
+      </p>
+    </section>
+
+    <section class="stage">
+      <aside class="notes">
+        <div class="note-card">
+          <strong>Locked decisions</strong>
+          <ul>
+            <li>Home is stats-first, not action-first.</li>
+            <li>Daily wellness uses calories, protein, hydration, and nutrition.</li>
+            <li>Cards stay collapsed on arrival.</li>
+            <li>Only one wellness card opens at a time.</li>
+          </ul>
+        </div>
+
+        <div class="note-card">
+          <strong>Interaction check</strong>
+          <p>
+            Click any card in the mockup to open it. Opening one closes the others. This keeps Home
+            focused while still letting people inspect where each daily value comes from.
+          </p>
+        </div>
+      </aside>
+
+      <div class="phone-frame">
+        <article class="phone">
+          <section class="screen">
+            <header class="top-row">
+              <span>2026-03-29</span>
+              <span class="status-chip"><i></i> Pacific/Honolulu</span>
+            </header>
+
+            <section class="hero-copy">
+              <p class="mini-label">Home</p>
+              <h2>Daily wellness</h2>
+              <p class="subcopy">
+                A calmer, more complete read on how the day is shaping up without mixing in logging
+                actions.
+              </p>
+            </section>
+
+            <section class="gauge-stage">
+              <div class="gauge-wrap">
+                <svg class="gauge-svg" viewBox="0 0 236 236" aria-hidden="true">
+                  <circle class="ring-track" cx="118" cy="118" r="98" stroke-width="7"></circle>
+                  <circle class="ring-fill sand" cx="118" cy="118" r="98" stroke-width="7" stroke-dasharray="616" stroke-dashoffset="160"></circle>
+
+                  <circle class="ring-track" cx="118" cy="118" r="82" stroke-width="7"></circle>
+                  <circle class="ring-fill teal" cx="118" cy="118" r="82" stroke-width="7" stroke-dasharray="515" stroke-dashoffset="128"></circle>
+
+                  <circle class="ring-track" cx="118" cy="118" r="66" stroke-width="7"></circle>
+                  <circle class="ring-fill blue" cx="118" cy="118" r="66" stroke-width="7" stroke-dasharray="415" stroke-dashoffset="124"></circle>
+
+                  <circle class="ring-track" cx="118" cy="118" r="50" stroke-width="7"></circle>
+                  <circle class="ring-fill gold" cx="118" cy="118" r="50" stroke-width="7" stroke-dasharray="314" stroke-dashoffset="88"></circle>
+                </svg>
+
+                <div class="gauge-core">
+                  <strong>74</strong>
+                </div>
+              </div>
+
+              <div class="legend">
+                <span><i class="sand-dot"></i>Calories</span>
+                <span><i class="teal-dot"></i>Protein</span>
+                <span><i class="blue-dot"></i>Hydration</span>
+                <span><i class="gold-dot"></i>Nutrition</span>
+              </div>
+            </section>
+
+            <section class="hero-insight">
+              <div>
+                <label>Today at a glance</label>
+                <strong>Hydration is the main gap right now.</strong>
+              </div>
+              <span>3 meals logged</span>
+            </section>
+
+            <section class="accordion-list" aria-label="Wellness details">
+              <article class="accordion-card calories-card" data-card="calories">
+                <button class="accordion-trigger" type="button" aria-expanded="false">
+                  <div class="trigger-copy">
+                    <span>Calories</span>
+                    <small>1620 / 2200 cal (74%)</small>
+                  </div>
+                  <i class="chevron"></i>
+                </button>
+                <div class="accordion-panel">
+                  <p class="insight">
+                    Most of today&apos;s calories came from breakfast and your late-morning yogurt bowl.
+                  </p>
+                  <div class="source-list">
+                    <div class="source-row">
+                      <span>Eggs, bacon, toast</span>
+                      <strong>510 cal</strong>
+                    </div>
+                    <div class="source-bar"><i style="width: 31%"></i></div>
+                    <div class="source-row">
+                      <span>Greek yogurt bowl</span>
+                      <strong>340 cal</strong>
+                    </div>
+                    <div class="source-bar"><i style="width: 21%"></i></div>
+                    <div class="source-row">
+                      <span>Chicken wrap</span>
+                      <strong>470 cal</strong>
+                    </div>
+                    <div class="source-bar"><i style="width: 29%"></i></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion-card protein-card" data-card="protein">
+                <button class="accordion-trigger" type="button" aria-expanded="false">
+                  <div class="trigger-copy">
+                    <span>Protein</span>
+                    <small>112 / 150g (75%)</small>
+                  </div>
+                  <i class="chevron"></i>
+                </button>
+                <div class="accordion-panel">
+                  <p class="insight">
+                    Protein is pacing well. Lunch is doing most of the heavy lifting.
+                  </p>
+                  <div class="source-list">
+                    <div class="source-row">
+                      <span>Chicken wrap</span>
+                      <strong>38g</strong>
+                    </div>
+                    <div class="source-bar teal-fill"><i style="width: 34%"></i></div>
+                    <div class="source-row">
+                      <span>Eggs and bacon</span>
+                      <strong>31g</strong>
+                    </div>
+                    <div class="source-bar teal-fill"><i style="width: 28%"></i></div>
+                    <div class="source-row">
+                      <span>Greek yogurt bowl</span>
+                      <strong>24g</strong>
+                    </div>
+                    <div class="source-bar teal-fill"><i style="width: 21%"></i></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion-card hydration-card" data-card="hydration">
+                <button class="accordion-trigger" type="button" aria-expanded="false">
+                  <div class="trigger-copy">
+                    <span>Hydration</span>
+                    <small>5.6 / 8 cups (70%)</small>
+                  </div>
+                  <i class="chevron"></i>
+                </button>
+                <div class="accordion-panel">
+                  <p class="insight">
+                    Hydration is your weakest category so far. One more bottle would move the hero
+                    noticeably.
+                  </p>
+                  <div class="source-list">
+                    <div class="source-row">
+                      <span>Morning water bottle</span>
+                      <strong>2.0 cups</strong>
+                    </div>
+                    <div class="source-bar blue-fill"><i style="width: 36%"></i></div>
+                    <div class="source-row">
+                      <span>Iced coffee</span>
+                      <strong>1.2 cups</strong>
+                    </div>
+                    <div class="source-bar blue-fill"><i style="width: 21%"></i></div>
+                    <div class="source-row">
+                      <span>Lunch water</span>
+                      <strong>1.8 cups</strong>
+                    </div>
+                    <div class="source-bar blue-fill"><i style="width: 32%"></i></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion-card nutrition-card" data-card="nutrition">
+                <button class="accordion-trigger" type="button" aria-expanded="false">
+                  <div class="trigger-copy">
+                    <span>Nutrition</span>
+                    <small>72% covered</small>
+                  </div>
+                  <i class="chevron"></i>
+                </button>
+                <div class="accordion-panel">
+                  <p class="insight">
+                    Coverage is solid overall. Vitamin D and potassium still look like the main weak
+                    spots.
+                  </p>
+                  <div class="source-list">
+                    <div class="source-row">
+                      <span>Protein foods covered</span>
+                      <strong>Strong</strong>
+                    </div>
+                    <div class="source-bar gold-fill"><i style="width: 78%"></i></div>
+                    <div class="source-row">
+                      <span>Fiber and mineral coverage</span>
+                      <strong>Moderate</strong>
+                    </div>
+                    <div class="source-bar gold-fill"><i style="width: 64%"></i></div>
+                    <div class="source-row">
+                      <span>Low nutrients</span>
+                      <strong>D, K</strong>
+                    </div>
+                    <div class="source-bar gold-fill"><i style="width: 41%"></i></div>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <section class="meals-card">
+              <div class="section-head">
+                <strong>Today&apos;s meals</strong>
+                <span>Updated live</span>
+              </div>
+
+              <div class="meal-row">
+                <div>
+                  <b>Eggs, bacon, toast</b>
+                  <small><i class="meal-chip breakfast-chip">Breakfast</i>8:51 AM</small>
+                </div>
+                <span class="meal-pill">510 cal</span>
+              </div>
+
+              <div class="meal-row">
+                <div>
+                  <b>Greek yogurt bowl</b>
+                  <small><i class="meal-chip snack-chip">Snack</i>11:12 AM</small>
+                </div>
+                <span class="meal-pill">340 cal</span>
+              </div>
+
+              <div class="meal-row">
+                <div>
+                  <b>Chicken wrap</b>
+                  <small><i class="meal-chip lunch-chip">Lunch</i>1:24 PM</small>
+                </div>
+                <span class="meal-pill">470 cal</span>
+              </div>
+            </section>
+
+            <nav class="tab-bar">
+              <span class="active">Home</span>
+              <span>Log</span>
+              <span>Trends</span>
+              <span>Profile</span>
+            </nav>
+          </section>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
