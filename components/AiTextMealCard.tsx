@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { AnalysisJob } from "../lib/domain/analysisQueue";
 import { useTheme } from "../lib/theme/ThemeProvider";
@@ -17,6 +17,7 @@ type AiTextMealCardProps = {
   onQuickAddSubmit: (values: ManualMealFormSubmission) => Promise<void> | void;
   onRetryJob: (jobId: string) => void;
   onSubmitDescription: (description: string) => Promise<void> | void;
+  quickAddExpansionSignal?: number;
 };
 
 export function AiTextMealCard({
@@ -28,11 +29,18 @@ export function AiTextMealCard({
   onQuickAddSubmit,
   onRetryJob,
   onSubmitDescription,
+  quickAddExpansionSignal = 0,
 }: AiTextMealCardProps) {
   const { theme } = useTheme();
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+
+  useEffect(() => {
+    if (quickAddExpansionSignal > 0) {
+      setShowQuickAdd(true);
+    }
+  }, [quickAddExpansionSignal]);
 
   return (
     <Card>

@@ -2,8 +2,99 @@ import { buildTodayDashboard } from "../lib/domain/dashboard";
 import { getDayWindowForTimestamp, getLocalDateKey } from "../lib/domain/dayWindow";
 import { getNutritionTargets } from "../lib/domain/wellness";
 import { resolveEffectiveTargets } from "../lib/domain/targets";
-import { query } from "./_generated/server";
+import { query, QueryCtx } from "./_generated/server";
 import { findCurrentUser } from "./lib/devIdentity";
+
+async function loadTodayEntries({
+  ctx,
+  user,
+}: {
+  ctx: QueryCtx;
+  user: NonNullable<Awaited<ReturnType<typeof findCurrentUser>>>;
+}) {
+  const now = Date.now();
+  const { end, start } = getDayWindowForTimestamp(now, user.timeZone);
+  const meals = await ctx.db
+    .query("meals")
+    .withIndex("by_user_date", (query) =>
+      query.eq("userId", user._id).gte("timestamp", start).lt("timestamp", end)
+    )
+    .collect();
+  const orderedMeals = [...meals].sort((left, right) => right.timestamp - left.timestamp);
+  const hydrationLogs = await ctx.db
+    .query("hydrationLogs")
+    .withIndex("by_user_date", (query) =>
+      query.eq("userId", user._id).gte("timestamp", start).lt("timestamp", end)
+    )
+    .collect();
+  const orderedHydrationLogs = [...hydrationLogs].sort((left, right) => right.timestamp - left.timestamp);
+  const macroTargets = resolveEffectiveTargets(user);
+  const targets = {
+    calories: macroTargets.calories,
+    hydration: user.targetHydration,
+    nutrition: getNutritionTargets({
+      age: user.age,
+      sex: user.sex,
+      targetFiber: user.targetFiber,
+    }),
+    protein: macroTargets.protein,
+  };
+
+  return {
+    macroTargets,
+    now,
+    orderedHydrationLogs,
+    orderedMeals,
+    start,
+    targets,
+  };
+}
+
+function buildMealNutrients(meal: {
+  b12: number;
+  b6: number;
+  calcium: number;
+  folate: number;
+  iron: number;
+  magnesium: number;
+  niacin: number;
+  phosphorus: number;
+  potassium: number;
+  riboflavin: number;
+  sodium?: number;
+  sugar?: number;
+  thiamin: number;
+  totalFiber: number;
+  vitaminA: number;
+  vitaminC: number;
+  vitaminD: number;
+  vitaminE: number;
+  vitaminK: number;
+  zinc: number;
+}) {
+  return {
+    b12: meal.b12,
+    b6: meal.b6,
+    calcium: meal.calcium,
+    fiber: meal.totalFiber,
+    folate: meal.folate,
+    iron: meal.iron,
+    magnesium: meal.magnesium,
+    niacin: meal.niacin,
+    phosphorus: meal.phosphorus,
+    potassium: meal.potassium,
+    riboflavin: meal.riboflavin,
+    sodium: meal.sodium ?? 0,
+    sugar: meal.sugar ?? 0,
+    thiamin: meal.thiamin,
+    vitaminA: meal.vitaminA,
+    vitaminC: meal.vitaminC,
+    vitaminD: meal.vitaminD,
+    vitaminE: meal.vitaminE,
+    vitaminK: meal.vitaminK,
+    zinc: meal.zinc,
+  };
+}
 
 export const today = query({
   args: {},
@@ -14,15 +105,10 @@ export const today = query({
       return null;
     }
 
-    const now = Date.now();
-    const { end, start } = getDayWindowForTimestamp(now, user.timeZone);
-    const meals = await ctx.db
-      .query("meals")
-      .withIndex("by_user_date", (query) =>
-        query.eq("userId", user._id).gte("timestamp", start).lt("timestamp", end)
-      )
-      .collect();
-    const orderedMeals = [...meals].sort((left, right) => right.timestamp - left.timestamp);
+    const { macroTargets, now, orderedHydrationLogs, orderedMeals, targets } = await loadTodayEntries({
+      ctx,
+      user,
+    });
     const mealItems = (
       await Promise.all(
         orderedMeals.map((meal) =>
@@ -33,25 +119,8 @@ export const today = query({
         )
       )
     ).flat();
-    const hydrationLogs = await ctx.db
-      .query("hydrationLogs")
-      .withIndex("by_user_date", (query) =>
-        query.eq("userId", user._id).gte("timestamp", start).lt("timestamp", end)
-      )
-      .collect();
-    const macroTargets = resolveEffectiveTargets(user);
-    const targets = {
-      calories: macroTargets.calories,
-      hydration: user.targetHydration,
-      nutrition: getNutritionTargets({
-        age: user.age,
-        sex: user.sex,
-        targetFiber: user.targetFiber,
-      }),
-      protein: macroTargets.protein,
-    };
     const dashboard = buildTodayDashboard({
-      hydrationLogs: hydrationLogs.map((entry) => ({
+      hydrationLogs: orderedHydrationLogs.map((entry) => ({
         amountOz: entry.amountOz,
         id: entry._id,
         timestamp: entry.timestamp,
@@ -64,14 +133,7 @@ export const today = query({
         id: meal._id,
         label: meal.label,
         mealType: meal.mealType,
-        nutrients: {
-          calcium: meal.calcium,
-          fiber: meal.totalFiber,
-          iron: meal.iron,
-          potassium: meal.potassium,
-          vitaminC: meal.vitaminC,
-          vitaminD: meal.vitaminD,
-        },
+        nutrients: buildMealNutrients(meal),
         timestamp: meal.timestamp,
         totals: {
           calories: meal.totalCalories,
@@ -85,6 +147,7 @@ export const today = query({
 
     return {
       dateKey: getLocalDateKey(now, user.timeZone),
+      displayName: user.displayName,
       targets: {
         calories: macroTargets.calories,
         hydration: user.targetHydration,
@@ -92,6 +155,59 @@ export const today = query({
       },
       timeZone: user.timeZone,
       ...dashboard,
+    };
+  },
+});
+
+export const reminderSnapshot = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await findCurrentUser(ctx);
+
+    if (!user) {
+      return null;
+    }
+
+    const { macroTargets, now, orderedHydrationLogs, orderedMeals, targets } = await loadTodayEntries({
+      ctx,
+      user,
+    });
+    const dashboard = buildTodayDashboard({
+      hydrationLogs: orderedHydrationLogs.map((entry) => ({
+        amountOz: entry.amountOz,
+        id: entry._id,
+        timestamp: entry.timestamp,
+      })),
+      mealItems: [],
+      meals: orderedMeals.map((meal) => ({
+        id: meal._id,
+        label: meal.label,
+        mealType: meal.mealType,
+        nutrients: buildMealNutrients(meal),
+        timestamp: meal.timestamp,
+        totals: {
+          calories: meal.totalCalories,
+          carbs: meal.totalCarbs,
+          fat: meal.totalFat,
+          protein: meal.totalProtein,
+        },
+      })),
+      targets,
+    });
+
+    return {
+      biggestGapKey: dashboard.wellness.biggestGapKey,
+      dateKey: getLocalDateKey(now, user.timeZone),
+      lastHydrationTimestamp: orderedHydrationLogs[0]?.timestamp ?? null,
+      lastMealTimestamp: orderedMeals[0]?.timestamp ?? null,
+      mealCount: orderedMeals.length,
+      progress: {
+        caloriesPercent: dashboard.cards.calories.rawProgressPercent,
+        hydrationPercent: dashboard.cards.hydration.rawProgressPercent,
+        nutritionPercent: dashboard.cards.nutrition.coveragePercent,
+        proteinPercent: dashboard.cards.protein.rawProgressPercent,
+      },
+      timeZone: user.timeZone,
     };
   },
 });

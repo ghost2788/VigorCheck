@@ -3,11 +3,11 @@ import { MealType } from "./meals";
 import { NutritionFields, ScanDraftItem } from "./scan";
 
 export type AnalysisJobStatus = "queued" | "analyzing" | "ready" | "failed";
-export type AnalysisJobSource = "photo" | "text";
+export type AnalysisJobSource = "photo" | "text" | "barcode";
 export type AnalysisJobOriginCard = "scan" | "text";
 
 export type AnalysisDraft = {
-  entryMethod: "ai_text" | "photo_scan";
+  entryMethod: "ai_text" | "photo_scan" | "barcode";
   items: ScanDraftItem[];
   mealType: MealType;
   overallConfidence: "high" | "medium" | "low";
@@ -28,7 +28,27 @@ export type TextAnalysisInput = {
   type: "text";
 };
 
-export type AnalysisJobInput = PhotoAnalysisInput | TextAnalysisInput;
+export type BarcodeAnalysisInput = {
+  code: string;
+  mealType: MealType;
+  type: "barcode";
+};
+
+export type AnalysisJobInput = PhotoAnalysisInput | TextAnalysisInput | BarcodeAnalysisInput;
+
+export type BarcodeLookupFallback = {
+  code: string;
+  message: string;
+};
+
+export type BarcodeLookupResult =
+  | {
+      draft: AnalysisDraft;
+      kind: "success";
+    }
+  | ({
+      kind: "fallback";
+    } & BarcodeLookupFallback);
 
 export type AnalysisJob = {
   createdAt: number;

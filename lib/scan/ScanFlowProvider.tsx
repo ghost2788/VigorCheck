@@ -3,6 +3,9 @@ import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import {
   AnalysisDraft,
+  BarcodeAnalysisInput,
+  BarcodeLookupFallback,
+  BarcodeLookupResult,
   AnalysisJob,
   AnalysisJobOriginCard,
   PhotoAnalysisInput,
@@ -11,9 +14,12 @@ import {
 
 type ScanFlowContextValue = {
   activeReviewJob: AnalysisJob | null;
+  barcodeFallback: BarcodeLookupFallback | null;
+  clearBarcodeFallback: () => void;
   clearActiveReview: () => void;
   completeReviewJob: (jobId: string) => void;
   dismissJob: (jobId: string) => void;
+  enqueueBarcodeJob: (input: Omit<BarcodeAnalysisInput, "type">) => string;
   enqueuePhotoJob: (input: Omit<PhotoAnalysisInput, "type">) => string;
   enqueueTextJob: (input: Omit<TextAnalysisInput, "type">) => string;
   getJobsForOrigin: (originCard: AnalysisJobOriginCard) => AnalysisJob[];
@@ -43,13 +49,19 @@ function buildTextPreview(input: Omit<TextAnalysisInput, "type">) {
   return clipPreview(input.description);
 }
 
+function buildBarcodePreview(input: Omit<BarcodeAnalysisInput, "type">) {
+  return `Barcode ${input.code}`;
+}
+
 export function ScanFlowProvider({ children }: { children: ReactNode }) {
   const analyzePhoto = useAction(api.scanAnalysis.analyzePhoto);
   const analyzeText = useAction(api.textAnalysis.analyzeMealDescription);
+  const lookupBarcode = useAction(api.barcode.lookupProduct);
   const idRef = useRef(0);
   const isMountedRef = useRef(true);
   const [jobs, setJobs] = useState<AnalysisJob[]>([]);
   const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(null);
+  const [barcodeFallback, setBarcodeFallback] = useState<BarcodeLookupFallback | null>(null);
 
   useEffect(() => {
     return () => {
@@ -95,6 +107,25 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
             });
           }
 
+          if (nextJob.source === "barcode") {
+            const input = nextJob.input as BarcodeAnalysisInput;
+            const result = (await lookupBarcode({
+              code: input.code,
+              mealType: input.mealType,
+            })) as BarcodeLookupResult;
+
+            if (result.kind === "fallback") {
+              setBarcodeFallback({
+                code: result.code,
+                message: result.message,
+              });
+              setJobs((current) => current.filter((job) => job.id !== jobId));
+              return null;
+            }
+
+            return result.draft;
+          }
+
           const input = nextJob.input as TextAnalysisInput;
 
           return analyzeText({
@@ -107,6 +138,10 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
           return;
         }
 
+        if (!draft) {
+          return;
+        }
+
         setJobs((current) =>
           current.map((job) =>
             job.id === jobId
@@ -114,6 +149,8 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
                   ...job,
                   draft,
                   error: undefined,
+                  labelPreview:
+                    nextJob.source === "barcode" ? draft.items[0]?.name ?? job.labelPreview : job.labelPreview,
                   status: "ready",
                 }
               : job
@@ -132,7 +169,9 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
                   error:
                     error instanceof Error
                       ? error.message
-                      : "This AI entry could not be analyzed right now.",
+                      : nextJob.source === "barcode"
+                        ? "This barcode lookup could not finish right now."
+                        : "This AI entry could not be analyzed right now.",
                   status: "failed",
                 }
               : job
@@ -141,11 +180,13 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
       }
     })();
 
-  }, [analyzePhoto, analyzeText, jobs]);
+  }, [analyzePhoto, analyzeText, jobs, lookupBarcode]);
 
   const value = useMemo<ScanFlowContextValue>(
     () => ({
       activeReviewJob: activeReviewJobId ? jobs.find((job) => job.id === activeReviewJobId) ?? null : null,
+      barcodeFallback,
+      clearBarcodeFallback: () => setBarcodeFallback(null),
       clearActiveReview: () => setActiveReviewJobId(null),
       completeReviewJob: (jobId) => {
         setJobs((current) => current.filter((job) => job.id !== jobId));
@@ -154,6 +195,25 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
       dismissJob: (jobId) => {
         setJobs((current) => current.filter((job) => job.id !== jobId));
         setActiveReviewJobId((current) => (current === jobId ? null : current));
+      },
+      enqueueBarcodeJob: (input) => {
+        idRef.current += 1;
+        const jobId = `barcode-${Date.now()}-${idRef.current}`;
+        const nextJob: AnalysisJob = {
+          createdAt: Date.now(),
+          id: jobId,
+          input: {
+            ...input,
+            type: "barcode",
+          },
+          labelPreview: buildBarcodePreview(input),
+          originCard: "scan",
+          source: "barcode",
+          status: "queued",
+        };
+        setBarcodeFallback(null);
+        setJobs((current) => [...current, nextJob]);
+        return jobId;
       },
       enqueuePhotoJob: (input) => {
         idRef.current += 1;
@@ -221,7 +281,7 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
         );
       },
     }),
-    [activeReviewJobId, jobs]
+    [activeReviewJobId, barcodeFallback, jobs]
   );
 
   return <ScanFlowContext.Provider value={value}>{children}</ScanFlowContext.Provider>;

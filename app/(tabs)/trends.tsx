@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 import { Card } from "../../components/Card";
+import { NutrientDetailGroups } from "../../components/NutrientDetailGroups";
 import { ThemedText } from "../../components/ThemedText";
 import { WeekNavigator } from "../../components/WeekNavigator";
 import { TrendChartMetric, WeeklyTrendChart } from "../../components/WeeklyTrendChart";
 import { api } from "../../convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useTheme } from "../../lib/theme/ThemeProvider";
+import { getWeeklyWellnessBandColor } from "../../lib/domain/trendsPresentation";
 
 function hexToRgba(hex: string, alpha: number) {
   const normalized = hex.replace("#", "");
@@ -33,26 +35,20 @@ function formatGapLabel(key: string) {
   return key.charAt(0).toUpperCase() + key.slice(1);
 }
 
-function formatStreakCount(count: number, isCapped: boolean) {
-  return isCapped ? `${count}+` : String(count);
-}
-
 export default function TrendsScreen() {
-  const { theme } = useTheme();
+  const { mode, theme } = useTheme();
   const [weekOffset, setWeekOffset] = useState(0);
   const [activeMetric, setActiveMetric] = useState<TrendChartMetric>("wellness");
   const data = useQuery(api.trends.weekly, { weekOffset });
-  const streakCards = useMemo(
+  const weeklyWellnessColor = useMemo(
     () =>
       data
-        ? [
-            { color: theme.accent2, key: "logging", label: "Logging", value: data.streaks.logging },
-            { color: theme.metricCalories, key: "calories", label: "Calories", value: data.streaks.calories },
-            { color: theme.metricProtein, key: "protein", label: "Protein", value: data.streaks.protein },
-            { color: theme.metricHydration, key: "hydration", label: "Hydration", value: data.streaks.hydration },
-          ]
-        : [],
-    [data, theme]
+        ? getWeeklyWellnessBandColor({
+            mode,
+            score: data.overview.weeklyWellnessScore,
+          })
+        : theme.text,
+    [data, mode, theme.text]
   );
 
   if (data === undefined) {
@@ -116,31 +112,20 @@ export default function TrendsScreen() {
             </ThemedText>
             <ThemedText size="sm">{data.week.isCurrentWeek ? "This week so far" : "Selected week"}</ThemedText>
           </View>
-          <ThemedText size="hero" style={styles.summaryScore}>
-            {data.overview.weeklyWellnessScore}
-          </ThemedText>
+          <View style={styles.summaryScoreGroup}>
+            <ThemedText size="hero" style={[styles.summaryScore, { color: weeklyWellnessColor }]}>
+              {data.overview.weeklyWellnessScore}
+            </ThemedText>
+            <ThemedText size="sm" variant="secondary" style={styles.summaryScoreMax}>
+              / 100
+            </ThemedText>
+          </View>
         </View>
 
         <ThemedText variant="secondary">
           {data.overview.onTrackDays} of {data.week.elapsedDays} days on track
         </ThemedText>
       </Card>
-
-      <View style={styles.streakGrid}>
-        {streakCards.map((card) => (
-          <Card key={card.key} style={styles.streakCard}>
-            <ThemedText variant="tertiary" size="xs" style={styles.eyebrow}>
-              {card.label}
-            </ThemedText>
-            <ThemedText size="lg" style={{ color: card.color }}>
-              {formatStreakCount(card.value.count, card.value.isCapped)}
-            </ThemedText>
-            <ThemedText variant="secondary" size="sm">
-              current streak
-            </ThemedText>
-          </Card>
-        ))}
-      </View>
 
       <View style={styles.section}>
         <WeeklyTrendChart
@@ -195,6 +180,13 @@ export default function TrendsScreen() {
           </View>
         ))}
       </Card>
+
+      <View style={styles.section}>
+        <NutrientDetailGroups
+          accentColor={theme.metricNutrition}
+          groups={data.nutrition.detailGroups}
+        />
+      </View>
 
       <Card style={styles.section}>
         <ThemedText variant="tertiary" size="xs" style={styles.eyebrow}>
@@ -260,16 +252,6 @@ const styles = StyleSheet.create({
   setupTitle: {
     marginBottom: 8,
   },
-  streakCard: {
-    flexBasis: "48%",
-    flexGrow: 1,
-  },
-  streakGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 16,
-  },
   summaryCard: {
     marginBottom: 16,
   },
@@ -279,10 +261,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
   },
+  summaryScoreGroup: {
+    alignItems: "baseline",
+    flexDirection: "row",
+    gap: 6,
+  },
   summaryScore: {
     fontSize: 48,
     letterSpacing: -2.4,
     lineHeight: 52,
+  },
+  summaryScoreMax: {
+    lineHeight: 22,
   },
   title: {
     marginBottom: 20,

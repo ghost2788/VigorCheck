@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "CalTracker",
-    "slug": "caltracker",
+    "name": "VigorCheck",
+    "slug": "vigorcheck",
     "version": "1.0.0",
     "owner": "loot-hunt",
     "orientation": "portrait",
-    "scheme": "caltracker",
+    "scheme": "vigorcheck",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.caltracker.app"
+      "bundleIdentifier": "com.vigorcheck.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,19 +24,34 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.caltracker.app",
-      "predictiveBackGestureEnabled": false
+      "package": "com.vigorcheck.app",
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "63f75b26-e8e2-4fd0-8ad2-63c67b6e38c9"
-      }
-    },
     "plugins": [
-      "expo-router"
-    ]
+      "expo-router",
+      "expo-notifications",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow VigorCheck to scan packaged-food barcodes."
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "097a5862-c791-41ca-a46a-a9841fddfa84"
+      }
+    }
   }
 }

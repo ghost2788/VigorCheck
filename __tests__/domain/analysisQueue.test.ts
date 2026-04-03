@@ -27,9 +27,16 @@ function createShortcut(
 function createJob(
   overrides: Partial<AnalysisJob> & Pick<AnalysisJob, "id" | "originCard" | "source" | "status">
 ): AnalysisJob {
+  const input =
+    overrides.source === "photo"
+      ? { type: "photo" }
+      : overrides.source === "barcode"
+        ? { code: "012345678905", mealType: "snack", type: "barcode" }
+        : { type: "text" };
+
   return {
     createdAt: 0,
-    input: { type: overrides.source === "photo" ? "photo" : "text" } as AnalysisJob["input"],
+    input: input as AnalysisJob["input"],
     labelPreview: overrides.id,
     ...overrides,
   };

@@ -10,6 +10,12 @@ import {
   scoreGoalProgress,
   WellnessKey,
 } from "./wellness";
+import {
+  buildGroupedNutrientDetails,
+  NutrientDetailGroup,
+  sumDetailedNutrients,
+  type DetailedNutrientInput,
+} from "./nutrients";
 
 export type DashboardMeal = {
   id: string;
@@ -73,6 +79,7 @@ export type DashboardPayload = {
     nutrition: {
       contributors: NutritionContributor[];
       coveragePercent: number;
+      detailGroups: NutrientDetailGroup[];
       nutrients: NutritionRow[];
       score: number;
     };
@@ -108,7 +115,7 @@ type MealInput = {
   id: string;
   label?: string;
   mealType: DashboardMeal["mealType"];
-  nutrients: NutritionAmounts;
+  nutrients: NutritionAmounts & DetailedNutrientInput;
   timestamp: number;
   totals: {
     calories: number;
@@ -244,6 +251,11 @@ export function buildTodayDashboard({
       vitaminD: 0,
     }
   );
+  const detailedNutrientTotals = sumDetailedNutrients(
+    meals.map((meal) => ({
+      nutrients: meal.nutrients,
+    }))
+  );
 
   const caloriesRawProgressPercent = roundPercent(totals.calories, targets.calories);
   const proteinRawProgressPercent = roundPercent(totals.protein, targets.protein);
@@ -351,6 +363,7 @@ export function buildTodayDashboard({
           }))
         ),
         coveragePercent: nutritionScore,
+        detailGroups: buildGroupedNutrientDetails(detailedNutrientTotals),
         nutrients: nutrientRows,
         score: nutritionScore,
       },

@@ -31,4 +31,31 @@ describe("AnalysisQueueList", () => {
 
     expect(getByText(longLabel).props.numberOfLines).toBeUndefined();
   });
+
+  it("uses barcode-specific lookup copy while a product is loading", () => {
+    const { getByText } = render(
+      <AnalysisQueueList
+        jobs={[
+          {
+            createdAt: 1,
+            id: "job-1",
+            input: {
+              code: "012345678905",
+              mealType: "snack",
+              type: "barcode",
+            },
+            labelPreview: "Barcode 012345678905",
+            originCard: "scan",
+            source: "barcode",
+            status: "analyzing",
+          },
+        ]}
+        onDismiss={jest.fn()}
+        onOpenReview={jest.fn()}
+        onRetry={jest.fn()}
+      />
+    );
+
+    expect(getByText("Looking up product...")).toBeTruthy();
+  });
 });

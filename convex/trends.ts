@@ -1,13 +1,10 @@
 import { v } from "convex/values";
 import {
-  getDayWindowForOffset,
   getLocalDateKey,
-  getTrailingDateKeys,
   getWeekDateKeysForOffset,
   getWeekWindowForOffset,
 } from "../lib/domain/dayWindow";
 import {
-  buildCurrentStreak,
   buildTrendDay,
   buildWeeklyOverview,
   summarizeWeeklyNutrition,
@@ -16,9 +13,53 @@ import { resolveEffectiveTargets } from "../lib/domain/targets";
 import { getNutritionTargets } from "../lib/domain/wellness";
 import { query } from "./_generated/server";
 import { findCurrentUser } from "./lib/devIdentity";
-
-const STREAK_CAP_DAYS = 60;
 const WEEK_STARTS_ON = 0 as const;
+
+function buildMealNutrients(meal: {
+  b12: number;
+  b6: number;
+  calcium: number;
+  folate: number;
+  iron: number;
+  magnesium: number;
+  niacin: number;
+  phosphorus: number;
+  potassium: number;
+  riboflavin: number;
+  thiamin: number;
+  totalFiber: number;
+  totalSodium: number;
+  totalSugar: number;
+  vitaminA: number;
+  vitaminC: number;
+  vitaminD: number;
+  vitaminE: number;
+  vitaminK: number;
+  zinc: number;
+}) {
+  return {
+    b12: meal.b12,
+    b6: meal.b6,
+    calcium: meal.calcium,
+    fiber: meal.totalFiber,
+    folate: meal.folate,
+    iron: meal.iron,
+    magnesium: meal.magnesium,
+    niacin: meal.niacin,
+    phosphorus: meal.phosphorus,
+    potassium: meal.potassium,
+    riboflavin: meal.riboflavin,
+    sodium: meal.totalSodium,
+    sugar: meal.totalSugar,
+    thiamin: meal.thiamin,
+    vitaminA: meal.vitaminA,
+    vitaminC: meal.vitaminC,
+    vitaminD: meal.vitaminD,
+    vitaminE: meal.vitaminE,
+    vitaminK: meal.vitaminK,
+    zinc: meal.zinc,
+  };
+}
 
 function groupByLocalDateKey<T extends { timestamp: number }>(entries: T[], timeZone: string) {
   const grouped = new Map<string, T[]>();
@@ -138,14 +179,7 @@ export const weekly = query({
           id: meal._id,
           label: meal.label,
           mealType: meal.mealType,
-          nutrients: {
-            calcium: meal.calcium,
-            fiber: meal.totalFiber,
-            iron: meal.iron,
-            potassium: meal.potassium,
-            vitaminC: meal.vitaminC,
-            vitaminD: meal.vitaminD,
-          },
+          nutrients: buildMealNutrients(meal),
           timestamp: meal.timestamp,
           totals: {
             calories: meal.totalCalories,
@@ -162,72 +196,10 @@ export const weekly = query({
       days,
       recurringGaps: nutrition.recurringGaps,
     });
-    const streakWindow = getDayWindowForOffset({
-      dayOffset: STREAK_CAP_DAYS - 1,
-      timeZone: user.timeZone,
-      timestamp: now,
-    });
-    const streakMeals = await ctx.db
-      .query("meals")
-      .withIndex("by_user_date", (query) =>
-        query.eq("userId", user._id).gte("timestamp", streakWindow.start).lt("timestamp", currentWeekWindow.end)
-      )
-      .collect();
-    const streakHydrationLogs = await ctx.db
-      .query("hydrationLogs")
-      .withIndex("by_user_date", (query) =>
-        query.eq("userId", user._id).gte("timestamp", streakWindow.start).lt("timestamp", currentWeekWindow.end)
-      )
-      .collect();
-    const streakMealsByDate = groupByLocalDateKey(streakMeals, user.timeZone);
-    const streakHydrationByDate = groupByLocalDateKey(streakHydrationLogs, user.timeZone);
-    const streakDays = getTrailingDateKeys({
-      count: STREAK_CAP_DAYS,
-      timeZone: user.timeZone,
-      timestamp: now,
-    }).map((dateKey) =>
-      buildTrendDay({
-        dateKey,
-        hydrationLogs: (streakHydrationByDate.get(dateKey) ?? []).map((entry) => ({
-          amountOz: entry.amountOz,
-          id: entry._id,
-          timestamp: entry.timestamp,
-        })),
-        isFuture: false,
-        meals: (streakMealsByDate.get(dateKey) ?? []).map((meal) => ({
-          id: meal._id,
-          label: meal.label,
-          mealType: meal.mealType,
-          nutrients: {
-            calcium: meal.calcium,
-            fiber: meal.totalFiber,
-            iron: meal.iron,
-            potassium: meal.potassium,
-            vitaminC: meal.vitaminC,
-            vitaminD: meal.vitaminD,
-          },
-          timestamp: meal.timestamp,
-          totals: {
-            calories: meal.totalCalories,
-            carbs: meal.totalCarbs,
-            fat: meal.totalFat,
-            protein: meal.totalProtein,
-          },
-        })),
-        targets,
-      })
-    );
-
     return {
       days,
       nutrition,
       overview,
-      streaks: {
-        calories: buildCurrentStreak({ days: streakDays, metric: "calories" }),
-        hydration: buildCurrentStreak({ days: streakDays, metric: "hydration" }),
-        logging: buildCurrentStreak({ days: streakDays, metric: "logging" }),
-        protein: buildCurrentStreak({ days: streakDays, metric: "protein" }),
-      },
       targets: {
         calories: macroTargets.calories,
         hydration: user.targetHydration,

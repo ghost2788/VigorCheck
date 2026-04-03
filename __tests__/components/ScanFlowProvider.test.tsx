@@ -34,6 +34,32 @@ function QueueProbe() {
   );
 }
 
+function BarcodeQueueProbe() {
+  const { barcodeFallback, enqueueBarcodeJob, jobs } = useScanFlow();
+  const startedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (startedRef.current) {
+      return;
+    }
+
+    startedRef.current = true;
+    enqueueBarcodeJob({
+      code: "012345678905",
+      mealType: "snack",
+    });
+  }, [enqueueBarcodeJob]);
+
+  return (
+    <>
+      {jobs.map((job) => (
+        <ThemedText key={job.id}>{job.status}</ThemedText>
+      ))}
+      {barcodeFallback ? <ThemedText>{barcodeFallback.code}</ThemedText> : null}
+    </>
+  );
+}
+
 describe("ScanFlowProvider", () => {
   beforeEach(() => {
     mockUseAction.mockReset();
@@ -47,10 +73,16 @@ describe("ScanFlowProvider", () => {
       mealType: "breakfast",
       overallConfidence: "medium",
     });
+    const lookupBarcode = jest.fn();
 
     let actionCall = 0;
     mockUseAction.mockImplementation(() => {
-      const next = actionCall % 2 === 0 ? analyzePhoto : analyzeText;
+      const next =
+        actionCall % 3 === 0
+          ? analyzePhoto
+          : actionCall % 3 === 1
+            ? analyzeText
+            : lookupBarcode;
       actionCall += 1;
       return next;
     });
@@ -63,5 +95,38 @@ describe("ScanFlowProvider", () => {
 
     await waitFor(() => expect(analyzeText).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(getByText("ready")).toBeTruthy());
+  });
+
+  it("stores a barcode fallback when lookup data is missing", async () => {
+    const analyzePhoto = jest.fn();
+    const analyzeText = jest.fn();
+    const lookupBarcode = jest.fn().mockResolvedValue({
+      code: "012345678905",
+      kind: "fallback",
+      message: "This barcode could not be matched to a complete product.",
+    });
+
+    let actionCall = 0;
+    mockUseAction.mockImplementation(() => {
+      const next =
+        actionCall % 3 === 0
+          ? analyzePhoto
+          : actionCall % 3 === 1
+            ? analyzeText
+            : lookupBarcode;
+      actionCall += 1;
+      return next;
+    });
+
+    const { getByText, queryByText } = render(
+      <ScanFlowProvider>
+        <BarcodeQueueProbe />
+      </ScanFlowProvider>
+    );
+
+    await waitFor(() => expect(lookupBarcode).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(getByText("012345678905")).toBeTruthy());
+    expect(queryByText("queued")).toBeNull();
+    expect(queryByText("analyzing")).toBeNull();
   });
 });

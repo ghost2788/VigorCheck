@@ -9,6 +9,7 @@ type ScanEntryActionsProps = {
   children?: ReactNode;
   error?: string | null;
   isPreparing?: boolean;
+  onBarcodePress?: () => void;
   onCameraPress: () => void;
   onLibraryPress: () => void;
   title?: string;
@@ -18,6 +19,7 @@ export function ScanEntryActions({
   children,
   error,
   isPreparing = false,
+  onBarcodePress,
   onCameraPress,
   onLibraryPress,
   title = "Scan a meal",
@@ -32,6 +34,9 @@ export function ScanEntryActions({
       <View style={styles.actions}>
         <Button label={isPreparing ? "Preparing..." : "Use camera"} onPress={onCameraPress} />
         <Button label="Choose photo" onPress={onLibraryPress} variant="secondary" />
+        {onBarcodePress ? (
+          <Button label="Scan barcode" onPress={onBarcodePress} variant="secondary" />
+        ) : null}
       </View>
       {error ? (
         <ThemedText variant="accent2" size="sm" style={[styles.error, { color: theme.accent2 }]}>

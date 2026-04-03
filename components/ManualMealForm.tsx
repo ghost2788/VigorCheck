@@ -17,10 +17,13 @@ export type ManualMealFormSubmission = {
 
 type ManualMealFormProps = {
   fixedMealType?: MealType;
+  initialValues?: Partial<ManualMealFormSubmission>;
   isSubmitting?: boolean;
   mealTypeMode?: "fixed" | "select";
   onSubmit: (values: ManualMealFormSubmission) => Promise<void> | void;
+  resetOnSubmit?: boolean;
   sectionTitle?: string;
+  submitButtonTestId?: string;
   submitLabel?: string;
 };
 
@@ -98,19 +101,30 @@ function Field({
 
 export function ManualMealForm({
   fixedMealType = "breakfast",
+  initialValues,
   isSubmitting = false,
   mealTypeMode = "select",
   onSubmit,
+  resetOnSubmit = true,
   sectionTitle = "Quick add",
+  submitButtonTestId,
   submitLabel = "Log meal",
 }: ManualMealFormProps) {
   const { theme } = useTheme();
-  const [mealType, setMealType] = useState<ManualMealFormSubmission["mealType"]>(fixedMealType);
-  const [name, setName] = useState("");
-  const [calories, setCalories] = useState("");
-  const [protein, setProtein] = useState("");
-  const [carbs, setCarbs] = useState("");
-  const [fat, setFat] = useState("");
+  const [mealType, setMealType] = useState<ManualMealFormSubmission["mealType"]>(
+    initialValues?.mealType ?? fixedMealType
+  );
+  const [name, setName] = useState(initialValues?.name ?? "");
+  const [calories, setCalories] = useState(
+    initialValues?.calories !== undefined ? String(initialValues.calories) : ""
+  );
+  const [protein, setProtein] = useState(
+    initialValues?.protein !== undefined ? String(initialValues.protein) : ""
+  );
+  const [carbs, setCarbs] = useState(
+    initialValues?.carbs !== undefined ? String(initialValues.carbs) : ""
+  );
+  const [fat, setFat] = useState(initialValues?.fat !== undefined ? String(initialValues.fat) : "");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -143,12 +157,14 @@ export function ManualMealForm({
         name: name.trim() || undefined,
         protein: parsedProtein,
       });
-      setName("");
-      setCalories("");
-      setProtein("");
-      setCarbs("");
-      setFat("");
-      setMealType(fixedMealType);
+      if (resetOnSubmit) {
+        setName("");
+        setCalories("");
+        setProtein("");
+        setCarbs("");
+        setFat("");
+        setMealType(fixedMealType);
+      }
     } finally {
       setSaving(false);
     }
@@ -208,7 +224,11 @@ export function ManualMealForm({
         </ThemedText>
       ) : null}
 
-      <Button label={saving || isSubmitting ? "Saving..." : submitLabel} onPress={submit} />
+      <Button
+        label={saving || isSubmitting ? "Saving..." : submitLabel}
+        onPress={submit}
+        testID={submitButtonTestId}
+      />
     </Card>
   );
 }

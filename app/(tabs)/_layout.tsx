@@ -1,10 +1,11 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSubscription } from "../../lib/billing/SubscriptionProvider";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 
-type TabName = "index" | "log" | "trends" | "profile";
+type TabName = "index" | "log" | "history" | "trends" | "profile";
 
 function getTabIconName(name: TabName, focused: boolean): React.ComponentProps<typeof Ionicons>["name"] {
   if (name === "index") {
@@ -13,6 +14,10 @@ function getTabIconName(name: TabName, focused: boolean): React.ComponentProps<t
 
   if (name === "log") {
     return focused ? "add-circle" : "add-circle-outline";
+  }
+
+  if (name === "history") {
+    return focused ? "time" : "time-outline";
   }
 
   if (name === "trends") {
@@ -25,6 +30,11 @@ function getTabIconName(name: TabName, focused: boolean): React.ComponentProps<t
 export default function TabLayout() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { accessState } = useSubscription();
+
+  if (accessState?.shouldShowPaywall) {
+    return <Redirect href="/paywall" />;
+  }
 
   return (
     <Tabs
@@ -63,6 +73,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" options={{ title: "Home" }} />
       <Tabs.Screen name="log" options={{ title: "Log" }} />
+      <Tabs.Screen name="history" options={{ title: "History" }} />
       <Tabs.Screen name="trends" options={{ title: "Trends" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>

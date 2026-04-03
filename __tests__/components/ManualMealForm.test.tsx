@@ -66,4 +66,27 @@ describe("ManualMealForm", () => {
       });
     });
   });
+
+  it("can render with initial values for editing", () => {
+    const { getByDisplayValue } = render(
+      <ManualMealForm
+        initialValues={{
+          calories: 320,
+          carbs: 34,
+          fat: 9,
+          mealType: "breakfast",
+          name: "Breakfast scan",
+          protein: 23,
+        }}
+        onSubmit={() => {}}
+        submitLabel="Save changes"
+      />
+    );
+
+    expect(getByDisplayValue("Breakfast scan")).toBeTruthy();
+    expect(getByDisplayValue("320")).toBeTruthy();
+    expect(getByDisplayValue("23")).toBeTruthy();
+    expect(getByDisplayValue("34")).toBeTruthy();
+    expect(getByDisplayValue("9")).toBeTruthy();
+  });
 });

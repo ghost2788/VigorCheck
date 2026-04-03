@@ -13,7 +13,11 @@ export const mealTypeValidator = v.union(
   v.literal("snack")
 );
 
-export const aiEntryMethodValidator = v.union(v.literal("photo_scan"), v.literal("ai_text"));
+export const aiEntryMethodValidator = v.union(
+  v.literal("photo_scan"),
+  v.literal("ai_text"),
+  v.literal("barcode")
+);
 
 export const rememberedShortcutCategoryValidator = v.union(
   v.literal("water"),
@@ -55,12 +59,18 @@ export const nutritionValidator = v.object({
 });
 
 export const savedScanItemValidator = v.object({
+  barcodeValue: v.optional(v.string()),
   confidence: confidenceValidator,
   estimatedGrams: v.number(),
   name: v.string(),
   nutrition: nutritionValidator,
   portionLabel: v.string(),
   prepMethod: v.optional(v.string()),
-  source: v.union(v.literal("usda"), v.literal("ai_estimated"), v.literal("manual")),
+  source: v.union(
+    v.literal("usda"),
+    v.literal("ai_estimated"),
+    v.literal("manual"),
+    v.literal("barcode_catalog")
+  ),
   usdaFoodId: v.optional(v.string()),
 });

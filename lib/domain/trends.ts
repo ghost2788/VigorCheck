@@ -1,11 +1,18 @@
 import { buildTodayDashboard, DashboardTargets, NutritionRow } from "./dashboard";
+import {
+  buildGroupedNutrientDetails,
+  createEmptyDetailedNutrientTotals,
+  type DetailedNutrientInput,
+  type DetailedNutrientKey,
+  type NutrientDetailGroup,
+} from "./nutrients";
 import { NutritionAmounts, NutritionKey, getNutritionKeys, ouncesToCups } from "./wellness";
 
 type TrendMealInput = {
   id: string;
   label?: string;
   mealType: "breakfast" | "lunch" | "dinner" | "snack";
-  nutrients: NutritionAmounts;
+  nutrients: NutritionAmounts & DetailedNutrientInput;
   timestamp: number;
   totals: {
     calories: number;
@@ -30,6 +37,7 @@ export type TrendDay = {
   hydrationScore: number;
   isFuture: boolean;
   nutritionCoveragePercent: number;
+  nutrientDetailGroups: NutrientDetailGroup[];
   nutrients: NutritionRow[];
   protein: number;
   proteinScore: number;
@@ -37,13 +45,9 @@ export type TrendDay = {
   wellnessScore: number;
 };
 
-export type TrendStreak = {
-  count: number;
-  isCapped: boolean;
-};
-
 export type WeeklyNutritionSummary = {
   averageCoveragePercent: number;
+  detailGroups: NutrientDetailGroup[];
   nutrients: Array<{
     averagePercent: number;
     key: NutritionKey;
@@ -108,6 +112,7 @@ export function buildTrendDay({
     hydrationScore: dashboard.cards.hydration.score,
     isFuture,
     nutritionCoveragePercent: dashboard.cards.nutrition.coveragePercent,
+    nutrientDetailGroups: dashboard.cards.nutrition.detailGroups,
     nutrients: dashboard.cards.nutrition.nutrients,
     protein: dashboard.totals.protein,
     proteinScore: dashboard.cards.protein.score,
@@ -119,7 +124,7 @@ export function buildTrendDay({
 export function summarizeWeeklyNutrition({
   days,
 }: {
-  days: Array<Pick<TrendDay, "isFuture" | "nutrients">>;
+  days: Array<Pick<TrendDay, "isFuture" | "nutrientDetailGroups" | "nutrients">>;
 }): WeeklyNutritionSummary {
   const elapsedDays = days.filter((day) => !day.isFuture);
   const nutrientSummaries = getNutritionKeys().map((key) => {
@@ -153,61 +158,32 @@ export function summarizeWeeklyNutrition({
     })
     .slice(0, 2)
     .map((entry) => entry.key);
+  const averageDetailTotals = elapsedDays.reduce((totals, day) => {
+    for (const group of day.nutrientDetailGroups ?? []) {
+      for (const nutrient of group.nutrients) {
+        totals[nutrient.key as DetailedNutrientKey] += nutrient.value;
+      }
+    }
+
+    return totals;
+  }, createEmptyDetailedNutrientTotals());
+
+  for (const key of Object.keys(averageDetailTotals) as DetailedNutrientKey[]) {
+    averageDetailTotals[key] =
+      elapsedDays.length === 0 ? 0 : Math.round((averageDetailTotals[key] / elapsedDays.length) * 10) / 10;
+  }
 
   return {
     averageCoveragePercent: Math.round(
       average(nutrientSummaries.map((nutrient) => nutrient.averagePercent))
     ),
+    detailGroups: buildGroupedNutrientDetails(averageDetailTotals),
     nutrients: nutrientSummaries.map(({ averagePercent, key, target }) => ({
       averagePercent,
       key,
       target,
     })),
     recurringGaps,
-  };
-}
-
-export function buildCurrentStreak({
-  cap = 60,
-  days,
-  metric,
-}: {
-  cap?: number;
-  days: Array<
-    Pick<TrendDay, "caloriesScore" | "didLogAnything" | "hydrationScore" | "proteinScore">
-  >;
-  metric: "calories" | "hydration" | "logging" | "protein";
-}): TrendStreak {
-  const recentDays = days.slice(0, cap);
-  const predicate = (day: (typeof recentDays)[number]) => {
-    if (metric === "logging") {
-      return day.didLogAnything;
-    }
-
-    if (metric === "calories") {
-      return day.caloriesScore === 100;
-    }
-
-    if (metric === "protein") {
-      return day.proteinScore >= 100;
-    }
-
-    return day.hydrationScore >= 100;
-  };
-
-  let count = 0;
-
-  for (const day of recentDays) {
-    if (!predicate(day)) {
-      break;
-    }
-
-    count += 1;
-  }
-
-  return {
-    count,
-    isCapped: count === cap && recentDays.length === cap,
   };
 }
 

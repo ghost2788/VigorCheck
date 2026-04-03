@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import { CartesianChart, Line } from "victory-native";
 import { useTheme } from "../lib/theme/ThemeProvider";
 import { Card } from "./Card";
 import { ThemedText } from "./ThemedText";
@@ -9,10 +8,13 @@ export type TrendChartMetric = "calories" | "hydration" | "nutrition" | "protein
 
 type TrendChartDay = {
   calories: number;
+  caloriesScore: number;
   hydrationCups: number;
+  hydrationScore: number;
   isFuture: boolean;
   nutritionCoveragePercent: number;
   protein: number;
+  proteinScore: number;
   shortLabel: string;
   wellnessScore: number;
 };
@@ -28,11 +30,7 @@ type WeeklyTrendChartProps = {
   };
 };
 
-type ChartDatum = {
-  label: string;
-  target: number | null;
-  value: number | null;
-};
+const CHART_VISUAL_HEIGHT = 248;
 
 function hexToRgba(hex: string, alpha: number) {
   const normalized = hex.replace("#", "");
@@ -41,6 +39,42 @@ function hexToRgba(hex: string, alpha: number) {
   const b = parseInt(normalized.slice(4, 6), 16);
 
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function clampPercent(value: number) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function getDisplayPercent(
+  day: TrendChartDay,
+  metric: TrendChartMetric,
+  targets: WeeklyTrendChartProps["targets"]
+) {
+  if (day.isFuture) {
+    return null;
+  }
+
+  if (metric === "calories") {
+    if (!targets.calories) {
+      return 0;
+    }
+
+    return clampPercent((day.calories / targets.calories) * 100);
+  }
+
+  if (metric === "protein") {
+    return clampPercent(day.proteinScore);
+  }
+
+  if (metric === "hydration") {
+    return clampPercent(day.hydrationScore);
+  }
+
+  if (metric === "nutrition") {
+    return clampPercent(day.nutritionCoveragePercent);
+  }
+
+  return clampPercent(day.wellnessScore);
 }
 
 export function WeeklyTrendChart({
@@ -64,30 +98,24 @@ export function WeeklyTrendChart({
     if (activeMetric === "calories") {
       return {
         color: theme.metricCalories,
-        hint: `${targets.calories.toLocaleString()} kcal target`,
+        hint: "Target balance %",
         label: "Calories",
-        maxY: undefined as number | undefined,
-        target: targets.calories,
       };
     }
 
     if (activeMetric === "protein") {
       return {
         color: theme.metricProtein,
-        hint: `${targets.protein} g target`,
+        hint: "Goal progress %",
         label: "Protein",
-        maxY: undefined as number | undefined,
-        target: targets.protein,
       };
     }
 
     if (activeMetric === "hydration") {
       return {
         color: theme.metricHydration,
-        hint: `${targets.hydration} cups target`,
+        hint: "Goal progress %",
         label: "Hydration",
-        maxY: undefined as number | undefined,
-        target: targets.hydration,
       };
     }
 
@@ -96,54 +124,16 @@ export function WeeklyTrendChart({
         color: theme.metricNutrition,
         hint: "Daily coverage %",
         label: "Nutrition",
-        maxY: 100,
         target: null,
       };
     }
 
     return {
       color: theme.text,
-      hint: "Daily wellness score",
+      hint: "Daily score %",
       label: "Wellness",
-      maxY: 100,
-      target: null,
     };
-  }, [activeMetric, targets.calories, targets.hydration, targets.protein, theme]);
-  const chartData = useMemo<ChartDatum[]>(() => {
-    return days.map((day) => {
-      const value = (() => {
-        if (day.isFuture) {
-          return null;
-        }
-
-        if (activeMetric === "calories") {
-          return day.calories;
-        }
-
-        if (activeMetric === "protein") {
-          return day.protein;
-        }
-
-        if (activeMetric === "hydration") {
-          return day.hydrationCups;
-        }
-
-        if (activeMetric === "nutrition") {
-          return day.nutritionCoveragePercent;
-        }
-
-        return day.wellnessScore;
-      })();
-
-      return {
-        label: day.shortLabel,
-        target: config.target,
-        value,
-      };
-    });
-  }, [activeMetric, config.target, days]);
-  const yKeys: Array<"value" | "target"> =
-    config.target === null ? ["value"] : ["value", "target"];
+  }, [activeMetric, theme]);
 
   return (
     <Card>
@@ -190,56 +180,67 @@ export function WeeklyTrendChart({
         })}
       </View>
 
-      <View style={styles.chartWrap}>
-        <CartesianChart
-          data={chartData}
-          domain={config.maxY ? { y: [0, config.maxY] } : undefined}
-          padding={{ bottom: 12, left: 8, right: 8, top: 18 }}
-          xKey="label"
-          yKeys={yKeys}
-        >
-          {({ points }) => (
-            <>
-              {config.target !== null ? (
-                <Line
-                  color={hexToRgba(config.color, 0.28)}
-                  points={(points as typeof points & { target: (typeof points)["value"] }).target}
-                  strokeWidth={1.5}
-                />
-              ) : null}
-              <Line
-                color={config.color}
-                connectMissingData={false}
-                points={points.value}
-                strokeWidth={3}
-              />
-            </>
-          )}
-        </CartesianChart>
-      </View>
+      <View style={styles.visualArea} testID={`weekly-trend-chart-mode-${activeMetric}`}>
+        <View style={styles.hiddenMarker} testID="weekly-trend-chart-strip" />
+        <View style={styles.heatStrip}>
+          {days.map((day, index) => {
+            const displayPercent = getDisplayPercent(day, activeMetric, targets);
+            const isFuture = day.isFuture || displayPercent === null;
 
-      <View style={styles.labelRow}>
-        {days.map((day) => (
-          <View key={`${activeMetric}-${day.shortLabel}`} style={styles.labelCell}>
-            <ThemedText
-              size="sm"
-              variant={day.isFuture ? "muted" : "tertiary"}
-              style={styles.labelText}
-            >
-              {day.shortLabel}
-            </ThemedText>
-          </View>
-        ))}
+            return (
+              <View
+                key={`${activeMetric}-${day.shortLabel}-${index}`}
+                style={styles.heatStripColumn}
+              >
+                <ThemedText
+                  size="sm"
+                  variant={isFuture ? "muted" : "tertiary"}
+                  style={styles.heatStripDayLabel}
+                >
+                  {day.shortLabel}
+                </ThemedText>
+                <View
+                  style={[
+                    styles.heatCell,
+                    isFuture
+                      ? {
+                          backgroundColor: "transparent",
+                          borderColor: theme.cardBorder,
+                          borderStyle: "dashed",
+                        }
+                      : {
+                          backgroundColor: hexToRgba(config.color, 0.05),
+                          borderColor: hexToRgba(config.color, 0.22),
+                        },
+                  ]}
+                  testID={`weekly-trend-chart-cell-${activeMetric}-${index}-${isFuture ? "future" : "active"}`}
+                >
+                  {!isFuture ? (
+                    <View
+                      style={[
+                        styles.heatFill,
+                        {
+                          backgroundColor: hexToRgba(config.color, 0.82),
+                          height: `${displayPercent}%`,
+                        },
+                      ]}
+                      testID={`weekly-trend-chart-fill-${activeMetric}-${index}`}
+                    />
+                  ) : null}
+                </View>
+                <ThemedText size="sm" style={{ color: isFuture ? theme.textMuted : config.color }}>
+                  {isFuture ? "—" : `${displayPercent}%`}
+                </ThemedText>
+              </View>
+            );
+          })}
+        </View>
       </View>
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  chartWrap: {
-    height: 220,
-    marginBottom: 6,
-  },
   eyebrow: {
     marginBottom: 4,
   },
@@ -249,16 +250,40 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 16,
   },
-  labelCell: {
+  heatCell: {
+    borderRadius: 16,
+    borderWidth: 1,
+    flex: 1,
+    minHeight: 128,
+    overflow: "hidden",
+    position: "relative",
+    width: "100%",
+  },
+  heatFill: {
+    borderRadius: 14,
+    bottom: 0,
+    left: 0,
+    position: "absolute",
+    right: 0,
+  },
+  heatStrip: {
+    alignItems: "stretch",
+    flex: 1,
+    flexDirection: "row",
+    gap: 8,
+  },
+  heatStripColumn: {
     alignItems: "center",
     flex: 1,
+    gap: 12,
   },
-  labelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  labelText: {
+  heatStripDayLabel: {
     textAlign: "center",
+  },
+  hiddenMarker: {
+    height: 0,
+    opacity: 0,
+    width: 0,
   },
   segment: {
     alignItems: "center",
@@ -273,5 +298,8 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     marginBottom: 16,
+  },
+  visualArea: {
+    height: CHART_VISUAL_HEIGHT,
   },
 });

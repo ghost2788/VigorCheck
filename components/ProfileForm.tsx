@@ -25,6 +25,8 @@ import { ThemedText } from "./ThemedText";
 
 type ProfileFormProps = {
   autoPopulateTargets?: boolean;
+  embedded?: boolean;
+  footer?: React.ReactNode;
   initialValues?: Partial<ProfileFormSubmission>;
   isSubmitting?: boolean;
   onSubmit: (values: ProfileFormSubmission) => Promise<void> | void;
@@ -115,6 +117,8 @@ function parseTargetNumber(value: string) {
 
 export function ProfileForm({
   autoPopulateTargets,
+  embedded = false,
+  footer,
   initialValues,
   isSubmitting = false,
   onSubmit,
@@ -218,8 +222,8 @@ export function ProfileForm({
     }
   };
 
-  return (
-    <ScrollView contentContainerStyle={[styles.content, style]} showsVerticalScrollIndicator={false}>
+  const content = (
+    <View style={[styles.content, style]}>
       <View style={styles.header}>
         <ThemedText variant="tertiary" size="xs" style={styles.kicker}>
           Profile setup
@@ -347,6 +351,17 @@ export function ProfileForm({
       ) : null}
 
       <Button label={saving || isSubmitting ? "Saving..." : submitLabel} onPress={submit} />
+      {footer}
+    </View>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      {content}
     </ScrollView>
   );
 }
@@ -354,8 +369,6 @@ export function ProfileForm({
 const styles = StyleSheet.create({
   content: {
     paddingBottom: 36,
-    paddingHorizontal: 20,
-    paddingTop: 28,
   },
   error: {
     marginBottom: 16,
@@ -412,6 +425,10 @@ const styles = StyleSheet.create({
   subtitle: {
     lineHeight: 22,
     textAlign: "center",
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 28,
   },
   targetsHeader: {
     marginBottom: 14,

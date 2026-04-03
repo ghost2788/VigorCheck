@@ -6,7 +6,9 @@ import { api } from "../../convex/_generated/api";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { ConcentricProgressRings } from "../../components/ConcentricProgressRings";
+import { NutrientDetailGroups } from "../../components/NutrientDetailGroups";
 import { ThemedText } from "../../components/ThemedText";
+import { useSubscription } from "../../lib/billing/SubscriptionProvider";
 import { TodayMealsCard } from "../../components/TodayMealsCard";
 import { WellnessAccordionList } from "../../components/WellnessAccordionList";
 import { WellnessLegend } from "../../components/WellnessLegend";
@@ -17,6 +19,7 @@ import {
   getNutritionCoverageDescriptor,
   getTargetRelativeBarPercent,
 } from "../../lib/domain/homeInsight";
+import { useOnboardingFlow } from "../../lib/onboarding/OnboardingFlowProvider";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 
 function formatCompactNumber(value: number) {
@@ -108,6 +111,18 @@ export default function HomeScreen() {
   const router = useRouter();
   const dashboard = useQuery(api.dashboard.today);
   const logHydration = useMutation(api.hydration.logQuickAdd);
+  const { accessState } = useSubscription();
+  const { consumePostOnboardingHomeCTA, showPostOnboardingHomeCTA } = useOnboardingFlow();
+  const [showCompletionCard, setShowCompletionCard] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!showPostOnboardingHomeCTA) {
+      return;
+    }
+
+    setShowCompletionCard(true);
+    consumePostOnboardingHomeCTA();
+  }, [consumePostOnboardingHomeCTA, showPostOnboardingHomeCTA]);
 
   if (dashboard === undefined) {
     return (
@@ -154,9 +169,32 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {showCompletionCard ? (
+        <Card style={styles.onboardingCard}>
+          <ThemedText size="sm" style={styles.onboardingCardTitle}>
+            Your plan is ready. Log your first meal to start filling today&apos;s rings.
+          </ThemedText>
+          <ThemedText variant="secondary" style={styles.onboardingCardBody}>
+            Home is set up. Your first log will start bringing these targets to life.
+          </ThemedText>
+          <Button label="Log first meal" onPress={() => router.push("/(tabs)/log")} />
+        </Card>
+      ) : null}
+
+      {accessState?.status === "trial" ? (
+        <Card style={styles.trialCard}>
+          <ThemedText size="sm" style={styles.onboardingCardTitle}>
+            {accessState.daysRemaining} day{accessState.daysRemaining === 1 ? "" : "s"} left in your free trial
+          </ThemedText>
+          <ThemedText variant="secondary">
+            Keep logging now. You can subscribe any time in Profile before the trial ends.
+          </ThemedText>
+        </Card>
+      ) : null}
+
       <View style={styles.heroCopy}>
         <ThemedText size="xl" style={styles.heroTitle}>
-          Daily wellness
+          {dashboard.displayName ? `${dashboard.displayName}'s Daily Vigor` : "Daily Vigor"}
         </ThemedText>
       </View>
 
@@ -443,6 +481,11 @@ export default function HomeScreen() {
                     </View>
                   ))}
                 </View>
+
+                <NutrientDetailGroups
+                  accentColor={theme.metricNutrition}
+                  groups={dashboard.cards.nutrition.detailGroups}
+                />
               </View>
             ),
             headerPercentLabel: `(${formatPercent(dashboard.cards.nutrition.coveragePercent)})`,
@@ -518,6 +561,15 @@ const styles = StyleSheet.create({
   mealsSection: {
     marginTop: 18,
   },
+  onboardingCard: {
+    marginBottom: 16,
+  },
+  onboardingCardBody: {
+    marginBottom: 16,
+  },
+  onboardingCardTitle: {
+    marginBottom: 10,
+  },
   missingBody: {
     marginBottom: 18,
   },
@@ -571,5 +623,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 18,
+  },
+  trialCard: {
+    marginBottom: 16,
   },
 });

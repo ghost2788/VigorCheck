@@ -1,4 +1,8 @@
-import { getDayWindowForTimestamp, getLocalDateKey } from "../../lib/domain/dayWindow";
+import {
+  getDayWindowForDateKey,
+  getDayWindowForTimestamp,
+  getLocalDateKey,
+} from "../../lib/domain/dayWindow";
 
 describe("day window helpers", () => {
   it("uses the user's local date near midnight in Honolulu", () => {
@@ -15,5 +19,12 @@ describe("day window helpers", () => {
     const timestamp = Date.parse("2026-03-29T06:30:00.000Z");
 
     expect(getLocalDateKey(timestamp, "America/Los_Angeles")).toBe("2026-03-28");
+  });
+
+  it("resolves an exact day window from a local date key", () => {
+    expect(getDayWindowForDateKey({ dateKey: "2026-03-29", timeZone: "Pacific/Honolulu" })).toEqual({
+      end: Date.parse("2026-03-30T10:00:00.000Z"),
+      start: Date.parse("2026-03-29T10:00:00.000Z"),
+    });
   });
 });

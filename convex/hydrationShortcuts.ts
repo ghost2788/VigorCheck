@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { createEmptyNutrition } from "../lib/domain/scan";
-import { query, mutation } from "./_generated/server";
-import { requireCurrentUser } from "./lib/devIdentity";
+import { mutation, query, QueryCtx } from "./_generated/server";
+import { findCurrentUser, requireCurrentUser } from "./lib/devIdentity";
 import {
   mealTypeValidator,
   nutritionValidator,
@@ -26,27 +26,34 @@ function buildNutritionProfile(args: {
   return base;
 }
 
+export async function listHydrationShortcutsForCurrentUser(ctx: QueryCtx) {
+  const user = await findCurrentUser(ctx);
+
+  if (!user) {
+    return [];
+  }
+
+  const shortcuts = await ctx.db
+    .query("hydrationShortcuts")
+    .withIndex("by_user", (query) => query.eq("userId", user._id))
+    .collect();
+
+  return [...shortcuts].sort((left, right) => {
+    if (left.pinned !== right.pinned) {
+      return left.pinned ? -1 : 1;
+    }
+
+    if (left.lastUsedAt !== right.lastUsedAt) {
+      return right.lastUsedAt - left.lastUsedAt;
+    }
+
+    return left.label.localeCompare(right.label);
+  });
+}
+
 export const listForCurrentUser = query({
   args: {},
-  handler: async (ctx) => {
-    const user = await requireCurrentUser(ctx);
-    const shortcuts = await ctx.db
-      .query("hydrationShortcuts")
-      .withIndex("by_user", (query) => query.eq("userId", user._id))
-      .collect();
-
-    return [...shortcuts].sort((left, right) => {
-      if (left.pinned !== right.pinned) {
-        return left.pinned ? -1 : 1;
-      }
-
-      if (left.lastUsedAt !== right.lastUsedAt) {
-        return right.lastUsedAt - left.lastUsedAt;
-      }
-
-      return left.label.localeCompare(right.label);
-    });
-  },
+  handler: async (ctx) => listHydrationShortcutsForCurrentUser(ctx),
 });
 
 export const ensureSeeded = mutation({

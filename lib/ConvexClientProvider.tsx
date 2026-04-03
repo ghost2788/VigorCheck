@@ -1,10 +1,14 @@
-import React, { ReactNode, useMemo } from "react";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+import React, { ReactNode, useEffect, useMemo } from "react";
+import { ConvexReactClient } from "convex/react";
+import { authClient, getConvexUrl } from "./auth/authClient";
 
 let hasWarnedMissingUrl = false;
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
+  const convexUrl = getConvexUrl();
+  const { data: session } = authClient.useSession();
+  const sessionKey = session?.session?.id ?? "signed-out";
 
   const client = useMemo(() => {
     if (!convexUrl) {
@@ -12,7 +16,13 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     }
 
     return new ConvexReactClient(convexUrl);
-  }, [convexUrl]);
+  }, [convexUrl, sessionKey]);
+
+  useEffect(() => {
+    return () => {
+      void client?.close();
+    };
+  }, [client]);
 
   if (!client) {
     if (__DEV__ && !hasWarnedMissingUrl) {
@@ -25,5 +35,13 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
-  return <ConvexProvider client={client}>{children}</ConvexProvider>;
+  return (
+    <ConvexBetterAuthProvider
+      authClient={authClient}
+      client={client}
+      key={sessionKey}
+    >
+      {children}
+    </ConvexBetterAuthProvider>
+  );
 }

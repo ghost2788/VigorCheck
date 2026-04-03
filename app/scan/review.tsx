@@ -1,15 +1,22 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { useRouter } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
-import { ManualMealForm } from "../../components/ManualMealForm";
 import { ScanReviewItemCard } from "../../components/ScanReviewItemCard";
 import { ThemedText } from "../../components/ThemedText";
 import { api } from "../../convex/_generated/api";
 import { MEAL_TYPE_OPTIONS } from "../../lib/domain/meals";
-import { createEmptyNutrition, createManualDraftItem, ScanDraftItem } from "../../lib/domain/scan";
+import { ScanDraftItem } from "../../lib/domain/scan";
 import { useScanFlow } from "../../lib/scan/ScanFlowProvider";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 
@@ -46,28 +53,42 @@ function MealTypePill({
 export default function ScanReviewScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const { activeReviewJob, clearActiveReview, completeReviewJob, updateActiveDraft } = useScanFlow();
   const saveAiEntry = useMutation(api.meals.saveAiEntry);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [showManualAdd, setShowManualAdd] = useState(false);
+  const [expandedItemIds, setExpandedItemIds] = useState<Record<string, boolean>>({});
   const currentDraft = activeReviewJob?.draft ?? null;
 
-  const totals = useMemo(() => {
-    return (currentDraft?.items ?? []).reduce(
-      (summary, item) => ({
-        calories: summary.calories + item.nutrition.calories,
-        carbs: summary.carbs + item.nutrition.carbs,
-        fat: summary.fat + item.nutrition.fat,
-        protein: summary.protein + item.nutrition.protein,
-      }),
-      {
-        calories: 0,
-        carbs: 0,
-        fat: 0,
-        protein: 0,
+  useEffect(() => {
+    if (!currentDraft?.items.length) {
+      return;
+    }
+
+    setExpandedItemIds((current) => {
+      const next: Record<string, boolean> = {};
+      let changed = false;
+
+      currentDraft.items.forEach((item, index) => {
+        next[item.id] = current[item.id] ?? index === 0;
+
+        if (current[item.id] !== next[item.id]) {
+          changed = true;
+        }
+      });
+
+      if (Object.keys(current).some((itemId) => !(itemId in next))) {
+        changed = true;
       }
-    );
+
+      if (!currentDraft.items.some((item) => next[item.id])) {
+        next[currentDraft.items[0].id] = true;
+        changed = true;
+      }
+
+      return changed ? next : current;
+    });
   }, [currentDraft?.items]);
 
   if (!currentDraft) {
@@ -95,6 +116,19 @@ export default function ScanReviewScreen() {
   };
 
   const removeItem = (targetId: string) => {
+    const nextExpandedItemId = currentDraft.items.find((item) => item.id !== targetId)?.id;
+
+    setExpandedItemIds((current) => {
+      const next = { ...current };
+      delete next[targetId];
+
+      if (nextExpandedItemId && !Object.values(next).some(Boolean)) {
+        next[nextExpandedItemId] = true;
+      }
+
+      return next;
+    });
+
     updateActiveDraft((draft) => ({
       ...draft,
       items: draft.items.filter((item) => item.id !== targetId),
@@ -102,190 +136,186 @@ export default function ScanReviewScreen() {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-      style={{ flex: 1, backgroundColor: theme.background }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={[styles.screen, { backgroundColor: theme.background }]}
     >
-      <ThemedText size="xs" variant="tertiary" style={styles.eyebrow}>
-        AI review
-      </ThemedText>
-      <ThemedText size="xl" style={styles.title}>
-        Check the drafted items
-      </ThemedText>
-
-      <Card style={styles.summaryCard}>
-        <View style={styles.summaryHeader}>
-          <ThemedText size="sm">Meal type</ThemedText>
-          <ThemedText size="xs" variant="tertiary">
-            Confidence {currentDraft.overallConfidence}
-          </ThemedText>
-        </View>
-        <View style={styles.typeRow}>
-          {MEAL_TYPE_OPTIONS.map((option) => (
-            <MealTypePill
-              active={currentDraft.mealType === option.value}
-              key={option.value}
-              label={option.label}
-              onPress={() =>
-                updateActiveDraft((draft) => ({
-                  ...draft,
-                  mealType: option.value,
-                }))
-              }
-            />
-          ))}
-        </View>
-        <ThemedText variant="secondary" style={styles.summaryCopy}>
-          {currentDraft.items.length} items, {totals.calories} calories, {totals.protein}g protein,{" "}
-          {totals.carbs}g carbs, {totals.fat}g fat.
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingBottom: 168,
+            paddingTop: Math.max(insets.top + 12, 24),
+          },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        style={{ flex: 1 }}
+      >
+        <ThemedText size="xl" style={styles.title}>
+          Review meal
         </ThemedText>
-      </Card>
 
-      {currentDraft.items.map((item) => (
-        <ScanReviewItemCard
-          item={item}
-          key={item.id}
-          onChange={(nextItem) => updateItem(item.id, nextItem)}
-          onRemove={() => removeItem(item.id)}
-        />
-      ))}
-
-      <Card style={styles.addCard}>
-        <View style={styles.addHeader}>
-          <View>
-            <ThemedText size="sm">Missing something?</ThemedText>
-            <ThemedText size="sm" variant="secondary">
-              Add a manual item before saving the meal.
-            </ThemedText>
+        <View
+          style={[
+            styles.summaryStrip,
+            {
+              backgroundColor: theme.surfaceSoft,
+              borderColor: theme.cardBorder,
+            },
+          ]}
+          testID="scan-review-summary-strip"
+        >
+          <View style={styles.summaryHeader}>
+            <ThemedText size="sm">Meal type</ThemedText>
+            <View
+              style={[
+                styles.confidenceChip,
+                {
+                  backgroundColor: theme.card,
+                  borderColor: theme.cardBorder,
+                },
+              ]}
+            >
+              <ThemedText size="xs" variant="secondary">
+                {`${currentDraft.overallConfidence.charAt(0).toUpperCase()}${currentDraft.overallConfidence.slice(1)} confidence`}
+              </ThemedText>
+            </View>
           </View>
+
+          <View style={styles.typeRow}>
+            {MEAL_TYPE_OPTIONS.map((option) => (
+              <MealTypePill
+                active={currentDraft.mealType === option.value}
+                key={option.value}
+                label={option.label}
+                onPress={() =>
+                  updateActiveDraft((draft) => ({
+                    ...draft,
+                    mealType: option.value,
+                  }))
+                }
+              />
+            ))}
+          </View>
+        </View>
+
+        {currentDraft.items.map((item) => (
+          <ScanReviewItemCard
+            expanded={expandedItemIds[item.id] ?? false}
+            item={item}
+            key={item.id}
+            onChange={(nextItem) => updateItem(item.id, nextItem)}
+            onRemove={() => removeItem(item.id)}
+            onToggleExpand={() =>
+              setExpandedItemIds((current) => ({
+                ...current,
+                [item.id]: !current[item.id],
+              }))
+            }
+          />
+        ))}
+      </ScrollView>
+
+      <View
+        style={[
+          styles.footerBar,
+          {
+            backgroundColor: theme.background,
+            borderTopColor: theme.cardBorder,
+            bottom: 0,
+            left: 0,
+            paddingBottom: Math.max(insets.bottom, 12),
+            right: 0,
+          },
+        ]}
+        testID="scan-review-footer"
+      >
+        {saveError ? (
+          <ThemedText size="sm" variant="accent2" style={styles.saveError}>
+            {saveError}
+          </ThemedText>
+        ) : null}
+
+        <View style={styles.footerActions}>
           <Button
-            label={showManualAdd ? "Close" : "Add item"}
-            onPress={() => setShowManualAdd((value) => !value)}
+            label="Back to Log"
+            onPress={() => {
+              clearActiveReview();
+              router.replace("/(tabs)/log");
+            }}
+            style={styles.footerButton}
             variant="secondary"
           />
-        </View>
-
-        {showManualAdd ? (
-          <ManualMealForm
-            fixedMealType={currentDraft.mealType}
-            mealTypeMode="fixed"
-            onSubmit={async (values) => {
-              const nutrition = {
-                ...createEmptyNutrition(),
-                calories: values.calories,
-                carbs: values.carbs,
-                fat: values.fat,
-                protein: values.protein,
-              };
-
-              updateActiveDraft((draft) => ({
-                ...draft,
-                items: [
-                  ...draft.items,
-                  {
-                    ...createManualDraftItem({
-                      confidence: "high",
-                      estimatedGrams: 100,
-                      name: values.name?.trim() || "Manual item",
-                      nutrition,
-                      portionLabel: "Manual estimate",
-                    }),
-                    id: `manual-${Date.now()}`,
-                  },
-                ],
-              }));
-              setShowManualAdd(false);
-            }}
-            sectionTitle="Manual item"
-            submitLabel="Add item"
-          />
-        ) : null}
-      </Card>
-
-      {saveError ? (
-        <ThemedText size="sm" variant="accent2" style={styles.saveError}>
-          {saveError}
-        </ThemedText>
-      ) : null}
-
-      <View style={styles.footerActions}>
-        <Button
-          label="Back to Log"
-          onPress={() => {
-            clearActiveReview();
-            router.replace("/(tabs)/log");
-          }}
-          variant="secondary"
-        />
-        <Button
-          label={isSaving ? "Saving..." : "Save meal"}
-          onPress={async () => {
-            if (isSaving) {
-              return;
-            }
-
-            if (!currentDraft.items.length) {
-              setSaveError("Add at least one item before saving this meal.");
-              return;
-            }
-
-            setSaveError(null);
-            setIsSaving(true);
-
-            try {
-              await saveAiEntry({
-                entryMethod: currentDraft.entryMethod,
-                items: currentDraft.items.map((item) => ({
-                  confidence: item.confidence,
-                  estimatedGrams: item.estimatedGrams,
-                  name: item.name.trim(),
-                  nutrition: item.nutrition,
-                  portionLabel: item.portionLabel,
-                  prepMethod: item.prepMethod || undefined,
-                  source: item.source,
-                  usdaFoodId: item.usdaFoodId || undefined,
-                })),
-                mealType: currentDraft.mealType,
-                overallConfidence: currentDraft.overallConfidence,
-                photoStorageId: currentDraft.photoStorageId || undefined,
-              });
-              if (activeReviewJob) {
-                completeReviewJob(activeReviewJob.id);
+          <Button
+            label={isSaving ? "Saving..." : "Save meal"}
+            onPress={async () => {
+              if (isSaving) {
+                return;
               }
-              router.replace("/(tabs)/log");
-            } catch (error) {
-              setSaveError(
-                error instanceof Error ? error.message : "This AI meal could not be saved."
-              );
-            } finally {
-              setIsSaving(false);
-            }
-          }}
-        />
+
+              if (!currentDraft.items.length) {
+                setSaveError("Add at least one item before saving this meal.");
+                return;
+              }
+
+              setSaveError(null);
+              setIsSaving(true);
+
+              try {
+                await saveAiEntry({
+                  entryMethod: currentDraft.entryMethod,
+                  items: currentDraft.items.map((item) => ({
+                    barcodeValue: item.barcodeValue,
+                    confidence: item.confidence,
+                    estimatedGrams: item.estimatedGrams,
+                    name: item.name.trim(),
+                    nutrition: item.nutrition,
+                    portionLabel: item.portionLabel,
+                    prepMethod: item.prepMethod || undefined,
+                    source: item.source,
+                    usdaFoodId: item.usdaFoodId || undefined,
+                  })),
+                  mealType: currentDraft.mealType,
+                  overallConfidence: currentDraft.overallConfidence,
+                  photoStorageId: currentDraft.photoStorageId || undefined,
+                });
+                if (activeReviewJob) {
+                  completeReviewJob(activeReviewJob.id);
+                }
+                router.replace("/(tabs)/log");
+              } catch (error) {
+                setSaveError(
+                  error instanceof Error ? error.message : "This AI meal could not be saved."
+                );
+              } finally {
+                setIsSaving(false);
+              }
+            }}
+            style={styles.footerButton}
+          />
+        </View>
       </View>
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  addCard: {
-    marginBottom: 16,
-  },
-  addHeader: {
-    gap: 12,
-    marginBottom: 16,
-  },
   centered: {
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
   },
+  confidenceChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
   content: {
-    paddingBottom: 40,
+    paddingBottom: 24,
     paddingHorizontal: 20,
-    paddingTop: 26,
   },
   emptyBody: {
     marginBottom: 18,
@@ -296,26 +326,44 @@ const styles = StyleSheet.create({
   emptyTitle: {
     marginBottom: 8,
   },
-  eyebrow: {
-    marginBottom: 10,
-  },
   footerActions: {
-    gap: 10,
+    columnGap: 10,
+    flexDirection: "row",
+  },
+  footerBar: {
+    borderTopWidth: 1,
+    elevation: 14,
+    paddingHorizontal: 20,
+    position: "absolute",
+    paddingTop: 14,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -10,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 24,
+  },
+  footerButton: {
+    flex: 1,
   },
   saveError: {
-    marginBottom: 16,
+    marginBottom: 10,
   },
-  summaryCard: {
-    marginBottom: 18,
-  },
-  summaryCopy: {
-    lineHeight: 22,
+  screen: {
+    flex: 1,
   },
   summaryHeader: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 6,
+  },
+  summaryStrip: {
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 18,
+    padding: 14,
   },
   title: {
     marginBottom: 18,
@@ -330,7 +378,6 @@ const styles = StyleSheet.create({
     columnGap: 8,
     flexDirection: "row",
     flexWrap: "wrap",
-    marginBottom: 14,
     rowGap: 8,
   },
 });

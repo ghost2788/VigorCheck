@@ -64,12 +64,22 @@ const supplementNutrients = {
 
 export default defineSchema({
   users: defineTable({
-    authSubject: v.string(),
+    authSubject: v.optional(v.string()),
+    displayName: v.optional(v.string()),
+    tokenIdentifier: v.optional(v.string()),
     themePalette: v.optional(v.string()),
     timeZone: v.string(),
     age: v.number(),
     weight: v.number(),
     height: v.number(),
+    preferredUnitSystem: v.optional(v.union(v.literal("imperial"), v.literal("metric"))),
+    primaryTrackingChallenge: v.optional(v.union(
+      v.literal("consistency"),
+      v.literal("knowing_what_to_eat"),
+      v.literal("portion_sizes"),
+      v.literal("motivation")
+    )),
+    goalPace: v.optional(v.union(v.literal("slow"), v.literal("moderate"), v.literal("aggressive"))),
     activityLevel: v.union(
       v.literal("sedentary"),
       v.literal("light"),
@@ -101,13 +111,29 @@ export default defineSchema({
     overrideHydration: v.optional(v.number()),
     subscriptionStatus: v.union(v.literal("trial"), v.literal("active"), v.literal("expired")),
     trialStartDate: v.number(),
+    trialEndsAt: v.optional(v.number()),
+    subscriptionExpiresAt: v.optional(v.number()),
+    subscriptionProductId: v.optional(v.string()),
+    subscriptionPlatform: v.optional(
+      v.union(v.literal("android"), v.literal("ios"), v.literal("web"), v.literal("unknown"))
+    ),
+    revenueCatAppUserId: v.optional(v.string()),
+    lastBillingSyncAt: v.optional(v.number()),
     notifyHydration: v.boolean(),
     notifyMealLogging: v.boolean(),
     notifyGoalCompletion: v.boolean(),
     notifyEndOfDay: v.boolean(),
     wakeTime: v.string(),
     sleepTime: v.string(),
-  }).index("by_auth_subject", ["authSubject"]),
+  })
+    .index("by_token_identifier", ["tokenIdentifier"])
+    .index("by_revenuecat_app_user_id", ["revenueCatAppUserId"]),
+
+  revenueCatWebhookEvents: defineTable({
+    eventId: v.string(),
+    receivedAt: v.number(),
+    type: v.string(),
+  }).index("by_event_id", ["eventId"]),
 
   meals: defineTable({
     userId: v.id("users"),
@@ -141,6 +167,7 @@ export default defineSchema({
 
   mealItems: defineTable({
     mealId: v.id("meals"),
+    barcodeValue: v.optional(v.string()),
     foodName: v.string(),
     usdaFoodId: v.optional(v.string()),
     portionSize: v.number(),
@@ -155,7 +182,12 @@ export default defineSchema({
     sugar: v.number(),
     ...micronutrientFields,
     confidence: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
-    source: v.union(v.literal("usda"), v.literal("ai_estimated"), v.literal("manual")),
+    source: v.union(
+      v.literal("usda"),
+      v.literal("ai_estimated"),
+      v.literal("manual"),
+      v.literal("barcode_catalog")
+    ),
   }).index("by_meal", ["mealId"]),
 
   hydrationLogs: defineTable({

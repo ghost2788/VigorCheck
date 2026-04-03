@@ -1,0 +1,116 @@
+import React from "react";
+import { render } from "../../lib/test-utils";
+import { WeeklyTrendChart } from "../../components/WeeklyTrendChart";
+
+const days = [
+  {
+    calories: 1800,
+    caloriesScore: 44,
+    hydrationCups: 5,
+    hydrationScore: 63,
+    isFuture: false,
+    nutritionCoveragePercent: 62,
+    protein: 120,
+    proteinScore: 80,
+    shortLabel: "Sun",
+    wellnessScore: 78,
+  },
+  {
+    calories: 1500,
+    caloriesScore: 71,
+    hydrationCups: 4,
+    hydrationScore: 50,
+    isFuture: false,
+    nutritionCoveragePercent: 54,
+    protein: 110,
+    proteinScore: 73,
+    shortLabel: "Mon",
+    wellnessScore: 69,
+  },
+  {
+    calories: 0,
+    caloriesScore: 0,
+    hydrationCups: 0,
+    hydrationScore: 0,
+    isFuture: true,
+    nutritionCoveragePercent: 0,
+    protein: 0,
+    proteinScore: 0,
+    shortLabel: "Tue",
+    wellnessScore: 0,
+  },
+];
+
+describe("WeeklyTrendChart", () => {
+  it("renders the shared strip layout for wellness", () => {
+    const { getByTestId } = render(
+      <WeeklyTrendChart
+        activeMetric="wellness"
+        days={days}
+        onChangeMetric={jest.fn()}
+        targets={{ calories: 2200, hydration: 8, protein: 150 }}
+      />
+    );
+
+    expect(getByTestId("weekly-trend-chart-mode-wellness")).toBeTruthy();
+    expect(getByTestId("weekly-trend-chart-strip")).toBeTruthy();
+    expect(getByTestId("weekly-trend-chart-fill-wellness-0")).toBeTruthy();
+  });
+
+  it("uses target progress for calories instead of wellness score math", () => {
+    const { getByTestId } = render(
+      <WeeklyTrendChart
+        activeMetric="calories"
+        days={days}
+        onChangeMetric={jest.fn()}
+        targets={{ calories: 2200, hydration: 8, protein: 150 }}
+      />
+    );
+
+    const calorieFill = getByTestId("weekly-trend-chart-fill-calories-0");
+
+    expect(getByTestId("weekly-trend-chart-mode-calories")).toBeTruthy();
+    expect(getByTestId("weekly-trend-chart-strip")).toBeTruthy();
+    expect(calorieFill.props.style).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          height: "82%",
+        }),
+      ])
+    );
+  });
+
+  it("renders inactive future days as outlined cells with dash labels", () => {
+    const { getByTestId, getByText } = render(
+      <WeeklyTrendChart activeMetric="nutrition" days={days} onChangeMetric={jest.fn()} targets={{ calories: 2200, hydration: 8, protein: 150 }} />
+    );
+
+    expect(getByTestId("weekly-trend-chart-mode-nutrition")).toBeTruthy();
+    expect(getByTestId("weekly-trend-chart-strip")).toBeTruthy();
+    expect(getByTestId("weekly-trend-chart-cell-nutrition-2-future")).toBeTruthy();
+    expect(getByText("—")).toBeTruthy();
+  });
+
+  it("fills every metric from the bottom using the displayed percentage", () => {
+    const { getByTestId, queryByTestId } = render(
+      <WeeklyTrendChart activeMetric="hydration" days={days} onChangeMetric={jest.fn()} targets={{ calories: 2200, hydration: 8, protein: 150 }} />
+    );
+
+    const activeFill = getByTestId("weekly-trend-chart-fill-hydration-0");
+
+    expect(activeFill.props.style).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          bottom: 0,
+          left: 0,
+          position: "absolute",
+          right: 0,
+        }),
+        expect.objectContaining({
+          height: "63%",
+        }),
+      ])
+    );
+    expect(queryByTestId("weekly-trend-chart-fill-hydration-2")).toBeNull();
+  });
+});

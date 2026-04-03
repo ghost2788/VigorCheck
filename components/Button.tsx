@@ -4,10 +4,12 @@ import { useTheme } from "../lib/theme/ThemeProvider";
 import { ThemedText } from "./ThemedText";
 
 type ButtonProps = {
+  disabled?: boolean;
   label: string;
   onPress: () => void;
-  variant?: "primary" | "secondary";
   style?: StyleProp<ViewStyle>;
+  testID?: string;
+  variant?: "primary" | "secondary";
 };
 
 function hexToRgb(hex: string) {
@@ -19,14 +21,22 @@ function hexToRgb(hex: string) {
   return `${r}, ${g}, ${b}`;
 }
 
-export function Button({ label, onPress, variant = "primary", style }: ButtonProps) {
+export function Button({
+  disabled = false,
+  label,
+  onPress,
+  style,
+  testID,
+  variant = "primary",
+}: ButtonProps) {
   const { theme } = useTheme();
   const isPrimary = variant === "primary";
 
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={onPress}
+      accessibilityState={{ disabled }}
+      onPress={disabled ? undefined : onPress}
       style={({ pressed }) => [
         styles.button,
         {
@@ -34,10 +44,11 @@ export function Button({ label, onPress, variant = "primary", style }: ButtonPro
             ? `rgba(${hexToRgb(theme.accent1)}, ${pressed ? "0.2" : "0.14"})`
             : theme.card,
           borderColor: isPrimary ? `rgba(${hexToRgb(theme.accent1)}, 0.24)` : theme.cardBorder,
-          opacity: pressed ? 0.94 : 1,
+          opacity: disabled ? 0.45 : pressed ? 0.94 : 1,
         },
         style,
       ]}
+      testID={testID}
     >
       <ThemedText variant={isPrimary ? "accent1" : "primary"} size="sm" style={styles.label}>
         {label}

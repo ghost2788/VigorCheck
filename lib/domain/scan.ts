@@ -1,5 +1,5 @@
 export type ScanConfidence = "high" | "medium" | "low";
-export type ScanItemSource = "ai_estimated" | "manual" | "usda";
+export type ScanItemSource = "ai_estimated" | "manual" | "usda" | "barcode_catalog";
 
 export type NutritionFields = {
   calories: number;
@@ -38,6 +38,7 @@ export type RawScanModelItem = {
 };
 
 export type ScanDraftItem = {
+  barcodeValue?: string;
   id: string;
   source: ScanItemSource;
   name: string;
@@ -399,6 +400,20 @@ export function createManualDraftItem(input: CreateDraftItemInput): ScanDraftIte
     multiplier: 1,
     normalizedName: normalizeFoodName(input.name),
     source: "manual",
+  };
+}
+
+export function createBarcodeDraftItem(
+  input: CreateDraftItemInput & { barcodeValue: string }
+): ScanDraftItem {
+  return {
+    ...input,
+    baseEstimatedGrams: input.estimatedGrams,
+    baseNutrition: input.nutrition,
+    id: buildDraftId(normalizeFoodName(input.name), 0),
+    multiplier: 1,
+    normalizedName: normalizeFoodName(input.name),
+    source: "barcode_catalog",
   };
 }
 

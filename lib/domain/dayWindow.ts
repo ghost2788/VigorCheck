@@ -91,6 +91,30 @@ function getStartOfLocalDay(
   return start;
 }
 
+function getTimestampForLocalDateTime(
+  {
+    day,
+    hour,
+    minute,
+    month,
+    second,
+    year,
+  }: Pick<TimeZoneDateParts, "year" | "month" | "day" | "hour" | "minute" | "second">,
+  timeZone: string
+) {
+  const utcGuess = Date.UTC(year, month - 1, day, hour, minute, second, 0);
+  let offset = getTimeZoneOffsetMs(utcGuess, timeZone);
+  let timestamp = utcGuess - offset;
+  const adjustedOffset = getTimeZoneOffsetMs(timestamp, timeZone);
+
+  if (adjustedOffset !== offset) {
+    offset = adjustedOffset;
+    timestamp = utcGuess - offset;
+  }
+
+  return timestamp;
+}
+
 function formatDateKey({ day, month, year }: Pick<TimeZoneDateParts, "year" | "month" | "day">) {
   return `${year}-${pad(month)}-${pad(day)}`;
 }
@@ -115,6 +139,74 @@ export function getDayWindowForTimestamp(timestamp: number, timeZone: string) {
   const end = getStartOfLocalDay(next.year, next.month, next.day, timeZone);
 
   return { end, start };
+}
+
+export function getDayWindowForDateKey({
+  dateKey,
+  timeZone,
+}: {
+  dateKey: string;
+  timeZone: string;
+}) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const next = addUtcDays({ day, month, year }, 1);
+
+  return {
+    end: getStartOfLocalDay(next.year, next.month, next.day, timeZone),
+    start: getStartOfLocalDay(year, month, day, timeZone),
+  };
+}
+
+export function getLocalDateInputValue(timestamp: number, timeZone: string) {
+  return getLocalDateKey(timestamp, timeZone);
+}
+
+export function getLocalTimeInputValue(timestamp: number, timeZone: string) {
+  const parts = getTimeZoneDateParts(timestamp, timeZone);
+  return `${pad(parts.hour)}:${pad(parts.minute)}`;
+}
+
+export function parseTimestampFromLocalDateTime({
+  dateKey,
+  timeValue,
+  timeZone,
+}: {
+  dateKey: string;
+  timeValue: string;
+  timeZone: string;
+}) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const [hour, minute] = timeValue.split(":").map(Number);
+
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day) ||
+    !Number.isInteger(hour) ||
+    !Number.isInteger(minute) ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31 ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59
+  ) {
+    return null;
+  }
+
+  return getTimestampForLocalDateTime(
+    {
+      day,
+      hour,
+      minute,
+      month,
+      second: 0,
+      year,
+    },
+    timeZone
+  );
 }
 
 export function getWeekWindowForOffset({

@@ -1,0 +1,287 @@
+import Constants from "expo-constants";
+import * as Linking from "expo-linking";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Platform } from "react-native";
+import { useMutation, useQuery } from "convex/react";
+import Purchases, { CustomerInfo, LOG_LEVEL, PurchasesOfferings, PurchasesPackage } from "react-native-purchases";
+import { api } from "../../convex/_generated/api";
+import {
+  formatSubscriptionStatusLabel,
+  getManagementUrlFallback,
+  getPaywallPackage,
+  getRevenueCatApiKey,
+  getRevenueCatCustomerSnapshot,
+  getRevenueCatSupportMessage,
+} from "./revenueCat";
+import { resolveSubscriptionAccess, type ResolvedSubscriptionAccess } from "../domain/subscription";
+
+type SubscriptionContextValue = {
+  accessState: ResolvedSubscriptionAccess | null;
+  customerInfo: CustomerInfo | null;
+  isConfigured: boolean;
+  isLoading: boolean;
+  manageSubscription: () => Promise<void>;
+  offerings: PurchasesOfferings | null;
+  purchaseMonthly: () => Promise<void>;
+  refresh: () => Promise<void>;
+  restorePurchases: () => Promise<void>;
+  statusLabel: string | null;
+  supportMessage: string | null;
+};
+
+const SubscriptionContext = createContext<SubscriptionContextValue | null>(null);
+
+function getAndroidPackageName() {
+  return (
+    Constants.expoConfig?.android?.package ??
+    Constants.manifest2?.extra?.expoClient?.android?.package ??
+    "com.vigorcheck.app"
+  );
+}
+
+export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
+  const currentUser = useQuery(api.users.current);
+  const syncCustomerInfo = useMutation(api.subscriptions.syncCustomerInfo);
+  const apiKey = getRevenueCatApiKey();
+  const isConfigured = Boolean(apiKey) && Platform.OS !== "web";
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+  const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const configuredUserIdRef = useRef<string | null>(null);
+  const listenerRef = useRef<((info: CustomerInfo) => void) | null>(null);
+
+  const applyCustomerInfo = useCallback(
+    async (nextCustomerInfo: CustomerInfo, user = currentUser) => {
+      setCustomerInfo(nextCustomerInfo);
+
+      if (!user) {
+        return;
+      }
+
+      const snapshot = getRevenueCatCustomerSnapshot(nextCustomerInfo);
+
+      await syncCustomerInfo({
+        activeEntitlement: snapshot.hasActiveEntitlement,
+        revenueCatAppUserId: user.subscription.revenueCatAppUserId ?? undefined,
+        subscriptionExpiresAt: snapshot.subscriptionExpiresAt,
+        subscriptionPlatform: snapshot.subscriptionPlatform,
+        subscriptionProductId: snapshot.activeProductId ?? undefined,
+      });
+    },
+    [currentUser, syncCustomerInfo]
+  );
+
+  const refresh = useCallback(async () => {
+    if (!isConfigured || !currentUser) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const [nextCustomerInfo, nextOfferings] = await Promise.all([
+        Purchases.getCustomerInfo(),
+        Purchases.getOfferings(),
+      ]);
+
+      setOfferings(nextOfferings);
+      await applyCustomerInfo(nextCustomerInfo);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [applyCustomerInfo, currentUser, isConfigured]);
+
+  useEffect(() => {
+    if (!isConfigured) {
+      configuredUserIdRef.current = null;
+      setCustomerInfo(null);
+      setOfferings(null);
+      return;
+    }
+
+    if (!currentUser) {
+      setCustomerInfo(null);
+      setOfferings(null);
+      return;
+    }
+
+    const revenueCatAppUserId = currentUser.subscription.revenueCatAppUserId;
+
+    let cancelled = false;
+
+    const configure = async () => {
+      setIsLoading(true);
+
+      try {
+        if (!revenueCatAppUserId) {
+          return;
+        }
+
+        if (__DEV__) {
+          Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+        }
+
+        if (!(await Purchases.isConfigured())) {
+          Purchases.configure({
+            apiKey: apiKey!,
+            appUserID: revenueCatAppUserId,
+          });
+          configuredUserIdRef.current = revenueCatAppUserId;
+        } else if (configuredUserIdRef.current !== revenueCatAppUserId) {
+          await Purchases.logIn(revenueCatAppUserId);
+          configuredUserIdRef.current = revenueCatAppUserId;
+        }
+
+        if (!listenerRef.current) {
+          const listener = (info: CustomerInfo) => {
+            void applyCustomerInfo(info);
+          };
+
+          listenerRef.current = listener;
+          Purchases.addCustomerInfoUpdateListener(listener);
+        }
+
+        const [nextCustomerInfo, nextOfferings] = await Promise.all([
+          Purchases.getCustomerInfo(),
+          Purchases.getOfferings(),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        setOfferings(nextOfferings);
+        await applyCustomerInfo(nextCustomerInfo, currentUser);
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void configure();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiKey, applyCustomerInfo, currentUser, isConfigured]);
+
+  useEffect(() => {
+    return () => {
+      if (listenerRef.current) {
+        Purchases.removeCustomerInfoUpdateListener(listenerRef.current);
+      }
+    };
+  }, []);
+
+  const purchaseMonthly = useCallback(async () => {
+    if (!isConfigured) {
+      throw new Error("RevenueCat is not configured in this build.");
+    }
+
+    const paywallPackage = getPaywallPackage(offerings) as PurchasesPackage | null;
+
+    if (!paywallPackage) {
+      throw new Error("No monthly subscription package is available yet.");
+    }
+
+    setIsLoading(true);
+
+    try {
+      await Purchases.trackCustomPaywallImpression({
+        offeringId: offerings?.current?.identifier ?? undefined,
+        paywallId: "main-paywall",
+      });
+
+      const result = await Purchases.purchasePackage(paywallPackage);
+      await applyCustomerInfo(result.customerInfo);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [applyCustomerInfo, isConfigured, offerings]);
+
+  const restorePurchases = useCallback(async () => {
+    if (!isConfigured) {
+      throw new Error("RevenueCat is not configured in this build.");
+    }
+
+    setIsLoading(true);
+
+    try {
+      const restoredCustomerInfo = await Purchases.restorePurchases();
+      await applyCustomerInfo(restoredCustomerInfo);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [applyCustomerInfo, isConfigured]);
+
+  const manageSubscription = useCallback(async () => {
+    if (Platform.OS === "ios") {
+      await Purchases.showManageSubscriptions();
+      return;
+    }
+
+    const managementUrl = customerInfo?.managementURL ?? getManagementUrlFallback(getAndroidPackageName());
+
+    await Linking.openURL(managementUrl);
+  }, [customerInfo]);
+
+  const accessState = useMemo(() => {
+    if (!currentUser) {
+      return null;
+    }
+
+    const hasActiveLocalEntitlement = customerInfo
+      ? getRevenueCatCustomerSnapshot(customerInfo).hasActiveEntitlement
+      : false;
+
+    return resolveSubscriptionAccess({
+      hasActiveLocalEntitlement,
+      subscription: currentUser.subscription,
+    });
+  }, [currentUser, customerInfo]);
+
+  const value = useMemo<SubscriptionContextValue>(
+    () => ({
+      accessState,
+      customerInfo,
+      isConfigured,
+      isLoading,
+      manageSubscription,
+      offerings,
+      purchaseMonthly,
+      refresh,
+      restorePurchases,
+      statusLabel: accessState
+        ? formatSubscriptionStatusLabel({
+            daysRemaining: accessState.daysRemaining,
+            status: accessState.status,
+          })
+        : null,
+      supportMessage: getRevenueCatSupportMessage(isConfigured),
+    }),
+    [
+      accessState,
+      customerInfo,
+      isConfigured,
+      isLoading,
+      manageSubscription,
+      offerings,
+      purchaseMonthly,
+      refresh,
+      restorePurchases,
+    ]
+  );
+
+  return <SubscriptionContext.Provider value={value}>{children}</SubscriptionContext.Provider>;
+}
+
+export function useSubscription() {
+  const context = useContext(SubscriptionContext);
+
+  if (!context) {
+    throw new Error("useSubscription must be used within SubscriptionProvider.");
+  }
+
+  return context;
+}

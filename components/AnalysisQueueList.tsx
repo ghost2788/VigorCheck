@@ -74,10 +74,14 @@ export function AnalysisQueueList({
           job.status === "queued"
             ? getQueuedJobLabel(job, allJobs ?? jobs)
             : job.status === "analyzing"
-              ? "Analyzing..."
+              ? job.source === "barcode"
+                ? "Looking up product..."
+                : "Analyzing..."
               : job.status === "ready"
                 ? "Ready to review"
-                : "Analysis failed";
+                : job.source === "barcode"
+                  ? "Lookup failed"
+                  : "Analysis failed";
 
         return (
           <View
