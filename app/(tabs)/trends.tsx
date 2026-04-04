@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   nutritionSummary: {
     lineHeight: 20,
-    marginBottom: 4,
+    marginBottom: 12,
   },
   section: {
     marginBottom: 16,
