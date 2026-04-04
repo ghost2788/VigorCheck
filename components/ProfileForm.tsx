@@ -150,12 +150,14 @@ function Field({
   keyboardType = "default",
   label,
   onChangeText,
+  suffix,
   testID,
   value,
 }: {
   keyboardType?: "default" | "numeric";
   label: string;
   onChangeText: (value: string) => void;
+  suffix?: string;
   testID: string;
   value: string;
 }) {
@@ -166,21 +168,21 @@ function Field({
       <ThemedText size="xs" style={styles.fieldLabel} variant="tertiary">
         {label}
       </ThemedText>
-      <TextInput
-        keyboardType={keyboardType}
-        onChangeText={onChangeText}
-        placeholderTextColor={theme.textMuted}
-        style={[
-          styles.input,
-          {
-            backgroundColor: theme.surfaceSoft,
-            borderColor: theme.cardBorder,
-            color: theme.text,
-          },
-        ]}
-        testID={testID}
-        value={value}
-      />
+      <View style={[styles.inputRow, { backgroundColor: theme.surfaceSoft, borderColor: theme.cardBorder }]}>
+        <TextInput
+          keyboardType={keyboardType}
+          onChangeText={onChangeText}
+          placeholderTextColor={theme.textMuted}
+          style={[styles.input, { color: theme.text }]}
+          testID={testID}
+          value={value}
+        />
+        {suffix ? (
+          <ThemedText size="sm" style={styles.inputSuffix} variant="tertiary">
+            {suffix}
+          </ThemedText>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -563,6 +565,7 @@ export function ProfileForm({
                 protein: Number(targetProtein || 0),
               })
             }
+            suffix="kcal"
             testID="targetCaloriesInput"
             value={targetCalories}
           />
@@ -577,6 +580,7 @@ export function ProfileForm({
                 protein: Number(value || 0),
               })
             }
+            suffix="g"
             testID="targetProteinInput"
             value={targetProtein}
           />
@@ -593,6 +597,7 @@ export function ProfileForm({
                 protein: Number(targetProtein || 0),
               })
             }
+            suffix="g"
             testID="targetCarbsInput"
             value={targetCarbs}
           />
@@ -607,6 +612,7 @@ export function ProfileForm({
                 protein: Number(targetProtein || 0),
               })
             }
+            suffix="g"
             testID="targetFatInput"
             value={targetFat}
           />
@@ -654,10 +660,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    borderRadius: 16,
-    borderWidth: 1,
+    flex: 1,
     minHeight: 52,
     paddingHorizontal: 14,
+  },
+  inputRow: {
+    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+  },
+  inputSuffix: {
+    paddingRight: 14,
   },
   labeledOptionGroup: {
     gap: 8,
