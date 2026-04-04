@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { buildHistoryDaySummary, buildHistoryTimeline } from "../lib/domain/history";
 import { getDayWindowForDateKey, getLocalDateKey } from "../lib/domain/dayWindow";
 import { buildTodayDashboard } from "../lib/domain/dashboard";
+import { getDetailedNutrientTargets } from "../lib/domain/nutrients";
 import { resolveEffectiveTargets } from "../lib/domain/targets";
 import { getNutritionTargets } from "../lib/domain/wellness";
 import { Doc, Id } from "./_generated/dataModel";
@@ -16,6 +17,11 @@ function buildTargets(user: Doc<"users">) {
 
   return {
     calories: macroTargets.calories,
+    detailedNutrition: getDetailedNutrientTargets({
+      age: user.age,
+      sex: user.sex,
+      targetFiber: user.targetFiber,
+    }),
     hydration: user.targetHydration,
     nutrition: getNutritionTargets({
       age: user.age,
@@ -31,14 +37,19 @@ function buildMealNutrients(meal: Doc<"meals">) {
     b12: meal.b12,
     b6: meal.b6,
     calcium: meal.calcium,
+    choline: meal.choline ?? 0,
+    copper: meal.copper ?? 0,
     fiber: meal.totalFiber,
     folate: meal.folate,
     iron: meal.iron,
     magnesium: meal.magnesium,
+    manganese: meal.manganese ?? 0,
     niacin: meal.niacin,
+    omega3: meal.omega3 ?? 0,
     phosphorus: meal.phosphorus,
     potassium: meal.potassium,
     riboflavin: meal.riboflavin,
+    selenium: meal.selenium ?? 0,
     sodium: meal.totalSodium,
     sugar: meal.totalSugar,
     thiamin: meal.thiamin,
@@ -326,11 +337,14 @@ export const dayDetail = query({
       targets,
     });
 
+    const macroTargets = resolveEffectiveTargets(user);
+
     return {
       dateKey: args.dateKey,
       summary: {
         calories: summaryDashboard.totals.calories,
         hydrationCups: summaryDashboard.cards.hydration.consumedCups,
+        insights: summaryDashboard.cards.nutrition.insights,
         mealCount: meals.length,
         nutritionCoveragePercent: summaryDashboard.cards.nutrition.coveragePercent,
         nutrientGroups: summaryDashboard.cards.nutrition.detailGroups,
@@ -338,7 +352,14 @@ export const dayDetail = query({
         wellnessScore: summaryDashboard.wellness.score,
       },
       timeZone: user.timeZone,
+      targets: {
+        calories: macroTargets.calories,
+        carbs: macroTargets.carbs,
+        fat: macroTargets.fat,
+        protein: macroTargets.protein,
+      },
       timeline: buildHistoryTimeline({
+        detailedNutritionTargets: targets.detailedNutrition,
         hydrationLogs: hydrationLogs.map((entry) => ({
           amountOz: entry.amountOz,
           id: entry._id,
@@ -358,6 +379,7 @@ export const dayDetail = query({
           id: meal._id,
           label: meal.label,
           mealType: meal.mealType,
+          nutrients: buildMealNutrients(meal),
           timestamp: meal.timestamp,
           totals: {
             calories: meal.totalCalories,

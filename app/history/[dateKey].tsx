@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -85,6 +85,7 @@ export default function HistoryDayDetailScreen() {
   const params = useLocalSearchParams<{ dateKey?: string }>();
   const dateKey = typeof params.dateKey === "string" ? params.dateKey : null;
   const detail = useQuery(api.history.dayDetail, dateKey ? { dateKey } : "skip");
+  const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
 
   if (!dateKey || detail === undefined) {
     return (
@@ -217,6 +218,7 @@ export default function HistoryDayDetailScreen() {
       {detail.timeline.map((entry) => (
         <HistoryTimelineEntryCard
           entry={entry}
+          isExpanded={expandedEntryId === entry.id}
           key={`${entry.kind}-${entry.id}`}
           onDelete={() => {
             if (entry.kind === "hydration") {
@@ -252,6 +254,8 @@ export default function HistoryDayDetailScreen() {
 
             router.push(`/history/meals/${entry.id}`);
           }}
+          onToggle={() => setExpandedEntryId((current) => current === entry.id ? null : entry.id)}
+          targets={detail.targets}
         />
       ))}
     </ScrollView>
