@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { useNavigation, usePreventRemove } from "@react-navigation/native";
 import { api } from "../../convex/_generated/api";
+import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { ProfileDetailScaffold } from "../../components/ProfileDetailScaffold";
 import { ProfileForm } from "../../components/ProfileForm";
@@ -18,6 +19,11 @@ export default function ProfilePlanSettingsScreen() {
   const currentUser = useQuery(api.users.current);
   const updateCurrentPlanSettings = useMutation(api.users.updateCurrentPlanSettings);
   const [isDirty, setIsDirty] = React.useState(false);
+  const [submitProps, setSubmitProps] = React.useState<{
+    disabled: boolean;
+    label: string;
+    onPress: () => void;
+  } | null>(null);
 
   usePreventRemove(isDirty, ({ data }) => {
     Alert.alert("Discard changes?", "Your unsaved plan edits will be lost.", [
@@ -63,6 +69,15 @@ export default function ProfilePlanSettingsScreen() {
 
   return (
     <ProfileDetailScaffold
+      footer={
+        submitProps ? (
+          <Button
+            disabled={submitProps.disabled}
+            label={submitProps.label}
+            onPress={submitProps.onPress}
+          />
+        ) : null
+      }
       onBackPress={() => router.back()}
       subtitle="Update your goal, preferences, body metrics, and macro targets without leaving the app."
       title="Plan settings"
@@ -80,6 +95,7 @@ export default function ProfilePlanSettingsScreen() {
           setIsDirty(false);
           router.back();
         }}
+        onSubmitReady={setSubmitProps}
         submitLabel="Save changes"
       />
     </ProfileDetailScaffold>

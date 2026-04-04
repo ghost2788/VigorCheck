@@ -38,6 +38,7 @@ type ProfileFormProps = {
   isSubmitting?: boolean;
   onDirtyChange?: (dirty: boolean) => void;
   onSubmit: (values: PlanSettings) => Promise<void> | void;
+  onSubmitReady?: (submitProps: { disabled: boolean; label: string; onPress: () => void }) => void;
   style?: StyleProp<ViewStyle>;
   submitLabel: string;
 };
@@ -192,6 +193,7 @@ export function ProfileForm({
   isSubmitting = false,
   onDirtyChange,
   onSubmit,
+  onSubmitReady,
   style,
   submitLabel,
 }: ProfileFormProps) {
@@ -414,6 +416,9 @@ export function ProfileForm({
     }
   }
 
+  const submitRef = useRef(submit);
+  submitRef.current = submit;
+
   const computedTargetSnapshot =
     computedTargets === null
       ? null
@@ -423,6 +428,20 @@ export function ProfileForm({
           fat: computedTargets.fat,
           protein: computedTargets.protein,
         };
+
+  const submitProps = useMemo(
+    () => ({
+      disabled: saving || isSubmitting,
+      label: saving || isSubmitting ? "Saving..." : submitLabel,
+      onPress: () => void submitRef.current(),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [saving, isSubmitting, submitLabel]
+  );
+
+  useEffect(() => {
+    onSubmitReady?.(submitProps);
+  }, [onSubmitReady, submitProps]);
 
   return (
     <View style={[styles.content, style]}>
@@ -651,11 +670,13 @@ export function ProfileForm({
         </ThemedText>
       ) : null}
 
-      <Button
-        disabled={saving || isSubmitting}
-        label={saving || isSubmitting ? "Saving..." : submitLabel}
-        onPress={() => void submit()}
-      />
+      {onSubmitReady ? null : (
+        <Button
+          disabled={submitProps.disabled}
+          label={submitProps.label}
+          onPress={submitProps.onPress}
+        />
+      )}
     </View>
   );
 }
