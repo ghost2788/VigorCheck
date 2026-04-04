@@ -1,15 +1,80 @@
 import React from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Card } from "../../components/Card";
 import { HistoryTimelineEntryCard } from "../../components/HistoryTimelineEntryCard";
-import { NutrientDetailGroups } from "../../components/NutrientDetailGroups";
+import { NutrientProgressRows } from "../../components/NutrientProgressRows";
 import { ThemedText } from "../../components/ThemedText";
 import { api } from "../../convex/_generated/api";
 import { formatHistoryDateLabel } from "../../lib/domain/history";
+import { buildExpandedNutrientProgressRows } from "../../lib/domain/nutrientProgress";
 import { useTheme } from "../../lib/theme/ThemeProvider";
+
+function formatPercent(value: number) {
+  return `${Math.round(value)}%`;
+}
+
+function formatCompactNumber(value: number) {
+  return Number.isInteger(value) ? value.toString() : value.toFixed(1);
+}
+
+function NutrientInsightSummaryCard({
+  accentColor,
+  emptyLabel,
+  items,
+  title,
+}: {
+  accentColor: string;
+  emptyLabel: string;
+  items: Array<{
+    label: string;
+    percent: number;
+    target: number;
+    unit: string;
+    value: number;
+  }>;
+  title: string;
+}) {
+  const { theme } = useTheme();
+
+  return (
+    <View
+      style={[
+        styles.insightCard,
+        {
+          backgroundColor: theme.surfaceSoft,
+          borderColor: theme.cardBorder,
+        },
+      ]}
+    >
+      <ThemedText size="sm" style={styles.insightTitle}>
+        {title}
+      </ThemedText>
+      {items.length === 0 ? (
+        <ThemedText size="sm" variant="secondary">
+          {emptyLabel}
+        </ThemedText>
+      ) : (
+        items.slice(0, 2).map((item) => (
+          <View key={`${title}-${item.label}`} style={styles.insightRow}>
+            <View style={styles.insightRowTop}>
+              <ThemedText size="sm">{item.label}</ThemedText>
+              <ThemedText size="sm" style={{ color: accentColor }}>
+                {formatPercent(item.percent)}
+              </ThemedText>
+            </View>
+            <ThemedText size="xs" variant="secondary">
+              {formatCompactNumber(item.value)} / {formatCompactNumber(item.target)} {item.unit}
+            </ThemedText>
+          </View>
+        ))
+      )}
+    </View>
+  );
+}
 
 export default function HistoryDayDetailScreen() {
   const { theme } = useTheme();
@@ -44,6 +109,10 @@ export default function HistoryDayDetailScreen() {
     );
   }
 
+  const nutrientRows = buildExpandedNutrientProgressRows({
+    detailGroups: detail.summary.nutrientGroups,
+  });
+
   return (
     <ScrollView
       contentContainerStyle={[styles.content, { paddingTop: Math.max(insets.top + 12, 26) }]}
@@ -56,19 +125,13 @@ export default function HistoryDayDetailScreen() {
         </ThemedText>
         <Pressable
           accessibilityRole="button"
+          hitSlop={8}
           onPress={() => router.back()}
-          style={[
-            styles.backButton,
-            {
-              backgroundColor: theme.surfaceSoft,
-              borderColor: theme.cardBorder,
-            },
-          ]}
+          style={styles.backButton}
           testID="history-day-detail-back-button"
         >
-          <ThemedText size="xs" variant="secondary">
-            Back
-          </ThemedText>
+          <Ionicons color={theme.accent1} name="chevron-back" size={18} />
+          <ThemedText size="sm" variant="accent1">Back</ThemedText>
         </Pressable>
       </View>
 
@@ -129,10 +192,27 @@ export default function HistoryDayDetailScreen() {
         </View>
       </Card>
 
-      <NutrientDetailGroups
-        accentColor={theme.metricNutrition}
-        groups={detail.summary.nutrientGroups}
-      />
+      <View style={styles.insightStack}>
+        <NutrientInsightSummaryCard
+          accentColor={theme.metricNutrition}
+          emptyLabel="No standout wins on this day."
+          items={detail.summary.insights?.topWins ?? []}
+          title="Day wins"
+        />
+        <NutrientInsightSummaryCard
+          accentColor={theme.metricNutrition}
+          emptyLabel="No clear gaps on this day."
+          items={detail.summary.insights?.biggestGaps ?? []}
+          title="Day gaps"
+        />
+      </View>
+
+      <Card style={styles.nutritionCard}>
+        <ThemedText variant="tertiary" size="xs" style={styles.insightTitle}>
+          Nutrients
+        </ThemedText>
+        <NutrientProgressRows accentColor={theme.metricNutrition} rows={nutrientRows} />
+      </Card>
 
       {detail.timeline.map((entry) => (
         <HistoryTimelineEntryCard
@@ -181,12 +261,9 @@ export default function HistoryDayDetailScreen() {
 const styles = StyleSheet.create({
   backButton: {
     alignItems: "center",
-    borderRadius: 999,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 38,
-    minWidth: 74,
-    paddingHorizontal: 14,
+    flexDirection: "row",
+    gap: 2,
+    paddingVertical: 6,
   },
   centered: {
     alignItems: "center",
@@ -209,6 +286,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
+    marginBottom: 18,
+  },
+  insightCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  insightRow: {
+    gap: 4,
+  },
+  insightRowTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  insightStack: {
+    gap: 10,
+    marginBottom: 18,
+  },
+  insightTitle: {
+    marginBottom: 2,
+  },
+  nutritionCard: {
     marginBottom: 18,
   },
   summaryCard: {
