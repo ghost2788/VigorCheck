@@ -1,42 +1,122 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Pressable,
-  ScrollView,
   StyleProp,
   StyleSheet,
   TextInput,
   View,
   ViewStyle,
 } from "react-native";
+import { Card } from "./Card";
+import { Button } from "./Button";
+import { ThemedText } from "./ThemedText";
 import {
   ACTIVITY_OPTIONS,
   ActivityLevel,
   computeBaseTargets,
+  EditableMacroTargets,
   GOAL_OPTIONS,
+  GOAL_PACE_OPTIONS,
+  GoalPace,
   GoalType,
-  ProfileFormSubmission,
+  inchesToCentimeters,
+  kilogramsToPounds,
+  poundsToKilograms,
+  PRIMARY_TRACKING_CHALLENGE_OPTIONS,
+  PreferredUnitSystem,
+  PrimaryTrackingChallenge,
+  requiresGoalPace,
   SEX_OPTIONS,
   Sex,
+  UNIT_SYSTEM_OPTIONS,
 } from "../lib/domain/targets";
+import { PlanSettings } from "../lib/domain/profileSettings";
 import { useTheme } from "../lib/theme/ThemeProvider";
-import { Button } from "./Button";
-import { Card } from "./Card";
-import { ThemedText } from "./ThemedText";
 
 type ProfileFormProps = {
-  autoPopulateTargets?: boolean;
-  embedded?: boolean;
-  footer?: React.ReactNode;
-  initialValues?: Partial<ProfileFormSubmission>;
+  initialValues?: Partial<PlanSettings>;
   isSubmitting?: boolean;
-  onSubmit: (values: ProfileFormSubmission) => Promise<void> | void;
+  onDirtyChange?: (dirty: boolean) => void;
+  onSubmit: (values: PlanSettings) => Promise<void> | void;
   style?: StyleProp<ViewStyle>;
   submitLabel: string;
-  subtitle: string;
-  title: string;
 };
 
-function OptionPill<T extends string>({
+function formatHeightForUnit(heightInches?: number, unitSystem?: PreferredUnitSystem) {
+  if (!heightInches) {
+    return "";
+  }
+
+  if (unitSystem === "metric") {
+    return String(Math.round(inchesToCentimeters(heightInches)));
+  }
+
+  return String(Math.round(heightInches));
+}
+
+function formatWeightForUnit(weightPounds?: number, unitSystem?: PreferredUnitSystem) {
+  if (!weightPounds) {
+    return "";
+  }
+
+  if (unitSystem === "metric") {
+    return String(Math.round(poundsToKilograms(weightPounds)));
+  }
+
+  return String(Math.round(weightPounds));
+}
+
+function parsePositiveNumber(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function parseTargetNumber(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+function parseHeightToInches(value: string, unitSystem: PreferredUnitSystem) {
+  const parsed = parsePositiveNumber(value);
+
+  if (!parsed) {
+    return null;
+  }
+
+  return unitSystem === "metric" ? parsed / 2.54 : parsed;
+}
+
+function parseWeightToPounds(value: string, unitSystem: PreferredUnitSystem) {
+  const parsed = parsePositiveNumber(value);
+
+  if (!parsed) {
+    return null;
+  }
+
+  return unitSystem === "metric" ? kilogramsToPounds(parsed) : parsed;
+}
+
+function normalizeGoalPace(goalType: GoalType, goalPace?: GoalPace) {
+  return requiresGoalPace(goalType) ? goalPace ?? "moderate" : undefined;
+}
+
+function targetsMatchComputed(
+  targets: EditableMacroTargets,
+  computedTargets: EditableMacroTargets | null
+) {
+  if (!computedTargets) {
+    return false;
+  }
+
+  return (
+    targets.calories === computedTargets.calories &&
+    targets.carbs === computedTargets.carbs &&
+    targets.fat === computedTargets.fat &&
+    targets.protein === computedTargets.protein
+  );
+}
+
+function OptionPill({
   active,
   label,
   onPress,
@@ -59,9 +139,44 @@ function OptionPill<T extends string>({
         },
       ]}
     >
-      <ThemedText variant={active ? "accent1" : "secondary"} size="sm">
+      <ThemedText size="sm" variant={active ? "accent1" : "secondary"}>
         {label}
       </ThemedText>
+    </Pressable>
+  );
+}
+
+function ChallengeOption({
+  active,
+  description,
+  label,
+  onPress,
+}: {
+  active: boolean;
+  description: string;
+  label: string;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+
+  return (
+    <Pressable accessibilityRole="button" onPress={onPress}>
+      <View
+        style={[
+          styles.challengeOption,
+          {
+            backgroundColor: active ? theme.surfaceStrong : theme.surfaceSoft,
+            borderColor: active ? theme.accent1 : theme.cardBorder,
+          },
+        ]}
+      >
+        <ThemedText size="sm" variant={active ? "accent1" : "primary"}>
+          {label}
+        </ThemedText>
+        <ThemedText variant="secondary" style={styles.challengeDescription}>
+          {description}
+        </ThemedText>
+      </View>
     </Pressable>
   );
 }
@@ -83,7 +198,7 @@ function Field({
 
   return (
     <View style={styles.field}>
-      <ThemedText variant="tertiary" size="xs" style={styles.fieldLabel}>
+      <ThemedText size="xs" style={styles.fieldLabel} variant="tertiary">
         {label}
       </ThemedText>
       <TextInput
@@ -105,69 +220,115 @@ function Field({
   );
 }
 
-function parsePositiveNumber(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function parseTargetNumber(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
-}
-
 export function ProfileForm({
-  autoPopulateTargets,
-  embedded = false,
-  footer,
   initialValues,
   isSubmitting = false,
+  onDirtyChange,
   onSubmit,
   style,
   submitLabel,
-  subtitle,
-  title,
 }: ProfileFormProps) {
-  const shouldAutoPopulateTargets = autoPopulateTargets ?? !initialValues;
-  const [goalType, setGoalType] = useState<GoalType>(initialValues?.goalType ?? "general_health");
+  const initialGoalType = initialValues?.goalType ?? "general_health";
+  const initialUnitSystem = initialValues?.preferredUnitSystem ?? "imperial";
+  const initialGoalPace = normalizeGoalPace(initialGoalType, initialValues?.goalPace);
+  const initialComputedTargets =
+    initialValues?.age &&
+    initialValues?.height &&
+    initialValues?.weight &&
+    initialValues?.activityLevel &&
+    initialValues?.goalType &&
+    initialValues?.sex
+      ? computeBaseTargets({
+          activityLevel: initialValues.activityLevel,
+          age: initialValues.age,
+          goalPace: initialGoalPace,
+          goalType: initialGoalType,
+          height: initialValues.height,
+          sex: initialValues.sex,
+          weight: initialValues.weight,
+        })
+      : null;
+  const initialTargetValues = initialValues?.targets ?? {
+    calories: initialComputedTargets?.calories ?? 0,
+    carbs: initialComputedTargets?.carbs ?? 0,
+    fat: initialComputedTargets?.fat ?? 0,
+    protein: initialComputedTargets?.protein ?? 0,
+  };
+  const [goalType, setGoalType] = useState<GoalType>(initialGoalType);
+  const [goalPace, setGoalPace] = useState<GoalPace | undefined>(initialGoalPace);
+  const [preferredUnitSystem, setPreferredUnitSystem] =
+    useState<PreferredUnitSystem>(initialUnitSystem);
+  const [primaryTrackingChallenge, setPrimaryTrackingChallenge] = useState<PrimaryTrackingChallenge>(
+    initialValues?.primaryTrackingChallenge ?? "consistency"
+  );
   const [sex, setSex] = useState<Sex>(initialValues?.sex ?? "male");
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>(
     initialValues?.activityLevel ?? "moderate"
   );
   const [age, setAge] = useState(initialValues?.age?.toString() ?? "");
-  const [height, setHeight] = useState(initialValues?.height?.toString() ?? "");
-  const [weight, setWeight] = useState(initialValues?.weight?.toString() ?? "");
-  const [targetCalories, setTargetCalories] = useState(
-    initialValues?.targets?.calories?.toString() ?? ""
+  const [height, setHeight] = useState(
+    formatHeightForUnit(initialValues?.height, initialUnitSystem)
   );
-  const [targetProtein, setTargetProtein] = useState(
-    initialValues?.targets?.protein?.toString() ?? ""
+  const [weight, setWeight] = useState(
+    formatWeightForUnit(initialValues?.weight, initialUnitSystem)
   );
-  const [targetCarbs, setTargetCarbs] = useState(initialValues?.targets?.carbs?.toString() ?? "");
-  const [targetFat, setTargetFat] = useState(initialValues?.targets?.fat?.toString() ?? "");
+  const [targetCalories, setTargetCalories] = useState(initialTargetValues.calories.toString());
+  const [targetProtein, setTargetProtein] = useState(initialTargetValues.protein.toString());
+  const [targetCarbs, setTargetCarbs] = useState(initialTargetValues.carbs.toString());
+  const [targetFat, setTargetFat] = useState(initialTargetValues.fat.toString());
+  const [hasManualTargetEdits, setHasManualTargetEdits] = useState(
+    Boolean(initialValues?.targets) && !targetsMatchComputed(initialTargetValues, initialComputedTargets)
+  );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const heightInches = parseHeightToInches(height, preferredUnitSystem);
+  const weightPounds = parseWeightToPounds(weight, preferredUnitSystem);
+  const parsedAge = parsePositiveNumber(age);
+
+  const initialComparableState = useRef(
+    JSON.stringify({
+      activityLevel: initialValues?.activityLevel ?? "moderate",
+      age: initialValues?.age?.toString() ?? "",
+      goalPace: initialGoalPace,
+      goalType: initialGoalType,
+      height: formatHeightForUnit(initialValues?.height, initialUnitSystem),
+      preferredUnitSystem: initialUnitSystem,
+      primaryTrackingChallenge: initialValues?.primaryTrackingChallenge ?? "consistency",
+      sex: initialValues?.sex ?? "male",
+      targetCalories: initialTargetValues.calories.toString(),
+      targetCarbs: initialTargetValues.carbs.toString(),
+      targetFat: initialTargetValues.fat.toString(),
+      targetProtein: initialTargetValues.protein.toString(),
+      weight: formatWeightForUnit(initialValues?.weight, initialUnitSystem),
+    })
+  );
 
   const computedTargets = useMemo(() => {
-    const parsedAge = parsePositiveNumber(age);
-    const parsedHeight = parsePositiveNumber(height);
-    const parsedWeight = parsePositiveNumber(weight);
-
-    if (!parsedAge || !parsedHeight || !parsedWeight) {
+    if (!parsedAge || !heightInches || !weightPounds) {
       return null;
     }
 
     return computeBaseTargets({
       activityLevel,
       age: parsedAge,
+      goalPace: normalizeGoalPace(goalType, goalPace),
       goalType,
-      height: parsedHeight,
+      height: heightInches,
       sex,
-      weight: parsedWeight,
+      weight: weightPounds,
     });
-  }, [activityLevel, age, goalType, height, sex, weight]);
+  }, [activityLevel, age, goalPace, goalType, heightInches, parsedAge, sex, weightPounds]);
 
   useEffect(() => {
-    if (!shouldAutoPopulateTargets || !computedTargets) {
+    const normalizedGoalPace = normalizeGoalPace(goalType, goalPace);
+
+    if (normalizedGoalPace !== goalPace) {
+      setGoalPace(normalizedGoalPace);
+    }
+  }, [goalPace, goalType]);
+
+  useEffect(() => {
+    if (!computedTargets || hasManualTargetEdits) {
       return;
     }
 
@@ -175,12 +336,72 @@ export function ProfileForm({
     setTargetProtein(computedTargets.protein.toString());
     setTargetCarbs(computedTargets.carbs.toString());
     setTargetFat(computedTargets.fat.toString());
-  }, [computedTargets, shouldAutoPopulateTargets]);
+  }, [computedTargets, hasManualTargetEdits]);
 
-  const submit = async () => {
-    const parsedAge = parsePositiveNumber(age);
-    const parsedHeight = parsePositiveNumber(height);
-    const parsedWeight = parsePositiveNumber(weight);
+  useEffect(() => {
+    if (!onDirtyChange) {
+      return;
+    }
+
+    const currentComparableState = JSON.stringify({
+      activityLevel,
+      age,
+      goalPace: normalizeGoalPace(goalType, goalPace),
+      goalType,
+      height,
+      preferredUnitSystem,
+      primaryTrackingChallenge,
+      sex,
+      targetCalories,
+      targetCarbs,
+      targetFat,
+      targetProtein,
+      weight,
+    });
+
+    onDirtyChange(currentComparableState !== initialComparableState.current);
+  }, [
+    activityLevel,
+    age,
+    goalPace,
+    goalType,
+    height,
+    onDirtyChange,
+    preferredUnitSystem,
+    primaryTrackingChallenge,
+    sex,
+    targetCalories,
+    targetCarbs,
+    targetFat,
+    targetProtein,
+    weight,
+  ]);
+
+  function switchUnits(nextUnit: PreferredUnitSystem) {
+    if (nextUnit === preferredUnitSystem) {
+      return;
+    }
+
+    if (heightInches) {
+      setHeight(formatHeightForUnit(heightInches, nextUnit));
+    }
+
+    if (weightPounds) {
+      setWeight(formatWeightForUnit(weightPounds, nextUnit));
+    }
+
+    setPreferredUnitSystem(nextUnit);
+  }
+
+  function updateManualTargets(nextTargets: EditableMacroTargets) {
+    setTargetCalories(nextTargets.calories.toString());
+    setTargetProtein(nextTargets.protein.toString());
+    setTargetCarbs(nextTargets.carbs.toString());
+    setTargetFat(nextTargets.fat.toString());
+    setHasManualTargetEdits(!targetsMatchComputed(nextTargets, computedTargets));
+  }
+
+  async function submit() {
     const parsedTargetCalories = parseTargetNumber(targetCalories);
     const parsedTargetProtein = parseTargetNumber(targetProtein);
     const parsedTargetCarbs = parseTargetNumber(targetCarbs);
@@ -188,8 +409,8 @@ export function ProfileForm({
 
     if (
       !parsedAge ||
-      !parsedHeight ||
-      !parsedWeight ||
+      !heightInches ||
+      !weightPounds ||
       parsedTargetCalories === null ||
       parsedTargetProtein === null ||
       parsedTargetCarbs === null ||
@@ -206,8 +427,11 @@ export function ProfileForm({
       await onSubmit({
         activityLevel,
         age: parsedAge,
+        goalPace: normalizeGoalPace(goalType, goalPace),
         goalType,
-        height: parsedHeight,
+        height: Math.round(heightInches),
+        preferredUnitSystem,
+        primaryTrackingChallenge,
         sex,
         targets: {
           calories: parsedTargetCalories,
@@ -215,27 +439,26 @@ export function ProfileForm({
           fat: parsedTargetFat,
           protein: parsedTargetProtein,
         },
-        weight: parsedWeight,
+        timeZone: initialValues?.timeZone ?? "UTC",
+        weight: Math.round(weightPounds),
       });
     } finally {
       setSaving(false);
     }
-  };
+  }
 
-  const content = (
+  const computedTargetSnapshot =
+    computedTargets === null
+      ? null
+      : {
+          calories: computedTargets.calories,
+          carbs: computedTargets.carbs,
+          fat: computedTargets.fat,
+          protein: computedTargets.protein,
+        };
+
+  return (
     <View style={[styles.content, style]}>
-      <View style={styles.header}>
-        <ThemedText variant="tertiary" size="xs" style={styles.kicker}>
-          Profile setup
-        </ThemedText>
-        <ThemedText size="xl" style={styles.title}>
-          {title}
-        </ThemedText>
-        <ThemedText variant="secondary" style={styles.subtitle}>
-          {subtitle}
-        </ThemedText>
-      </View>
-
       <Card style={styles.section}>
         <ThemedText size="sm" style={styles.sectionTitle}>
           Goal
@@ -251,9 +474,56 @@ export function ProfileForm({
           ))}
         </View>
 
+        {requiresGoalPace(goalType) ? (
+          <>
+            <ThemedText size="sm" style={styles.sectionTitle}>
+              Goal pace
+            </ThemedText>
+            <View style={styles.optionWrap}>
+              {GOAL_PACE_OPTIONS.map((option) => (
+                <OptionPill
+                  active={goalPace === option.value}
+                  key={option.value}
+                  label={option.label}
+                  onPress={() => setGoalPace(option.value)}
+                />
+              ))}
+            </View>
+          </>
+        ) : null}
+
         <ThemedText size="sm" style={styles.sectionTitle}>
-          Basics
+          Primary challenge
         </ThemedText>
+        <View style={styles.challengeList}>
+          {PRIMARY_TRACKING_CHALLENGE_OPTIONS.map((option) => (
+            <ChallengeOption
+              active={primaryTrackingChallenge === option.value}
+              description={option.description}
+              key={option.value}
+              label={option.label}
+              onPress={() => setPrimaryTrackingChallenge(option.value)}
+            />
+          ))}
+        </View>
+      </Card>
+
+      <Card style={styles.section}>
+        <ThemedText size="sm" style={styles.sectionTitle}>
+          Body & preferences
+        </ThemedText>
+
+        <View style={styles.optionWrap}>
+          {UNIT_SYSTEM_OPTIONS.map((option) => (
+            <OptionPill
+              active={preferredUnitSystem === option.value}
+              key={option.value}
+              label={option.label}
+              onPress={() => switchUnits(option.value)}
+            />
+          ))}
+        </View>
+
         <View style={styles.optionWrap}>
           {SEX_OPTIONS.map((option) => (
             <OptionPill
@@ -264,18 +534,19 @@ export function ProfileForm({
             />
           ))}
         </View>
+
         <View style={styles.row}>
           <Field keyboardType="numeric" label="Age" onChangeText={setAge} testID="ageInput" value={age} />
           <Field
             keyboardType="numeric"
-            label="Height (in)"
+            label={preferredUnitSystem === "metric" ? "Height (cm)" : "Height (in)"}
             onChangeText={setHeight}
             testID="heightInput"
             value={height}
           />
           <Field
             keyboardType="numeric"
-            label="Weight (lb)"
+            label={preferredUnitSystem === "metric" ? "Weight (kg)" : "Weight (lb)"}
             onChangeText={setWeight}
             testID="weightInput"
             value={weight}
@@ -300,28 +571,38 @@ export function ProfileForm({
       <Card style={styles.section}>
         <View style={styles.targetsHeader}>
           <ThemedText size="sm">Daily targets</ThemedText>
-          {computedTargets ? (
-            <ThemedText variant="tertiary" size="xs">
-              Auto-filled from your basics
-            </ThemedText>
-          ) : (
-            <ThemedText variant="tertiary" size="xs">
-              Fill the basics above to generate defaults
-            </ThemedText>
-          )}
+          <ThemedText size="xs" variant="tertiary">
+            {hasManualTargetEdits
+              ? "Manual edits stay until they match the suggestion again"
+              : "Targets follow your plan until you edit them"}
+          </ThemedText>
         </View>
         <View style={styles.row}>
           <Field
             keyboardType="numeric"
             label="Calories"
-            onChangeText={setTargetCalories}
+            onChangeText={(value) =>
+              updateManualTargets({
+                calories: Number(value || 0),
+                carbs: Number(targetCarbs || 0),
+                fat: Number(targetFat || 0),
+                protein: Number(targetProtein || 0),
+              })
+            }
             testID="targetCaloriesInput"
             value={targetCalories}
           />
           <Field
             keyboardType="numeric"
-            label="Protein (g)"
-            onChangeText={setTargetProtein}
+            label="Protein"
+            onChangeText={(value) =>
+              updateManualTargets({
+                calories: Number(targetCalories || 0),
+                carbs: Number(targetCarbs || 0),
+                fat: Number(targetFat || 0),
+                protein: Number(value || 0),
+              })
+            }
             testID="targetProteinInput"
             value={targetProtein}
           />
@@ -329,74 +610,93 @@ export function ProfileForm({
         <View style={styles.row}>
           <Field
             keyboardType="numeric"
-            label="Carbs (g)"
-            onChangeText={setTargetCarbs}
+            label="Carbs"
+            onChangeText={(value) =>
+              updateManualTargets({
+                calories: Number(targetCalories || 0),
+                carbs: Number(value || 0),
+                fat: Number(targetFat || 0),
+                protein: Number(targetProtein || 0),
+              })
+            }
             testID="targetCarbsInput"
             value={targetCarbs}
           />
           <Field
             keyboardType="numeric"
-            label="Fat (g)"
-            onChangeText={setTargetFat}
+            label="Fat"
+            onChangeText={(value) =>
+              updateManualTargets({
+                calories: Number(targetCalories || 0),
+                carbs: Number(targetCarbs || 0),
+                fat: Number(value || 0),
+                protein: Number(targetProtein || 0),
+              })
+            }
             testID="targetFatInput"
             value={targetFat}
           />
         </View>
+        {computedTargetSnapshot ? (
+          <ThemedText style={styles.targetHint} variant="secondary">
+            Suggested now: {computedTargetSnapshot.calories} kcal, {computedTargetSnapshot.protein}g protein,{" "}
+            {computedTargetSnapshot.carbs}g carbs, {computedTargetSnapshot.fat}g fat.
+          </ThemedText>
+        ) : (
+          <ThemedText style={styles.targetHint} variant="secondary">
+            Fill the basics above to generate suggested targets.
+          </ThemedText>
+        )}
       </Card>
 
       {error ? (
-        <ThemedText variant="accent2" size="sm" style={styles.error}>
+        <ThemedText size="sm" style={styles.error} variant="accent2">
           {error}
         </ThemedText>
       ) : null}
 
-      <Button label={saving || isSubmitting ? "Saving..." : submitLabel} onPress={submit} />
-      {footer}
+      <Button
+        disabled={saving || isSubmitting}
+        label={saving || isSubmitting ? "Saving..." : submitLabel}
+        onPress={() => void submit()}
+      />
     </View>
-  );
-
-  if (embedded) {
-    return content;
-  }
-
-  return (
-    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      {content}
-    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  challengeDescription: {
+    lineHeight: 20,
+    marginTop: 6,
+  },
+  challengeList: {
+    gap: 10,
+  },
+  challengeOption: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
   content: {
-    paddingBottom: 36,
+    gap: 16,
+    paddingBottom: 12,
   },
   error: {
-    marginBottom: 16,
-    textAlign: "center",
+    marginBottom: -4,
     textTransform: "none",
   },
   field: {
     flex: 1,
-    minWidth: 0,
   },
   fieldLabel: {
     marginBottom: 8,
   },
-  header: {
-    alignItems: "center",
-    marginBottom: 22,
-  },
   input: {
     borderRadius: 16,
     borderWidth: 1,
-    fontSize: 15,
-    fontWeight: "500",
     minHeight: 52,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  kicker: {
-    marginBottom: 10,
   },
   optionPill: {
     borderRadius: 999,
@@ -405,36 +705,24 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   optionWrap: {
-    columnGap: 8,
     flexDirection: "row",
     flexWrap: "wrap",
-    rowGap: 8,
+    gap: 10,
   },
   row: {
-    columnGap: 12,
     flexDirection: "row",
-    marginBottom: 16,
+    gap: 12,
   },
   section: {
-    marginBottom: 16,
+    gap: 14,
   },
   sectionTitle: {
-    marginBottom: 12,
-    marginTop: 4,
+    marginBottom: 2,
   },
-  subtitle: {
-    lineHeight: 22,
-    textAlign: "center",
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 28,
+  targetHint: {
+    lineHeight: 20,
   },
   targetsHeader: {
-    marginBottom: 14,
-  },
-  title: {
-    marginBottom: 10,
-    textAlign: "center",
+    gap: 6,
   },
 });

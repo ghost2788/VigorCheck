@@ -9,8 +9,6 @@ describe("ProfileForm", () => {
       <ProfileForm
         onSubmit={onSubmit}
         submitLabel="Save profile"
-        subtitle="Test"
-        title="Setup"
       />
     );
 
@@ -28,8 +26,6 @@ describe("ProfileForm", () => {
       <ProfileForm
         onSubmit={onSubmit}
         submitLabel="Save profile"
-        subtitle="Test"
-        title="Setup"
       />
     );
 
@@ -51,8 +47,11 @@ describe("ProfileForm", () => {
       expect(onSubmit).toHaveBeenCalledWith({
         activityLevel: "moderate",
         age: 34,
+        goalPace: "moderate",
         goalType: "fat_loss",
         height: 70,
+        preferredUnitSystem: "imperial",
+        primaryTrackingChallenge: "consistency",
         sex: "male",
         targets: {
           calories: 2232,
@@ -60,6 +59,7 @@ describe("ProfileForm", () => {
           fat: 62,
           protein: 162,
         },
+        timeZone: "UTC",
         weight: 180,
       });
     });
