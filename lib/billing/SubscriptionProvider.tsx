@@ -71,6 +71,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     [currentUser, syncCustomerInfo]
   );
 
+  // Stable ref so the configure effect doesn't re-run when currentUser changes
+  // after a syncCustomerInfo mutation (which would cause a loading flicker loop).
+  const applyCustomerInfoRef = useRef(applyCustomerInfo);
+  applyCustomerInfoRef.current = applyCustomerInfo;
+
   const refresh = useCallback(async () => {
     if (!isConfigured || !currentUser) {
       return;
@@ -134,7 +139,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
         if (!listenerRef.current) {
           const listener = (info: CustomerInfo) => {
-            void applyCustomerInfo(info);
+            void applyCustomerInfoRef.current(info);
           };
 
           listenerRef.current = listener;
@@ -151,7 +156,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         }
 
         setOfferings(nextOfferings);
-        await applyCustomerInfo(nextCustomerInfo, currentUser);
+        await applyCustomerInfoRef.current(nextCustomerInfo, currentUser);
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -164,7 +169,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     return () => {
       cancelled = true;
     };
-  }, [apiKey, applyCustomerInfo, currentUser, isConfigured]);
+  }, [apiKey, currentUser, isConfigured]);
 
   useEffect(() => {
     return () => {
