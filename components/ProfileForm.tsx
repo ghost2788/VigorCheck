@@ -479,30 +479,38 @@ export function ProfileForm({
           Body & preferences
         </ThemedText>
 
-        <View style={styles.optionWrap}>
-          {UNIT_SYSTEM_OPTIONS.map((option) => (
-            <OptionPill
-              active={preferredUnitSystem === option.value}
-              key={option.value}
-              label={option.label}
-              onPress={() => switchUnits(option.value)}
-            />
-          ))}
+        <View style={styles.labeledOptionGroup}>
+          <ThemedText size="xs" variant="tertiary">Units</ThemedText>
+          <View style={styles.optionWrap}>
+            {UNIT_SYSTEM_OPTIONS.map((option) => (
+              <OptionPill
+                active={preferredUnitSystem === option.value}
+                key={option.value}
+                label={option.label}
+                onPress={() => switchUnits(option.value)}
+              />
+            ))}
+          </View>
         </View>
 
-        <View style={styles.optionWrap}>
-          {SEX_OPTIONS.map((option) => (
-            <OptionPill
-              active={sex === option.value}
-              key={option.value}
-              label={option.label}
-              onPress={() => setSex(option.value)}
-            />
-          ))}
+        <View style={styles.labeledOptionGroup}>
+          <ThemedText size="xs" variant="tertiary">Sex</ThemedText>
+          <View style={styles.optionWrap}>
+            {SEX_OPTIONS.map((option) => (
+              <OptionPill
+                active={sex === option.value}
+                key={option.value}
+                label={option.label}
+                onPress={() => setSex(option.value)}
+              />
+            ))}
+          </View>
         </View>
 
         <View style={styles.row}>
           <Field keyboardType="numeric" label="Age" onChangeText={setAge} testID="ageInput" value={age} />
+        </View>
+        <View style={styles.row}>
           <Field
             keyboardType="numeric"
             label={preferredUnitSystem === "metric" ? "Height (cm)" : "Height (in)"}
@@ -650,6 +658,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minHeight: 52,
     paddingHorizontal: 14,
+  },
+  labeledOptionGroup: {
+    gap: 8,
   },
   optionPill: {
     borderRadius: 999,
