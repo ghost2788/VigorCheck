@@ -146,41 +146,6 @@ function OptionPill({
   );
 }
 
-function ChallengeOption({
-  active,
-  description,
-  label,
-  onPress,
-}: {
-  active: boolean;
-  description: string;
-  label: string;
-  onPress: () => void;
-}) {
-  const { theme } = useTheme();
-
-  return (
-    <Pressable accessibilityRole="button" onPress={onPress}>
-      <View
-        style={[
-          styles.challengeOption,
-          {
-            backgroundColor: active ? theme.surfaceStrong : theme.surfaceSoft,
-            borderColor: active ? theme.accent1 : theme.cardBorder,
-          },
-        ]}
-      >
-        <ThemedText size="sm" variant={active ? "accent1" : "primary"}>
-          {label}
-        </ThemedText>
-        <ThemedText variant="secondary" style={styles.challengeDescription}>
-          {description}
-        </ThemedText>
-      </View>
-    </Pressable>
-  );
-}
-
 function Field({
   keyboardType = "default",
   label,
@@ -460,7 +425,7 @@ export function ProfileForm({
   return (
     <View style={[styles.content, style]}>
       <Card style={styles.section}>
-        <ThemedText size="sm" style={styles.sectionTitle}>
+        <ThemedText size="md" style={styles.sectionTitle}>
           Goal
         </ThemedText>
         <View style={styles.optionWrap}>
@@ -476,7 +441,7 @@ export function ProfileForm({
 
         {requiresGoalPace(goalType) ? (
           <>
-            <ThemedText size="sm" style={styles.sectionTitle}>
+            <ThemedText size="md" style={styles.sectionTitle}>
               Goal pace
             </ThemedText>
             <View style={styles.optionWrap}>
@@ -491,15 +456,16 @@ export function ProfileForm({
             </View>
           </>
         ) : null}
+      </Card>
 
-        <ThemedText size="sm" style={styles.sectionTitle}>
+      <Card style={styles.section}>
+        <ThemedText size="md" style={styles.sectionTitle}>
           Primary challenge
         </ThemedText>
-        <View style={styles.challengeList}>
+        <View style={styles.optionWrap}>
           {PRIMARY_TRACKING_CHALLENGE_OPTIONS.map((option) => (
-            <ChallengeOption
+            <OptionPill
               active={primaryTrackingChallenge === option.value}
-              description={option.description}
               key={option.value}
               label={option.label}
               onPress={() => setPrimaryTrackingChallenge(option.value)}
@@ -509,7 +475,7 @@ export function ProfileForm({
       </Card>
 
       <Card style={styles.section}>
-        <ThemedText size="sm" style={styles.sectionTitle}>
+        <ThemedText size="md" style={styles.sectionTitle}>
           Body & preferences
         </ThemedText>
 
@@ -553,7 +519,7 @@ export function ProfileForm({
           />
         </View>
 
-        <ThemedText size="sm" style={styles.sectionTitle}>
+        <ThemedText size="md" style={styles.sectionTitle}>
           Activity
         </ThemedText>
         <View style={styles.optionWrap}>
@@ -570,7 +536,7 @@ export function ProfileForm({
 
       <Card style={styles.section}>
         <View style={styles.targetsHeader}>
-          <ThemedText size="sm">Daily targets</ThemedText>
+          <ThemedText size="md">Daily targets</ThemedText>
           <ThemedText size="xs" variant="tertiary">
             {hasManualTargetEdits
               ? "Manual edits stay until they match the suggestion again"
@@ -665,19 +631,6 @@ export function ProfileForm({
 }
 
 const styles = StyleSheet.create({
-  challengeDescription: {
-    lineHeight: 20,
-    marginTop: 6,
-  },
-  challengeList: {
-    gap: 10,
-  },
-  challengeOption: {
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
   content: {
     gap: 16,
     paddingBottom: 12,
