@@ -546,7 +546,23 @@ export function ProfileForm({
 
       <Card style={styles.section}>
         <View style={styles.targetsHeader}>
-          <ThemedText size="md">Daily targets</ThemedText>
+          <View style={styles.targetsHeaderRow}>
+            <ThemedText size="md" style={styles.targetsHeaderTitle}>Daily targets</ThemedText>
+            {hasManualTargetEdits && computedTargets ? (
+              <Pressable
+                hitSlop={8}
+                onPress={() => {
+                  setTargetCalories(computedTargets.calories.toString());
+                  setTargetProtein(computedTargets.protein.toString());
+                  setTargetCarbs(computedTargets.carbs.toString());
+                  setTargetFat(computedTargets.fat.toString());
+                  setHasManualTargetEdits(false);
+                }}
+              >
+                <ThemedText size="sm" variant="accent1">Reset to suggested</ThemedText>
+              </Pressable>
+            ) : null}
+          </View>
           <ThemedText size="xs" variant="tertiary">
             {hasManualTargetEdits
               ? "Manual edits stay until they match the suggestion again"
@@ -702,5 +718,12 @@ const styles = StyleSheet.create({
   },
   targetsHeader: {
     gap: 6,
+  },
+  targetsHeaderRow: {
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  targetsHeaderTitle: {
+    flex: 1,
   },
 });
