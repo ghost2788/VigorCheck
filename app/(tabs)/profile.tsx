@@ -1,26 +1,80 @@
 import React from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { api } from "../../convex/_generated/api";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
-import { ProfileForm } from "../../components/ProfileForm";
-import { ReminderSettingsCard } from "../../components/ReminderSettingsCard";
+import { ProfileReminderSummary } from "../../components/ProfileReminderSummary";
+import { ProfileSummaryCard } from "../../components/ProfileSummaryCard";
 import { ThemedText } from "../../components/ThemedText";
 import { authClient } from "../../lib/auth/authClient";
 import { useSubscription } from "../../lib/billing/SubscriptionProvider";
-import { getDeviceTimeZone } from "../../lib/domain/dayWindow";
-import { useReminderSync } from "../../lib/reminders/ReminderSyncProvider";
+import { isInternalTestingToolsEnabled } from "../../lib/config/internalTesting";
+import {
+  buildBodyAndPreferencesSummary,
+  buildGoalsAndTargetsSummary,
+  buildReminderSummaryItems,
+  formatClockTimeDisplay,
+  toPlanSettings,
+} from "../../lib/domain/profileSettings";
+import { formatClockTime, parseClockTime } from "../../lib/domain/reminders";
 import { useTheme } from "../../lib/theme/ThemeProvider";
+
+function getSubscriptionHeroCopy({
+  daysRemaining,
+  status,
+}: {
+  daysRemaining: number;
+  status: "trial" | "active" | "expired";
+}) {
+  if (status === "trial") {
+    return {
+      badge: `${daysRemaining} ${daysRemaining === 1 ? "day" : "days"} left`,
+      body: "Your free trial is active. Start a plan to keep full access when it ends.",
+      ctaLabel: "Start monthly plan",
+    };
+  }
+
+  if (status === "active") {
+    return {
+      badge: "Pro active",
+      body: "Your subscription is active. Restore and management actions stay available here.",
+      ctaLabel: "Manage subscription",
+    };
+  }
+
+  return {
+    badge: "Expired",
+    body: "Your trial has ended. Renew to unlock the full app again, or restore a previous purchase.",
+    ctaLabel: "Renew monthly plan",
+  };
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("");
+}
+
+function formatReminderWindow(wakeTime: string, sleepTime: string): string {
+  const wake = formatClockTimeDisplay(
+    formatClockTime(parseClockTime(wakeTime) ?? { hour: 7, minute: 0 })
+  );
+  const sleep = formatClockTimeDisplay(
+    formatClockTime(parseClockTime(sleepTime) ?? { hour: 22, minute: 0 })
+  );
+
+  return `Window: ${wake} \u2013 ${sleep}`;
+}
 
 export default function ProfileScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const currentUser = useQuery(api.users.current);
-  const upsertCurrentUser = useMutation(api.users.upsertCurrent);
-  const updateReminderSettings = useMutation(api.users.updateReminderSettings);
-  const { refreshReminders } = useReminderSync();
+  const forceTrialExpired = useMutation(api.testing.forceTrialExpired);
   const { data: session } = authClient.useSession();
   const {
     accessState,
@@ -33,12 +87,13 @@ export default function ProfileScreen() {
     supportMessage,
   } = useSubscription();
   const [accountActionError, setAccountActionError] = React.useState<string | null>(null);
+  const showInternalTestingTools = isInternalTestingToolsEnabled();
 
   if (currentUser === undefined) {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
         <ActivityIndicator color={theme.accent1} size="small" />
-        <ThemedText variant="secondary" style={styles.loadingLabel}>
+        <ThemedText style={styles.loadingLabel} variant="secondary">
           Loading your profile...
         </ThemedText>
       </View>
@@ -48,12 +103,13 @@ export default function ProfileScreen() {
   if (!currentUser) {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
-        <Card style={styles.card}>
-          <ThemedText size="sm" style={styles.cardTitle}>
+        <Card style={styles.emptyCard}>
+          <ThemedText size="sm" style={styles.emptyTitle}>
             No profile yet
           </ThemedText>
-          <ThemedText variant="secondary" style={styles.cardBody}>
-            Set your baseline once and Profile will become the place to tune targets later.
+          <ThemedText style={styles.emptyBody} variant="secondary">
+            Finish onboarding once and Profile becomes your home for subscriptions, reminders, and
+            plan updates.
           </ThemedText>
           <Button label="Open setup" onPress={() => router.replace("/")} />
         </Card>
@@ -63,6 +119,12 @@ export default function ProfileScreen() {
 
   const accountName = session?.user?.name ?? currentUser.displayName ?? "Google account";
   const accountEmail = session?.user?.email ?? "Signed in with Google";
+  const planSettings = toPlanSettings(currentUser);
+  const subscriptionStatus = accessState?.status ?? "expired";
+  const heroCopy = getSubscriptionHeroCopy({
+    daysRemaining: accessState?.daysRemaining ?? 0,
+    status: subscriptionStatus,
+  });
 
   async function runAccountAction(action: () => Promise<void>) {
     setAccountActionError(null);
@@ -81,19 +143,103 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
       style={[styles.container, { backgroundColor: theme.background }]}
     >
+      {/* ── Header ── */}
       <View style={styles.header}>
         <ThemedText size="xl">Profile</ThemedText>
-        <ThemedText variant="secondary" style={styles.headerBody}>
-          Manage your account, subscription, reminders, and baseline settings from one place.
+        <ThemedText style={styles.headerBody} variant="secondary">
+          Your account, plan, and preferences.
         </ThemedText>
       </View>
 
-      <Card style={styles.sectionCard}>
-        <ThemedText variant="tertiary" size="xs" style={styles.eyebrow}>
-          Account
+      {/* ── Subscription Hero ── */}
+      <Card style={styles.heroCard}>
+        <View style={styles.heroTopRow}>
+          <View style={styles.heroCopy}>
+            <ThemedText size="xs" style={styles.eyebrow} variant="tertiary">
+              Subscription
+            </ThemedText>
+            <ThemedText size="lg">{statusLabel ?? "Subscription required"}</ThemedText>
+          </View>
+          <View
+            style={[
+              styles.heroBadge,
+              {
+                backgroundColor:
+                  subscriptionStatus === "expired" ? `${theme.accent3}22` : `${theme.accent1}1f`,
+                borderColor:
+                  subscriptionStatus === "expired" ? `${theme.accent3}44` : `${theme.accent1}33`,
+              },
+            ]}
+          >
+            <ThemedText size="sm" variant={subscriptionStatus === "expired" ? "accent3" : "accent1"}>
+              {heroCopy.badge}
+            </ThemedText>
+          </View>
+        </View>
+
+        <ThemedText style={styles.heroBody} variant="secondary">
+          {heroCopy.body}
         </ThemedText>
-        <ThemedText size="sm">{accountName}</ThemedText>
-        <ThemedText variant="secondary">{accountEmail}</ThemedText>
+
+        {supportMessage ? (
+          <ThemedText size="sm" variant="accent3">
+            {supportMessage}
+          </ThemedText>
+        ) : null}
+
+        {accountActionError ? (
+          <ThemedText size="sm" variant="accent3">
+            {accountActionError}
+          </ThemedText>
+        ) : null}
+
+        <Button
+          disabled={billingBusy || !isConfigured}
+          label={billingBusy ? "Working..." : heroCopy.ctaLabel}
+          onPress={() =>
+            void runAccountAction(
+              subscriptionStatus === "active" ? manageSubscription : purchaseMonthly
+            )
+          }
+        />
+
+        <Pressable
+          disabled={billingBusy || !isConfigured}
+          onPress={() => void runAccountAction(restorePurchases)}
+          style={styles.restoreLink}
+        >
+          <ThemedText
+            size="sm"
+            style={[
+              styles.restoreText,
+              { opacity: billingBusy || !isConfigured ? 0.45 : 1 },
+            ]}
+            variant="tertiary"
+          >
+            Restore purchases
+          </ThemedText>
+        </Pressable>
+      </Card>
+
+      {/* ── Account ── */}
+      <Card style={styles.accountCard}>
+        <View
+          style={[
+            styles.avatar,
+            {
+              backgroundColor: theme.surfaceStrong,
+              borderColor: theme.cardBorder,
+            },
+          ]}
+        >
+          <ThemedText size="sm" variant="secondary">
+            {getInitials(accountName)}
+          </ThemedText>
+        </View>
+        <View style={styles.accountCopy}>
+          <ThemedText size="sm">{accountName}</ThemedText>
+          <ThemedText variant="secondary">{accountEmail}</ThemedText>
+        </View>
         <Button
           label="Sign out"
           onPress={() =>
@@ -106,112 +252,85 @@ export default function ProfileScreen() {
         />
       </Card>
 
-      <Card style={styles.sectionCard}>
-        <View style={styles.subscriptionHeader}>
-          <View style={styles.subscriptionCopy}>
-            <ThemedText variant="tertiary" size="xs" style={styles.eyebrow}>
-              Subscription
-            </ThemedText>
-            <ThemedText size="sm">{statusLabel ?? "Subscription required"}</ThemedText>
-          </View>
-          {accessState?.status === "active" ? (
-            <ThemedText size="sm" style={{ color: theme.accent1 }}>
-              Pro
-            </ThemedText>
-          ) : null}
-        </View>
+      {/* ── Your Plan ── */}
+      <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
+        Your plan
+      </ThemedText>
 
-        <ThemedText variant="secondary" style={styles.subscriptionBody}>
-          {accessState?.status === "trial"
-            ? "Your free trial is active. When it ends, a subscription keeps the full app unlocked."
-            : accessState?.status === "active"
-              ? "Your subscription is active. Restore and management actions are always available here."
-              : "Your trial has ended. Restore or manage a subscription here, or renew to unlock the full app again."}
-        </ThemedText>
-
-        {supportMessage ? (
-          <ThemedText size="sm" style={{ color: theme.accent3 }}>
-            {supportMessage}
-          </ThemedText>
-        ) : null}
-
-        {accountActionError ? (
-          <ThemedText size="sm" style={{ color: theme.accent3 }}>
-            {accountActionError}
-          </ThemedText>
-        ) : null}
-
-        <View style={styles.subscriptionActions}>
-          <Button
-            disabled={billingBusy || !isConfigured}
-            label={billingBusy ? "Working..." : accessState?.status === "active" ? "Manage subscription" : "Start monthly plan"}
-            onPress={() =>
-              void runAccountAction(
-                accessState?.status === "active" ? manageSubscription : purchaseMonthly
-              )
-            }
-          />
-          <Button
-            disabled={billingBusy || !isConfigured}
-            label="Restore purchases"
-            onPress={() => void runAccountAction(restorePurchases)}
-            variant="secondary"
-          />
-          <Button
-            disabled={billingBusy || !isConfigured}
-            label="Manage subscription"
-            onPress={() => void runAccountAction(manageSubscription)}
-            variant="secondary"
-          />
-        </View>
-      </Card>
-
-      <ProfileForm
-        autoPopulateTargets={false}
-        embedded
-        initialValues={{
-          activityLevel: currentUser.activityLevel,
-          age: currentUser.age,
-          goalType: currentUser.goalType,
-          height: currentUser.height,
-          sex: currentUser.sex,
-          targets: currentUser.targets,
-          weight: currentUser.weight,
-        }}
-        onSubmit={async (values) => {
-          await upsertCurrentUser({
-            ...values,
-            timeZone: getDeviceTimeZone(),
-          });
-        }}
-        style={styles.profileForm}
-        submitLabel="Save changes"
-        subtitle="Update your baseline and target macros. Home and Trends will react to these changes immediately."
-        title="Plan settings"
+      <ProfileSummaryCard
+        actionLabel="Edit"
+        items={buildGoalsAndTargetsSummary(planSettings)}
+        onPress={() => router.push("/profile/plan-settings")}
+        title="Goals & Targets"
       />
 
-      <View style={styles.footerStack}>
-        <ReminderSettingsCard
-          initialSettings={currentUser.reminders}
-          onSave={async (settings) => {
-            await updateReminderSettings(settings);
-            refreshReminders();
-          }}
-        />
-      </View>
+      <ProfileSummaryCard
+        actionLabel="Edit"
+        items={buildBodyAndPreferencesSummary(planSettings)}
+        onPress={() => router.push("/profile/plan-settings")}
+        title="Body & Preferences"
+      />
+
+      {/* ── Reminders ── */}
+      <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
+        Reminders
+      </ThemedText>
+
+      <ProfileReminderSummary
+        items={buildReminderSummaryItems(currentUser.reminders)}
+        onPress={() => router.push("/profile/reminder-settings")}
+        windowLabel={formatReminderWindow(
+          currentUser.reminders.wakeTime,
+          currentUser.reminders.sleepTime
+        )}
+      />
+
+      {/* ── Internal Testing ── */}
+      {showInternalTestingTools ? (
+        <View style={[styles.testingSection, { borderTopColor: theme.cardBorder }]}>
+          <View style={[styles.testingCard, { borderColor: theme.cardBorder }]}>
+            <ThemedText size="xs" variant="tertiary">
+              Internal testing
+            </ThemedText>
+            <ThemedText style={styles.testingBody} variant="tertiary">
+              Force the paywall path without waiting for the trial to finish naturally.
+            </ThemedText>
+            <Pressable
+              onPress={() =>
+                void runAccountAction(async () => {
+                  await forceTrialExpired({});
+                })
+              }
+              style={[styles.testingButton, { borderColor: theme.cardBorder }]}
+            >
+              <ThemedText size="xs" variant="tertiary">
+                Force trial expiry
+              </ThemedText>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: "100%",
+  accountCard: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 14,
   },
-  cardBody: {
-    marginBottom: 18,
+  accountCopy: {
+    flex: 1,
+    gap: 2,
   },
-  cardTitle: {
-    marginBottom: 8,
+  avatar: {
+    alignItems: "center",
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
   },
   centered: {
     alignItems: "center",
@@ -223,46 +342,86 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    gap: 16,
     paddingBottom: 36,
     paddingHorizontal: 20,
     paddingTop: 28,
   },
-  eyebrow: {
+  emptyBody: {
+    lineHeight: 22,
+    marginBottom: 18,
+  },
+  emptyCard: {
+    width: "100%",
+  },
+  emptyTitle: {
     marginBottom: 8,
   },
-  footerStack: {
-    gap: 16,
-    marginTop: 16,
+  eyebrow: {
+    marginBottom: 4,
   },
   header: {
-    marginBottom: 18,
+    marginBottom: 4,
   },
   headerBody: {
     lineHeight: 22,
     marginTop: 10,
   },
+  heroBadge: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  heroBody: {
+    lineHeight: 20,
+  },
+  heroCard: {
+    gap: 12,
+  },
+  heroCopy: {
+    flex: 1,
+  },
+  heroTopRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+  },
   loadingLabel: {
     marginTop: 12,
   },
-  profileForm: {
-    paddingBottom: 0,
+  restoreLink: {
+    alignSelf: "center",
+    paddingVertical: 4,
   },
-  sectionCard: {
-    gap: 10,
-    marginBottom: 16,
+  restoreText: {
+    letterSpacing: 0.4,
   },
-  subscriptionActions: {
-    gap: 10,
+  sectionLabel: {
+    marginTop: 8,
+    paddingLeft: 4,
   },
-  subscriptionBody: {
-    lineHeight: 20,
+  testingBody: {
+    lineHeight: 18,
   },
-  subscriptionCopy: {
-    flex: 1,
-  },
-  subscriptionHeader: {
+  testingButton: {
     alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
+    borderRadius: 12,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  testingCard: {
+    borderRadius: 16,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    gap: 10,
+    padding: 14,
+  },
+  testingSection: {
+    borderTopWidth: 1,
+    marginTop: 24,
+    paddingTop: 20,
   },
 });
