@@ -6,7 +6,7 @@ import { api } from "../../convex/_generated/api";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { ConcentricProgressRings } from "../../components/ConcentricProgressRings";
-import { NutrientDetailGroups } from "../../components/NutrientDetailGroups";
+import { NutrientProgressRows } from "../../components/NutrientProgressRows";
 import { ThemedText } from "../../components/ThemedText";
 import { useSubscription } from "../../lib/billing/SubscriptionProvider";
 import { TodayMealsCard } from "../../components/TodayMealsCard";
@@ -14,11 +14,11 @@ import { WellnessAccordionList } from "../../components/WellnessAccordionList";
 import { WellnessLegend } from "../../components/WellnessLegend";
 import {
   getAtAGlanceMessage,
-  getClampedProgressPercent,
   getDisplayedRingProgress,
   getNutritionCoverageDescriptor,
   getTargetRelativeBarPercent,
 } from "../../lib/domain/homeInsight";
+import { buildExpandedNutrientProgressRows } from "../../lib/domain/nutrientProgress";
 import { useOnboardingFlow } from "../../lib/onboarding/OnboardingFlowProvider";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 
@@ -37,30 +37,6 @@ function formatTargetRelativePercent(target: number, value: number) {
       value,
     })
   );
-}
-
-function formatNutritionLabel(key: string) {
-  if (key === "vitaminC") {
-    return "Vitamin C";
-  }
-
-  if (key === "vitaminD") {
-    return "Vitamin D";
-  }
-
-  return key.charAt(0).toUpperCase() + key.slice(1);
-}
-
-function formatNutrientUnit(key: string) {
-  if (key === "fiber") {
-    return "g";
-  }
-
-  if (key === "vitaminD") {
-    return "mcg";
-  }
-
-  return "mg";
 }
 
 function hexToRgba(hex: string, alpha: number) {
@@ -150,6 +126,10 @@ export default function HomeScreen() {
       </View>
     );
   }
+
+  const homeNutritionRows = buildExpandedNutrientProgressRows({
+    detailGroups: dashboard.cards.nutrition.detailGroups,
+  });
 
   return (
     <ScrollView
@@ -248,7 +228,7 @@ export default function HomeScreen() {
           <ThemedText variant="tertiary" size="xs" style={styles.insightEyebrow}>
             Today at a glance
           </ThemedText>
-          <ThemedText size="sm">
+          <ThemedText size="md">
             {getAtAGlanceMessage({
               biggestGapKey: dashboard.wellness.biggestGapKey,
               calorieProgressPercent: dashboard.cards.calories.rawProgressPercent,
@@ -400,14 +380,14 @@ export default function HomeScreen() {
                         <View
                           style={[
                             styles.sourceFill,
-                          {
-                            backgroundColor: theme.metricHydration,
-                            width: `${getTargetRelativeBarPercent({
-                              target: dashboard.cards.hydration.targetCups,
-                              value: entry.amountCups,
-                            })}%`,
-                          },
-                        ]}
+                            {
+                              backgroundColor: theme.metricHydration,
+                              width: `${getTargetRelativeBarPercent({
+                                target: dashboard.cards.hydration.targetCups,
+                                value: entry.amountCups,
+                              })}%`,
+                            },
+                          ]}
                         />
                       </View>
                     </View>
@@ -431,61 +411,9 @@ export default function HomeScreen() {
             detail: (
               <View>
                 <ThemedText variant="secondary" style={styles.cardInsight}>
-                  Coverage reflects foods with tracked nutrients.
+                  Coverage reflects foods with tracked nutrients across the expanded vitamin, mineral, and nutrient set.
                 </ThemedText>
-                {dashboard.cards.nutrition.nutrients.map((nutrient) => (
-                  <View key={nutrient.key} style={styles.nutrientRow}>
-                    <View style={styles.nutrientHeader}>
-                      <InlinePercentRow
-                        accentColor={theme.metricNutrition}
-                        leadingLabel={formatNutritionLabel(nutrient.key)}
-                        percentLabel={`(${formatPercent(nutrient.percent)})`}
-                        size="sm"
-                        variant="primary"
-                      />
-                      <ThemedText variant="tertiary" size="xs">
-                        {formatCompactNumber(nutrient.consumed)} / {formatCompactNumber(nutrient.target)}{" "}
-                        {formatNutrientUnit(nutrient.key)}
-                      </ThemedText>
-                    </View>
-                    <View
-                      style={[
-                        styles.sourceBar,
-                        { backgroundColor: hexToRgba(theme.metricNutrition, 0.12) },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.sourceFill,
-                          {
-                            backgroundColor: theme.metricNutrition,
-                            width: `${getClampedProgressPercent(nutrient.percent)}%`,
-                          },
-                        ]}
-                      />
-                    </View>
-                  </View>
-                ))}
-
-                <View style={styles.nutritionMeals}>
-                  {dashboard.cards.nutrition.contributors.map((meal) => (
-                    <View key={meal.id} style={styles.sourceRow}>
-                      <View style={styles.sourceCopy}>
-                        <ThemedText size="sm">{meal.label}</ThemedText>
-                        <ThemedText variant="tertiary" size="xs">
-                          {meal.topNutrients.length > 0
-                            ? meal.topNutrients.map((key) => formatNutritionLabel(key)).join(" • ")
-                            : "Tracked, but low contribution"}
-                        </ThemedText>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-
-                <NutrientDetailGroups
-                  accentColor={theme.metricNutrition}
-                  groups={dashboard.cards.nutrition.detailGroups}
-                />
+                <NutrientProgressRows accentColor={theme.metricNutrition} rows={homeNutritionRows} />
               </View>
             ),
             headerPercentLabel: `(${formatPercent(dashboard.cards.nutrition.coveragePercent)})`,
@@ -526,6 +454,14 @@ const styles = StyleSheet.create({
   heroCopy: {
     marginBottom: 18,
   },
+  heroStage: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  heroTitle: {
+    lineHeight: 30,
+    maxWidth: 280,
+  },
   inlineMetaRow: {
     alignItems: "center",
     flexDirection: "row",
@@ -537,14 +473,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 4,
   },
-  heroStage: {
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  heroTitle: {
-    lineHeight: 30,
-    maxWidth: 280,
-  },
   insightCard: {
     marginBottom: 14,
     paddingVertical: 14,
@@ -552,23 +480,14 @@ const styles = StyleSheet.create({
   insightEyebrow: {
     marginBottom: 6,
   },
-  loadingLabel: {
-    marginTop: 12,
-  },
   legendSection: {
     marginBottom: 16,
   },
+  loadingLabel: {
+    marginTop: 12,
+  },
   mealsSection: {
     marginTop: 18,
-  },
-  onboardingCard: {
-    marginBottom: 16,
-  },
-  onboardingCardBody: {
-    marginBottom: 16,
-  },
-  onboardingCardTitle: {
-    marginBottom: 10,
   },
   missingBody: {
     marginBottom: 18,
@@ -579,18 +498,14 @@ const styles = StyleSheet.create({
   missingTitle: {
     marginBottom: 10,
   },
-  nutrientHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
+  onboardingCard: {
+    marginBottom: 16,
   },
-  nutrientRow: {
-    marginBottom: 12,
+  onboardingCardBody: {
+    marginBottom: 16,
   },
-  nutritionMeals: {
-    gap: 12,
-    marginTop: 8,
+  onboardingCardTitle: {
+    marginBottom: 10,
   },
   sourceBar: {
     borderRadius: 999,
