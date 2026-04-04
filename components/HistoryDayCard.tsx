@@ -29,12 +29,7 @@ export function HistoryDayCard({ summary, onPress }: HistoryDayCardProps) {
           ]}
         >
           <View style={styles.header}>
-            <View>
-              <ThemedText size="lg">{formatHistoryDateLabel(summary.dateKey)}</ThemedText>
-              <ThemedText size="sm" variant="secondary" style={styles.subLabel}>
-                Logged day
-              </ThemedText>
-            </View>
+            <ThemedText size="lg">{formatHistoryDateLabel(summary.dateKey)}</ThemedText>
 
             <View
               style={[
@@ -138,8 +133,5 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 10,
-  },
-  subLabel: {
-    marginTop: 4,
   },
 });
