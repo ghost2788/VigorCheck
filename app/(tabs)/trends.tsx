@@ -1,38 +1,62 @@
 import React, { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 import { Card } from "../../components/Card";
-import { NutrientDetailGroups } from "../../components/NutrientDetailGroups";
+import { NutrientProgressRows } from "../../components/NutrientProgressRows";
 import { ThemedText } from "../../components/ThemedText";
 import { WeekNavigator } from "../../components/WeekNavigator";
 import { TrendChartMetric, WeeklyTrendChart } from "../../components/WeeklyTrendChart";
 import { api } from "../../convex/_generated/api";
 import { useQuery } from "convex/react";
+import {
+  buildExpandedNutrientProgressRows,
+  formatNutrientProgressLabel,
+} from "../../lib/domain/nutrientProgress";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 import { getWeeklyWellnessBandColor } from "../../lib/domain/trendsPresentation";
-
-function hexToRgba(hex: string, alpha: number) {
-  const normalized = hex.replace("#", "");
-  const r = parseInt(normalized.slice(0, 2), 16);
-  const g = parseInt(normalized.slice(2, 4), 16);
-  const b = parseInt(normalized.slice(4, 6), 16);
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
 
 function formatPercent(value: number) {
   return `${value}%`;
 }
 
-function formatGapLabel(key: string) {
-  if (key === "vitaminC") {
-    return "Vitamin C";
-  }
+function NutrientHighlightCard({
+  accentColor,
+  emptyLabel,
+  items,
+  title,
+}: {
+  accentColor: string;
+  emptyLabel: string;
+  items: string[];
+  title: string;
+}) {
+  const { theme } = useTheme();
 
-  if (key === "vitaminD") {
-    return "Vitamin D";
-  }
-
-  return key.charAt(0).toUpperCase() + key.slice(1);
+  return (
+    <View
+      style={[
+        styles.highlightCard,
+        {
+          backgroundColor: theme.surfaceSoft,
+          borderColor: theme.cardBorder,
+        },
+      ]}
+    >
+      <ThemedText size="xs" style={styles.highlightTitle} variant="tertiary">
+        {title}
+      </ThemedText>
+      {items.length === 0 ? (
+        <ThemedText size="sm" variant="secondary">
+          {emptyLabel}
+        </ThemedText>
+      ) : (
+        items.slice(0, 2).map((item) => (
+          <ThemedText key={`${title}-${item}`} size="sm" style={{ color: accentColor }}>
+            {formatNutrientProgressLabel(item)}
+          </ThemedText>
+        ))
+      )}
+    </View>
+  );
 }
 
 export default function TrendsScreen() {
@@ -49,6 +73,15 @@ export default function TrendsScreen() {
           })
         : theme.text,
     [data, mode, theme.text]
+  );
+  const nutritionRows = useMemo(
+    () =>
+      data
+        ? buildExpandedNutrientProgressRows({
+            detailGroups: data.nutrition.detailGroups,
+          })
+        : [],
+    [data]
   );
 
   if (data === undefined) {
@@ -110,7 +143,9 @@ export default function TrendsScreen() {
             <ThemedText variant="tertiary" size="xs" style={styles.eyebrow}>
               Weekly wellness
             </ThemedText>
-            <ThemedText size="sm">{data.week.isCurrentWeek ? "This week so far" : "Selected week"}</ThemedText>
+            <ThemedText size="sm">
+              {data.week.isCurrentWeek ? "This week so far" : "Selected week"}
+            </ThemedText>
           </View>
           <View style={styles.summaryScoreGroup}>
             <ThemedText size="hero" style={[styles.summaryScore, { color: weeklyWellnessColor }]}>
@@ -150,43 +185,26 @@ export default function TrendsScreen() {
         </View>
 
         <ThemedText variant="secondary" style={styles.nutritionSummary}>
-          Recurring gaps: {data.nutrition.recurringGaps.map(formatGapLabel).join(" and ")}
+          Ranked from the full tracked nutrient set, not just the six nutrients used in the wellness score.
         </ThemedText>
 
-        {data.nutrition.nutrients.map((nutrient) => (
-          <View key={nutrient.key} style={styles.nutrientRow}>
-            <View style={styles.nutrientCopy}>
-              <ThemedText size="sm">{formatGapLabel(nutrient.key)}</ThemedText>
-              <ThemedText size="sm" style={{ color: theme.metricNutrition }}>
-                {formatPercent(nutrient.averagePercent)}
-              </ThemedText>
-            </View>
-            <View
-              style={[
-                styles.nutrientTrack,
-                { backgroundColor: hexToRgba(theme.metricNutrition, 0.12) },
-              ]}
-            >
-              <View
-                style={[
-                  styles.nutrientFill,
-                  {
-                    backgroundColor: theme.metricNutrition,
-                    width: `${nutrient.averagePercent}%`,
-                  },
-                ]}
-              />
-            </View>
-          </View>
-        ))}
-      </Card>
+        <View style={styles.highlightGrid}>
+          <NutrientHighlightCard
+            accentColor={theme.metricNutrition}
+            emptyLabel="No recurring gaps yet."
+            items={data.nutrition.recurringGaps ?? []}
+            title="Recurring gaps"
+          />
+          <NutrientHighlightCard
+            accentColor={theme.metricNutrition}
+            emptyLabel="No standout wins yet."
+            items={data.nutrition.recurringWins ?? []}
+            title="Strong coverage"
+          />
+        </View>
 
-      <View style={styles.section}>
-        <NutrientDetailGroups
-          accentColor={theme.metricNutrition}
-          groups={data.nutrition.detailGroups}
-        />
-      </View>
+        <NutrientProgressRows accentColor={theme.metricNutrition} rows={nutritionRows} />
+      </Card>
 
       <Card style={styles.section}>
         <ThemedText variant="tertiary" size="xs" style={styles.eyebrow}>
@@ -219,28 +237,27 @@ const styles = StyleSheet.create({
   eyebrow: {
     marginBottom: 4,
   },
+  highlightCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  highlightGrid: {
+    gap: 10,
+    marginBottom: 16,
+  },
+  highlightTitle: {
+    letterSpacing: 1,
+    marginBottom: 2,
+    textTransform: "uppercase",
+  },
   loadingLabel: {
     marginTop: 12,
   },
-  nutrientCopy: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  nutrientFill: {
-    borderRadius: 999,
-    height: "100%",
-  },
-  nutrientRow: {
-    marginTop: 12,
-  },
-  nutrientTrack: {
-    borderRadius: 999,
-    height: 6,
-    overflow: "hidden",
-  },
   nutritionSummary: {
+    lineHeight: 20,
     marginBottom: 4,
   },
   section: {
@@ -261,15 +278,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
   },
-  summaryScoreGroup: {
-    alignItems: "baseline",
-    flexDirection: "row",
-    gap: 6,
-  },
   summaryScore: {
     fontSize: 48,
     letterSpacing: -2.4,
     lineHeight: 52,
+  },
+  summaryScoreGroup: {
+    alignItems: "baseline",
+    flexDirection: "row",
+    gap: 6,
   },
   summaryScoreMax: {
     lineHeight: 22,
