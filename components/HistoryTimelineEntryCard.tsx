@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { formatHistoryTimeLabel, HistoryTimelineEntry } from "../lib/domain/history";
 import { useTheme } from "../lib/theme/ThemeProvider";
 import { Card } from "./Card";
+import { NutrientSourceTagList } from "./NutrientSourceTagList";
 import { ThemedText } from "./ThemedText";
 
 type HistoryTimelineEntryCardProps = {
@@ -68,12 +69,14 @@ export function HistoryTimelineEntryCard({
         ) : (
           <>
             <ThemedText size="sm">{entry.calories} cal</ThemedText>
-            <ThemedText size="sm" variant="secondary">
-              P {entry.protein}g | C {entry.carbs}g | F {entry.fat}g
+            <ThemedText size="sm" variant="muted">
+              {entry.protein}p / {entry.carbs}c / {entry.fat}f
             </ThemedText>
           </>
         )}
       </View>
+
+      {entry.kind === "meal" ? <NutrientSourceTagList sources={entry.topNutrientSources} /> : null}
 
       <View style={styles.actions}>
         <Pressable
