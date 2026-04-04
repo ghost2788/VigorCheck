@@ -54,7 +54,7 @@ export function HistoryTimelineEntryCard({
         </ThemedText>
       </View>
 
-      <ThemedText size="lg" style={styles.title}>
+      <ThemedText size="md" style={styles.title}>
         {entry.label}
       </ThemedText>
 
