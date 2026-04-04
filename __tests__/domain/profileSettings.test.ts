@@ -1,4 +1,5 @@
 import {
+  buildGoalsAndTargetsSummary,
   buildReminderSummaryItems,
   diffPlanSettings,
   mergePlanSettings,
@@ -47,6 +48,32 @@ describe("buildReminderSummaryItems", () => {
     });
 
     expect(items.every((item) => !item.enabled)).toBe(true);
+  });
+});
+
+describe("buildGoalsAndTargetsSummary", () => {
+  it("returns Carbs and Fat as separate items", () => {
+    const items = buildGoalsAndTargetsSummary({
+      activityLevel: "moderate",
+      age: 32,
+      goalPace: "moderate",
+      goalType: "fat_loss",
+      height: 70,
+      preferredUnitSystem: "imperial",
+      primaryTrackingChallenge: "consistency",
+      sex: "male",
+      targets: { calories: 2000, protein: 150, carbs: 200, fat: 67 },
+      timeZone: "America/New_York",
+      weight: 185,
+    });
+
+    const labels = items.map((item) => item.label);
+    expect(labels).toContain("Carbs");
+    expect(labels).toContain("Fat");
+    expect(labels).not.toContain("Carbs / Fat");
+
+    expect(items.find((i) => i.label === "Carbs")?.value).toBe("200 g");
+    expect(items.find((i) => i.label === "Fat")?.value).toBe("67 g");
   });
 });
 

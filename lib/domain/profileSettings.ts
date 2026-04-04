@@ -269,10 +269,6 @@ export function buildGoalsAndTargetsSummary(settings: PlanSettings): SummaryItem
         : "Not used",
     },
     {
-      label: "Challenge",
-      value: formatPrimaryTrackingChallengeLabel(settings.primaryTrackingChallenge),
-    },
-    {
       label: "Calories",
       value: `${settings.targets.calories} kcal`,
     },
@@ -281,8 +277,12 @@ export function buildGoalsAndTargetsSummary(settings: PlanSettings): SummaryItem
       value: `${settings.targets.protein} g`,
     },
     {
-      label: "Carbs / Fat",
-      value: `${settings.targets.carbs}g / ${settings.targets.fat}g`,
+      label: "Carbs",
+      value: `${settings.targets.carbs} g`,
+    },
+    {
+      label: "Fat",
+      value: `${settings.targets.fat} g`,
     },
   ];
 }
