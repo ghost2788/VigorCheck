@@ -59,4 +59,28 @@ describe("RememberedHydrationShortcutsCard", () => {
     expect(getByText("Water")).toBeTruthy();
     expect(getByText("8 oz")).toBeTruthy();
   });
+
+  it("defaults new shortcut meal logging to drink", async () => {
+    const onCreateShortcut = jest.fn().mockResolvedValue(undefined);
+    const { getByText, getByDisplayValue } = render(
+      <RememberedHydrationShortcutsCard
+        onCreateShortcut={onCreateShortcut}
+        onLogShortcut={jest.fn()}
+        shortcuts={[createShortcut()]}
+      />
+    );
+
+    fireEvent.press(getByText("+ Add drink"));
+    fireEvent.changeText(getByDisplayValue(""), "Kombucha");
+    fireEvent.press(getByText("Save shortcut"));
+
+    await waitFor(() =>
+      expect(onCreateShortcut).toHaveBeenCalledWith(
+        expect.objectContaining({
+          label: "Kombucha",
+          mealType: "drink",
+        })
+      )
+    );
+  });
 });

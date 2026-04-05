@@ -135,7 +135,7 @@ export function RememberedHydrationShortcutsCard({
   const [label, setLabel] = useState("");
   const [category, setCategory] = useState<RememberedShortcutCategory>("water");
   const [defaultAmountOz, setDefaultAmountOz] = useState("8");
-  const [mealType, setMealType] = useState<MealType>("snack");
+  const [mealType, setMealType] = useState<MealType>("drink");
   const [shouldLogNutrition, setShouldLogNutrition] = useState(false);
   const [calories, setCalories] = useState("");
   const [protein, setProtein] = useState("");
@@ -159,7 +159,7 @@ export function RememberedHydrationShortcutsCard({
     setLabel("");
     setCategory("water");
     setDefaultAmountOz("8");
-    setMealType("snack");
+    setMealType("drink");
     setShouldLogNutrition(false);
     setCalories("");
     setProtein("");
@@ -178,8 +178,12 @@ export function RememberedHydrationShortcutsCard({
     <>
       <Card>
         <View style={styles.header}>
-          <ThemedText size="sm">Hydration shortcuts</ThemedText>
-          <Button label="Add drink" onPress={() => setIsSheetOpen(true)} />
+          <ThemedText size="md">Hydration shortcuts</ThemedText>
+          <Pressable hitSlop={8} onPress={() => setIsSheetOpen(true)}>
+            <ThemedText size="sm" style={{ color: theme.metricHydration }}>
+              + Add drink
+            </ThemedText>
+          </Pressable>
         </View>
 
         <View style={styles.shortcutList}>
