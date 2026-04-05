@@ -8,8 +8,13 @@ import { Card } from "../../components/Card";
 import { HistoryTimelineEntryCard } from "../../components/HistoryTimelineEntryCard";
 import { NutrientProgressRows } from "../../components/NutrientProgressRows";
 import { ThemedText } from "../../components/ThemedText";
+import { WellnessAccordionList } from "../../components/WellnessAccordionList";
 import { api } from "../../convex/_generated/api";
 import { formatHistoryDateLabel } from "../../lib/domain/history";
+import {
+  getNutritionCoverageDetailCopy,
+  getNutritionCoverageDescriptor,
+} from "../../lib/domain/homeInsight";
 import { buildExpandedNutrientProgressRows } from "../../lib/domain/nutrientProgress";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 
@@ -208,12 +213,29 @@ export default function HistoryDayDetailScreen() {
         />
       </View>
 
-      <Card style={styles.nutritionCard}>
-        <ThemedText variant="tertiary" size="xs" style={styles.insightTitle}>
-          Nutrients
-        </ThemedText>
-        <NutrientProgressRows accentColor={theme.metricNutrition} rows={nutrientRows} />
-      </Card>
+      <View style={styles.nutritionSection}>
+        <WellnessAccordionList
+          items={[
+            {
+              accentColor: theme.metricNutrition,
+              contentTestID: "history-day-detail-nutrition-content",
+              detail: (
+                <View>
+                  <ThemedText variant="secondary" style={styles.cardInsight}>
+                    {getNutritionCoverageDetailCopy()}
+                  </ThemedText>
+                  <NutrientProgressRows accentColor={theme.metricNutrition} rows={nutrientRows} />
+                </View>
+              ),
+              headerPercentLabel: `(${formatPercent(detail.summary.nutritionCoveragePercent)})`,
+              key: "nutrition",
+              summary: getNutritionCoverageDescriptor(detail.summary.nutritionCoveragePercent),
+              title: "Nutrition",
+              triggerTestID: "history-day-detail-nutrition-trigger",
+            },
+          ]}
+        />
+      </View>
 
       {detail.timeline.map((entry) => (
         <HistoryTimelineEntryCard
@@ -275,6 +297,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 24,
   },
+  cardInsight: {
+    lineHeight: 20,
+    marginBottom: 14,
+  },
   content: {
     paddingBottom: 32,
     paddingHorizontal: 24,
@@ -314,7 +340,7 @@ const styles = StyleSheet.create({
   insightTitle: {
     marginBottom: 2,
   },
-  nutritionCard: {
+  nutritionSection: {
     marginBottom: 18,
   },
   summaryCard: {

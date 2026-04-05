@@ -157,9 +157,14 @@ export function HistoryTimelineEntryCard({
                 {/* Insight line */}
                 <ThemedText size="xs" variant="secondary" style={styles.insight}>
                   This meal covered{" "}
-                  {Math.round((entry.calories / targets.calories) * 100)}% of your daily
-                  calories and{" "}
-                  {Math.round((entry.protein / targets.protein) * 100)}% of protein.
+                  {targets.calories > 0
+                    ? Math.round((entry.calories / targets.calories) * 100)
+                    : 0}
+                  % of your daily calories and{" "}
+                  {targets.protein > 0
+                    ? Math.round((entry.protein / targets.protein) * 100)
+                    : 0}
+                  % of protein.
                 </ThemedText>
 
                 {/* Progress bars */}

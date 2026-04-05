@@ -83,4 +83,77 @@ describe("HistoryTimelineEntryCard", () => {
     fireEvent.press(getByTestId("history-timeline-entry-toggle"));
     expect(onToggle).toHaveBeenCalledTimes(1);
   });
+
+  it("calls onEdit and onDelete when action links are pressed", () => {
+    const onEdit = jest.fn();
+    const onDelete = jest.fn();
+    const { getByTestId } = render(
+      <HistoryTimelineEntryCard
+        entry={MEAL_ENTRY}
+        isExpanded={true}
+        onDelete={onDelete}
+        onEdit={onEdit}
+        onToggle={jest.fn()}
+        targets={TARGETS}
+      />
+    );
+
+    fireEvent.press(getByTestId("history-timeline-edit-button"));
+    expect(onEdit).toHaveBeenCalledTimes(1);
+    fireEvent.press(getByTestId("history-timeline-delete-button"));
+    expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders hydration entry with oz and cups", () => {
+    const { getByText, queryByText } = render(
+      <HistoryTimelineEntryCard
+        entry={{
+          amountCups: 2.0,
+          amountOz: 16,
+          id: "hydration-1",
+          kind: "hydration",
+          label: "Water",
+          timestamp: Date.parse("2026-03-29T14:00:00.000Z"),
+        }}
+        isExpanded={false}
+        onDelete={jest.fn()}
+        onEdit={jest.fn()}
+        onToggle={jest.fn()}
+        targets={TARGETS}
+      />
+    );
+
+    expect(getByText("Water")).toBeTruthy();
+    expect(getByText("16 oz")).toBeTruthy();
+    expect(getByText("2.0 cups")).toBeTruthy();
+    expect(getByText("Hydration")).toBeTruthy();
+    // No progress bars for hydration
+    expect(queryByText("Calories")).toBeNull();
+  });
+
+  it("renders hydration expanded state with Edit (not Edit meal)", () => {
+    const { getByText, queryByText } = render(
+      <HistoryTimelineEntryCard
+        entry={{
+          amountCups: 2.0,
+          amountOz: 16,
+          id: "hydration-1",
+          kind: "hydration",
+          label: "Water",
+          timestamp: Date.parse("2026-03-29T14:00:00.000Z"),
+        }}
+        isExpanded={true}
+        onDelete={jest.fn()}
+        onEdit={jest.fn()}
+        onToggle={jest.fn()}
+        targets={TARGETS}
+      />
+    );
+
+    expect(getByText("Edit")).toBeTruthy();
+    expect(getByText("Delete")).toBeTruthy();
+    expect(queryByText("Edit meal")).toBeNull();
+    // No progress bars for hydration
+    expect(queryByText("Calories")).toBeNull();
+  });
 });
