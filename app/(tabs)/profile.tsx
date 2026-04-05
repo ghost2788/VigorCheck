@@ -51,14 +51,6 @@ function getSubscriptionHeroCopy({
   };
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => word.charAt(0).toUpperCase())
-    .join("");
-}
-
 function formatReminderWindow(wakeTime: string, sleepTime: string): string {
   const wake = formatClockTimeDisplay(
     formatClockTime(parseClockTime(wakeTime) ?? { hour: 7, minute: 0 })
@@ -223,22 +215,9 @@ export default function ProfileScreen() {
 
       {/* ── Account ── */}
       <Card style={styles.accountCard}>
-        <View
-          style={[
-            styles.avatar,
-            {
-              backgroundColor: theme.surfaceStrong,
-              borderColor: theme.cardBorder,
-            },
-          ]}
-        >
-          <ThemedText size="sm" variant="secondary">
-            {getInitials(accountName)}
-          </ThemedText>
-        </View>
         <View style={styles.accountCopy}>
           <ThemedText size="sm">{accountName}</ThemedText>
-          <ThemedText variant="secondary">{accountEmail}</ThemedText>
+          <ThemedText size="sm" variant="secondary">{accountEmail}</ThemedText>
         </View>
         <Pressable
           hitSlop={8}
@@ -326,14 +305,6 @@ const styles = StyleSheet.create({
   accountCopy: {
     flex: 1,
     gap: 2,
-  },
-  avatar: {
-    alignItems: "center",
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 44,
-    justifyContent: "center",
-    width: 44,
   },
   centered: {
     alignItems: "center",
