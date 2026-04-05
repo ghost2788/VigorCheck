@@ -92,6 +92,9 @@ export default function HistoryDayDetailScreen() {
   const detail = useQuery(api.history.dayDetail, dateKey ? { dateKey } : "skip");
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
 
+  const fallbackTargets = { calories: 2000, carbs: 250, fat: 67, protein: 150 };
+  const targets = detail?.targets ?? fallbackTargets;
+
   if (!dateKey || detail === undefined) {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
@@ -277,7 +280,7 @@ export default function HistoryDayDetailScreen() {
             router.push(`/history/meals/${entry.id}`);
           }}
           onToggle={() => setExpandedEntryId((current) => current === entry.id ? null : entry.id)}
-          targets={detail.targets}
+          targets={targets}
         />
       ))}
     </ScrollView>
