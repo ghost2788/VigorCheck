@@ -144,6 +144,10 @@ export default function HistoryDayDetailScreen() {
         </Pressable>
       </View>
 
+      <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
+        Overview
+      </ThemedText>
+
       <Card style={styles.summaryCard}>
         <View style={styles.summaryHeader}>
           <ThemedText
@@ -201,6 +205,10 @@ export default function HistoryDayDetailScreen() {
         </View>
       </Card>
 
+      <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
+        Insights
+      </ThemedText>
+
       <View style={styles.insightStack}>
         <NutrientInsightSummaryCard
           accentColor={theme.metricNutrition}
@@ -239,6 +247,10 @@ export default function HistoryDayDetailScreen() {
           ]}
         />
       </View>
+
+      <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
+        Timeline
+      </ThemedText>
 
       {detail.timeline.map((entry) => (
         <HistoryTimelineEntryCard
@@ -345,6 +357,13 @@ const styles = StyleSheet.create({
   },
   nutritionSection: {
     marginBottom: 18,
+  },
+  sectionLabel: {
+    letterSpacing: 1.2,
+    marginBottom: 10,
+    marginTop: 8,
+    paddingLeft: 4,
+    textTransform: "uppercase",
   },
   summaryCard: {
     marginBottom: 18,
