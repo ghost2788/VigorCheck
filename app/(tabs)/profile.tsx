@@ -240,16 +240,19 @@ export default function ProfileScreen() {
           <ThemedText size="sm">{accountName}</ThemedText>
           <ThemedText variant="secondary">{accountEmail}</ThemedText>
         </View>
-        <Button
-          label="Sign out"
+        <Pressable
+          hitSlop={8}
           onPress={() =>
             void runAccountAction(async () => {
               await authClient.signOut();
               router.replace("/(auth)/welcome");
             })
           }
-          variant="secondary"
-        />
+        >
+          <ThemedText size="sm" variant="tertiary">
+            Sign out
+          </ThemedText>
+        </Pressable>
       </Card>
 
       {/* ── Your Plan ── */}
