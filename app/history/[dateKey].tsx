@@ -55,7 +55,7 @@ function NutrientInsightSummaryCard({
         },
       ]}
     >
-      <ThemedText size="sm" style={styles.insightTitle}>
+      <ThemedText size="xs" style={styles.insightTitle} variant="tertiary">
         {title}
       </ThemedText>
       {items.length === 0 ? (
@@ -149,6 +149,9 @@ export default function HistoryDayDetailScreen() {
       </ThemedText>
 
       <Card style={styles.summaryCard}>
+        <ThemedText size="xs" style={styles.cardEyebrow} variant="tertiary">
+          Daily wellness
+        </ThemedText>
         <View style={styles.summaryHeader}>
           <ThemedText
             size="hero"
@@ -312,6 +315,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 24,
   },
+  cardEyebrow: {
+    letterSpacing: 1.2,
+    marginBottom: 4,
+    textTransform: "uppercase",
+  },
   cardInsight: {
     lineHeight: 20,
     marginBottom: 14,
@@ -353,7 +361,9 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   insightTitle: {
-    marginBottom: 2,
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    textTransform: "uppercase",
   },
   nutritionSection: {
     marginBottom: 18,
