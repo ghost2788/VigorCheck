@@ -7,8 +7,10 @@ import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { action } from "./_generated/server";
 import {
-  buildNormalizedScanDraftItems,
+  buildNormalizedScanDraftComponents,
   findBestUsdaMatch,
+  groupAssembledFoodDraftItems,
+  mergeDuplicateStandaloneDraftItems,
   normalizeScanConfidence,
   nutritionFromUsdaPer100g,
   promoteDraftItemToUsda,
@@ -16,6 +18,7 @@ import {
   ScanDraftItem,
   UsdaMatchCandidate,
 } from "../lib/domain/scan";
+import { MealType, resolveDraftMealType } from "../lib/domain/meals";
 import { mealTypeValidator } from "./lib/validators";
 
 const OPENAI_SCAN_MODEL = "gpt-4.1";
@@ -45,16 +48,21 @@ const scanResponseSchema = {
               calcium: { type: "number" },
               calories: { type: "number" },
               carbs: { type: "number" },
+              choline: { type: "number" },
+              copper: { type: "number" },
               fat: { type: "number" },
               fiber: { type: "number" },
               folate: { type: "number" },
               iron: { type: "number" },
               magnesium: { type: "number" },
+              manganese: { type: "number" },
               niacin: { type: "number" },
+              omega3: { type: "number" },
               phosphorus: { type: "number" },
               potassium: { type: "number" },
               protein: { type: "number" },
               riboflavin: { type: "number" },
+              selenium: { type: "number" },
               sodium: { type: "number" },
               sugar: { type: "number" },
               thiamin: { type: "number" },
@@ -71,6 +79,8 @@ const scanResponseSchema = {
               "carbs",
               "fat",
               "fiber",
+              "omega3",
+              "choline",
               "sodium",
               "sugar",
               "vitaminA",
@@ -88,6 +98,9 @@ const scanResponseSchema = {
               "iron",
               "potassium",
               "magnesium",
+              "selenium",
+              "copper",
+              "manganese",
               "zinc",
               "phosphorus",
             ],
@@ -116,10 +129,12 @@ const scanResponseSchema = {
 
 const scanPrompt = [
   "Analyze this meal photo and identify the visible food items.",
-  "Return separate items, not a single combined plate summary.",
+  "Return separate items for distinct foods on the plate, but keep obvious assembled foods like sandwiches, burgers, wraps, tacos, and toast with toppings as a single item.",
+  "Do not split bread, buns, tortillas, or toast away from their filling when they are clearly one assembled food.",
   "Estimate edible weight in grams for each item.",
-  "Use integers for nutrition values and grams.",
+  "Use whole numbers for calories and grams. Use decimals when needed for micronutrients such as omega-3, copper, or manganese.",
   "Do not duplicate the same item unless there are clearly multiple separate portions.",
+  "Estimate omega-3, choline, selenium, copper, and manganese when possible.",
   "If prep method is visible, include it.",
   "If uncertain, still return your best estimate and lower the confidence.",
   "Ignore plates, cutlery, cups, napkins, and background objects.",
@@ -128,7 +143,7 @@ const scanPrompt = [
 type AnalyzePhotoResult = {
   entryMethod: "photo_scan";
   items: ScanDraftItem[];
-  mealType: "breakfast" | "lunch" | "dinner" | "snack";
+  mealType: MealType;
   overallConfidence: ScanConfidence;
   photoStorageId: Id<"_storage">;
 };
@@ -152,11 +167,14 @@ type UsdaSearchCandidate = UsdaMatchCandidate & {
   folatePer100g: number;
   ironPer100g: number;
   magnesiumPer100g: number;
+  manganesePer100g?: number;
   niacinPer100g: number;
+  omega3Per100g?: number;
   phosphorusPer100g: number;
   potassiumPer100g: number;
   proteinPer100g: number;
   riboflavinPer100g: number;
+  seleniumPer100g?: number;
   sodiumPer100g: number;
   sugarPer100g: number;
   thiaminPer100g: number;
@@ -166,12 +184,14 @@ type UsdaSearchCandidate = UsdaMatchCandidate & {
   vitaminEPer100g: number;
   vitaminKPer100g: number;
   zincPer100g: number;
+  cholinePer100g?: number;
+  copperPer100g?: number;
 };
 
 async function buildScanDraft(
   ctx: any,
   args: {
-    mealType: "breakfast" | "lunch" | "dinner" | "snack";
+    mealType: MealType;
     storageId: Id<"_storage">;
   }
 ): Promise<AnalyzePhotoResult> {
@@ -224,19 +244,19 @@ async function buildScanDraft(
     overallConfidence?: unknown;
   };
 
-  const normalizedItems: ScanDraftItem[] = buildNormalizedScanDraftItems(
+  const normalizedComponents: ScanDraftItem[] = buildNormalizedScanDraftComponents(
     (parsed.items ?? []).map((item) => ({
       ...item,
       prepMethod: item.prepMethod ?? undefined,
     }))
   );
 
-  if (!normalizedItems.length) {
+  if (!normalizedComponents.length) {
     throw new Error("No usable food items were detected from this meal photo.");
   }
 
-  const matchedItems: ScanDraftItem[] = await Promise.all(
-    normalizedItems.map(async (item) => {
+  const matchedComponents: ScanDraftItem[] = await Promise.all(
+    normalizedComponents.map(async (item) => {
       const candidates = (await ctx.runQuery(internal.usda.searchByName, {
         term: item.name,
       })) as UsdaSearchCandidate[];
@@ -249,11 +269,17 @@ async function buildScanDraft(
       return promoteDraftItemToUsda(item, match.fdcId, nutritionFromUsdaPer100g(match));
     })
   );
+  const groupedItems = groupAssembledFoodDraftItems(matchedComponents);
+  const matchedItems = mergeDuplicateStandaloneDraftItems(groupedItems);
 
   return {
     entryMethod: "photo_scan",
     items: matchedItems,
-    mealType: args.mealType,
+    mealType: resolveDraftMealType({
+      itemNames: matchedItems.map((item) => item.name),
+      seedMealType: args.mealType,
+      source: "photo",
+    }),
     overallConfidence: normalizeScanConfidence(parsed.overallConfidence),
     photoStorageId: args.storageId,
   };
