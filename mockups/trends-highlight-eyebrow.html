@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#12 — Trends: Eyebrow Titles on Highlight Cards</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --metricNutrition: #c4a46c;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    min-height: 100vh;
+    padding: 50px 20px 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    color: var(--textSecondary);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .version-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+  .context-note {
+    font-size: 11px;
+    color: var(--textTertiary);
+    margin-bottom: 14px;
+    line-height: 16px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--cardBorder);
+    margin: 28px 0;
+  }
+
+  .highlight-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ─── BEFORE: sm title, same size as items ─── */
+  .highlight-card-before {
+    background: var(--surfaceSoft);
+    border: 1px solid var(--cardBorder);
+    border-radius: 20px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .highlight-title-before {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .highlight-item-before {
+    font-size: 14px;
+    color: var(--metricNutrition);
+  }
+
+  /* ─── AFTER: xs eyebrow title, sm items ─── */
+  .highlight-card-after {
+    background: var(--surfaceSoft);
+    border: 1px solid var(--cardBorder);
+    border-radius: 20px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .highlight-title-after {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 2px;
+  }
+  .highlight-item-after {
+    font-size: 14px;
+    color: var(--metricNutrition);
+  }
+
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --card: rgba(255,255,255,0.8);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --metricNutrition: #b8965a;
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? '&#9684; Dark' : '&#9684; Light'">&#9684; Light</button>
+
+<!-- ═══════════ BEFORE ═══════════ -->
+<div class="version-label">Before — sm title, same size as items</div>
+<div class="context-note">Title and nutrient names are both 14px — no hierarchy</div>
+
+<div class="highlight-grid">
+  <div class="highlight-card-before">
+    <div class="highlight-title-before">Recurring gaps</div>
+    <div class="highlight-item-before">Vitamin D</div>
+    <div class="highlight-item-before">Calcium</div>
+  </div>
+  <div class="highlight-card-before">
+    <div class="highlight-title-before">Strong coverage</div>
+    <div class="highlight-item-before">Vitamin C</div>
+    <div class="highlight-item-before">Potassium</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════ AFTER ═══════════ -->
+<div class="version-label">After — xs eyebrow title, items stay sm</div>
+<div class="context-note">Title recedes, nutrient names become the visual star</div>
+
+<div class="highlight-grid">
+  <div class="highlight-card-after">
+    <div class="highlight-title-after">Recurring gaps</div>
+    <div class="highlight-item-after">Vitamin D</div>
+    <div class="highlight-item-after">Calcium</div>
+  </div>
+  <div class="highlight-card-after">
+    <div class="highlight-title-after">Strong coverage</div>
+    <div class="highlight-item-after">Vitamin C</div>
+    <div class="highlight-item-after">Potassium</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -78,6 +78,16 @@ describe("HistoryDayDetailScreen", () => {
           kind: "meal",
           label: "Breakfast scan (2 items)",
           mealType: "breakfast",
+          nutritionRows: [
+            {
+              key: "calories",
+              label: "Calories",
+              percent: 16,
+              target: 2000,
+              unit: "kcal",
+              value: 320,
+            },
+          ],
           protein: 23,
           timestamp: Date.parse("2026-03-29T19:00:00.000Z"),
         },
@@ -139,7 +149,7 @@ describe("HistoryDayDetailScreen", () => {
     expect([colors.dark.accent1, colors.light.accent1]).toContain(scoreColor);
   });
 
-  it("shows nutrient source tags on meal entries but not hydration entries", () => {
+  it("shows unified nonzero nutrition rows on meal entries but not hydration entries", () => {
     mockUseLocalSearchParams.mockReturnValue({ dateKey: "2026-03-29" });
     mockUseQuery.mockReturnValue({
       dateKey: "2026-03-29",
@@ -177,22 +187,58 @@ describe("HistoryDayDetailScreen", () => {
           kind: "meal",
           label: "Coffee",
           mealType: "breakfast",
-          protein: 23,
-          timestamp: Date.parse("2026-03-29T19:00:00.000Z"),
-          topNutrientSources: [
+          nutritionRows: [
+            {
+              key: "calories",
+              label: "Calories",
+              percent: 16,
+              target: 2000,
+              unit: "kcal",
+              value: 320,
+            },
+            {
+              key: "protein",
+              label: "Protein",
+              percent: 15,
+              target: 150,
+              unit: "g",
+              value: 23,
+            },
+            {
+              key: "carbs",
+              label: "Carbs",
+              percent: 17,
+              target: 200,
+              unit: "g",
+              value: 34,
+            },
+            {
+              key: "fat",
+              label: "Fat",
+              percent: 13,
+              target: 67,
+              unit: "g",
+              value: 9,
+            },
             {
               key: "vitaminD",
               label: "Vitamin D",
+              percent: 87,
+              target: 15,
               unit: "mcg",
               value: 13,
             },
             {
               key: "omega3",
               label: "Omega-3",
+              percent: 75,
+              target: 1.6,
               unit: "g",
               value: 1.2,
             },
           ],
+          protein: 23,
+          timestamp: Date.parse("2026-03-29T19:00:00.000Z"),
         },
       ],
     });
@@ -201,9 +247,11 @@ describe("HistoryDayDetailScreen", () => {
 
     fireEvent.press(getAllByTestId("history-timeline-entry-toggle")[1]);
 
-    expect(getByText("Vitamin D 13mcg")).toBeTruthy();
-    expect(getByText("Omega-3 1.2g")).toBeTruthy();
-    expect(queryByText("Sodium 240mg")).toBeNull();
+    expect(getByText("Vitamin D")).toBeTruthy();
+    expect(getByText("13 / 15 mcg")).toBeTruthy();
+    expect(getByText("Omega-3")).toBeTruthy();
+    expect(getByText("1.2 / 1.6 g")).toBeTruthy();
+    expect(queryByText("Sodium")).toBeNull();
   });
 
   it("renders history nutrient detail with the same progress-row layout used on home and trends", () => {
@@ -295,5 +343,6 @@ describe("HistoryDayDetailScreen", () => {
     expect(queryByText("Vitamins")).toBeNull();
     expect(queryByText("Minerals")).toBeNull();
     expect(queryByText("Other nutrients")).toBeNull();
+    expect(queryByTestId("wellness-accordion-shell-layer-nutrition")).toBeNull();
   });
 });

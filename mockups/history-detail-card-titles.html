@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History Detail — Card Title Hierarchy</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --textMuted: rgba(255,255,255,0.16);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --accent1: #5ebaa9;
+    --metricCalories: #d8c49a;
+    --metricProtein: #5ebaa9;
+    --metricHydration: #78a0c8;
+    --metricNutrition: #d38a3a;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 50px 20px 60px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    color: var(--textSecondary);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .version-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 6px;
+    padding-left: 2px;
+  }
+  .context-note {
+    font-size: 11px;
+    color: var(--textTertiary);
+    margin-bottom: 14px;
+    line-height: 16px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--cardBorder);
+    margin: 32px 0;
+  }
+
+  /* ─── Section eyebrow ─── */
+  .section-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 10px;
+    margin-top: 8px;
+    padding-left: 4px;
+  }
+
+  /* ─── Cards ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* ─── Summary card ─── */
+  .card-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 4px;
+  }
+  .summary-header {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .summary-score {
+    font-size: 48px;
+    font-weight: 600;
+    letter-spacing: -2.4px;
+    line-height: 52px;
+    color: var(--accent1);
+    margin-right: 6px;
+  }
+  .summary-max {
+    font-size: 18px;
+    color: var(--textSecondary);
+  }
+  .summary-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .summary-metric {
+    min-width: 45%;
+  }
+  .summary-metric-label {
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .summary-metric-value {
+    font-size: 12px;
+  }
+
+  /* ─── Insight cards ─── */
+  .insight-card {
+    background: var(--surfaceSoft);
+    border: 1px solid var(--cardBorder);
+    border-radius: 20px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .insight-title-before {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .insight-title-after {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 8px;
+  }
+  .insight-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .insight-label { font-size: 12px; }
+  .insight-percent { font-size: 12px; color: var(--metricNutrition); }
+  .insight-sub { font-size: 11px; color: var(--textSecondary); }
+
+  /* Light theme */
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --textMuted: rgba(42,37,32,0.22);
+    --card: rgba(255,255,255,0.8);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --accent1: #3a9e8a;
+    --metricCalories: #c2aa78;
+    --metricProtein: #3a9e8a;
+    --metricHydration: #6090c0;
+    --metricNutrition: #bb7427;
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? '&#9684; Dark' : '&#9684; Light'">&#9684; Light</button>
+
+<!-- ═══════════════════════════════════════════
+     BEFORE
+     ═══════════════════════════════════════════ -->
+<div class="version-label">Before</div>
+<div class="context-note">Score card has no label. "Day wins" / "Day gaps" titles blend in with content at same size.</div>
+
+<div class="section-eyebrow">Overview</div>
+
+<div class="card">
+  <div class="summary-header">
+    <span class="summary-score">72</span>
+    <span class="summary-max">/ 100</span>
+  </div>
+  <div class="summary-grid">
+    <div class="summary-metric">
+      <div class="summary-metric-label" style="color:var(--metricCalories)">Calories</div>
+      <div class="summary-metric-value">1,845 kcal</div>
+    </div>
+    <div class="summary-metric">
+      <div class="summary-metric-label" style="color:var(--metricProtein)">Protein</div>
+      <div class="summary-metric-value">118g</div>
+    </div>
+    <div class="summary-metric">
+      <div class="summary-metric-label" style="color:var(--metricHydration)">Hydration</div>
+      <div class="summary-metric-value">6.5 cups</div>
+    </div>
+    <div class="summary-metric">
+      <div class="summary-metric-label" style="color:var(--metricNutrition)">Nutrition</div>
+      <div class="summary-metric-value">54%</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-eyebrow">Insights</div>
+
+<div class="insight-card">
+  <div class="insight-title-before">Day wins</div>
+  <div>
+    <div class="insight-row">
+      <span class="insight-label">Vitamin D</span>
+      <span class="insight-percent">92%</span>
+    </div>
+    <div class="insight-sub">13 / 15 mcg</div>
+  </div>
+</div>
+<div class="insight-card">
+  <div class="insight-title-before">Day gaps</div>
+  <div>
+    <div class="insight-row">
+      <span class="insight-label">Potassium</span>
+      <span class="insight-percent">28%</span>
+    </div>
+    <div class="insight-sub">920 / 3,400 mg</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════
+     AFTER
+     ═══════════════════════════════════════════ -->
+<div class="version-label">After</div>
+<div class="context-note">"Daily wellness" eyebrow anchors the score. "Day wins" / "Day gaps" converted to uppercase eyebrow style for clear hierarchy over content.</div>
+
+<div class="section-eyebrow">Overview</div>
+
+<div class="card">
+  <div class="card-eyebrow">Daily wellness</div>
+  <div class="summary-header">
+    <span class="summary-score">72</span>
+    <span class="summary-max">/ 100</span>
+  </div>
+  <div class="summary-grid">
+    <div class="summary-metric">
+      <div class="summary-metric-label" style="color:var(--metricCalories)">Calories</div>
+      <div class="summary-metric-value">1,845 kcal</div>
+    </div>
+    <div class="summary-metric">
+      <div class="summary-metric-label" style="color:var(--metricProtein)">Protein</div>
+      <div class="summary-metric-value">118g</div>
+    </div>
+    <div class="summary-metric">
+      <div class="summary-metric-label" style="color:var(--metricHydration)">Hydration</div>
+      <div class="summary-metric-value">6.5 cups</div>
+    </div>
+    <div class="summary-metric">
+      <div class="summary-metric-label" style="color:var(--metricNutrition)">Nutrition</div>
+      <div class="summary-metric-value">54%</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-eyebrow">Insights</div>
+
+<div class="insight-card">
+  <div class="insight-title-after">Day wins</div>
+  <div>
+    <div class="insight-row">
+      <span class="insight-label">Vitamin D</span>
+      <span class="insight-percent">92%</span>
+    </div>
+    <div class="insight-sub">13 / 15 mcg</div>
+  </div>
+</div>
+<div class="insight-card">
+  <div class="insight-title-after">Day gaps</div>
+  <div>
+    <div class="insight-row">
+      <span class="insight-label">Potassium</span>
+      <span class="insight-percent">28%</span>
+    </div>
+    <div class="insight-sub">920 / 3,400 mg</div>
+  </div>
+</div>
+
+</body>
+</html>

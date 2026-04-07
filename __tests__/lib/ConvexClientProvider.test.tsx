@@ -57,7 +57,7 @@ describe("ConvexClientProvider", () => {
     mockProviderSpy.mockReset();
   });
 
-  it("recreates and closes the Convex client when the auth session changes", () => {
+  it("keeps the same Convex client when the auth session changes", () => {
     let sessionId: string | null = "session-a";
     mockGetConvexUrl.mockReturnValue("https://resilient-sparrow-160.convex.cloud");
     mockUseSession.mockImplementation(() => ({
@@ -87,12 +87,12 @@ describe("ConvexClientProvider", () => {
       </ConvexClientProvider>
     );
 
-    expect(mockClientInstances).toHaveLength(2);
-    expect(mockClientInstances[0].close).toHaveBeenCalledTimes(1);
+    expect(mockClientInstances).toHaveLength(1);
+    expect(mockClientInstances[0].close).not.toHaveBeenCalled();
 
     unmount();
 
-    expect(mockClientInstances[1].close).toHaveBeenCalledTimes(1);
+    expect(mockClientInstances[0].close).toHaveBeenCalledTimes(1);
   });
 
   it("renders children without a client when the Convex url is missing", () => {

@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Accordion Shell Effects</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --background: #1a1814;
+    --background-alt: #15131a;
+    --text: #e8e0d4;
+    --text-secondary: rgba(255,255,255,0.45);
+    --text-tertiary: rgba(255,255,255,0.28);
+    --card: rgba(255,255,255,0.035);
+    --card-border: rgba(255,255,255,0.08);
+    --surface-soft: rgba(255,255,255,0.025);
+    --shadow: rgba(0,0,0,0.34);
+
+    --metric-calories: #d8c49a;
+    --metric-protein: #5ebaa9;
+    --metric-hydration: #78a0c8;
+    --metric-nutrition: #d38a3a;
+
+    --warning-soft: #b86a62;
+    --warning-strong: #d17a6e;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(94,186,169,0.08), transparent 28%),
+      radial-gradient(circle at top right, rgba(196,164,108,0.06), transparent 24%),
+      var(--background);
+    color: var(--text);
+    font-family: "SF Pro Display", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 30px 18px 42px;
+  }
+
+  .shell {
+    margin: 0 auto;
+    max-width: 1320px;
+  }
+
+  .eyebrow,
+  .panel-label,
+  .section-label,
+  .micro,
+  .status-chip {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: clamp(30px, 5vw, 42px);
+    font-weight: 300;
+    letter-spacing: -1px;
+    line-height: 1.03;
+    margin: 10px 0 12px;
+  }
+
+  .summary {
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.55;
+    max-width: 920px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .legend-chip {
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    padding: 7px 10px;
+  }
+
+  .board {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 390px));
+    justify-content: center;
+  }
+
+  .panel {
+    display: grid;
+    gap: 10px;
+  }
+
+  .panel-copy {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .phone {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--background-alt) 78%, black 4%), var(--background));
+    border: 1px solid var(--card-border);
+    border-radius: 34px;
+    box-shadow: 0 28px 70px var(--shadow);
+    padding: 12px;
+  }
+
+  .screen {
+    background: var(--background);
+    border-radius: 24px;
+    min-height: 820px;
+    overflow: hidden;
+    padding: 20px 18px 24px;
+  }
+
+  .topline {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .hero-title {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    margin-bottom: 18px;
+  }
+
+  .section {
+    margin-top: 18px;
+  }
+
+  .section-label {
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+
+  .accordion + .accordion {
+    margin-top: 14px;
+  }
+
+  .accordion {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    box-shadow: 0 18px 36px rgba(0,0,0,0.18);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .accordion::before,
+  .accordion::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .accordion .fx-glow,
+  .accordion .fx-sheen,
+  .accordion .fx-pulse {
+    border-radius: 20px;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .accordion .fx-glow {
+    opacity: 0.9;
+  }
+
+  .accordion .fx-sheen {
+    opacity: 0.8;
+  }
+
+  .accordion .fx-pulse {
+    opacity: 0;
+  }
+
+  .card-top {
+    padding: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .detail {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 14px 16px 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .title-row {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .metric-title {
+    color: currentColor;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+  }
+
+  .metric-percent {
+    color: currentColor;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .summary-row {
+    align-items: center;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .summary-value {
+    font-size: 13px;
+  }
+
+  .chevron {
+    border-bottom: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    color: var(--text-tertiary);
+    height: 10px;
+    transform: rotate(-135deg);
+    width: 10px;
+  }
+
+  .status-strip {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .status-chip {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    color: var(--text);
+    padding: 5px 9px 4px;
+  }
+
+  .status-chip.warning {
+    background: rgba(184,106,98,0.12);
+    border-color: rgba(184,106,98,0.18);
+    color: var(--warning-strong);
+  }
+
+  .detail-copy {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .contributor {
+    margin-bottom: 12px;
+  }
+
+  .contributor:last-child {
+    margin-bottom: 0;
+  }
+
+  .contributor-name {
+    font-size: 13px;
+  }
+
+  .contributor-meta {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    margin-top: 3px;
+  }
+
+  .mini-track {
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    height: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .mini-fill {
+    border-radius: 999px;
+    height: 100%;
+  }
+
+  .mini-fill.calories {
+    background: var(--metric-calories);
+    width: 100%;
+  }
+
+  .mini-fill.protein {
+    background: var(--metric-protein);
+    width: 62%;
+  }
+
+  .mini-fill.hydration {
+    background: var(--metric-hydration);
+    width: 78%;
+  }
+
+  .mini-fill.nutrition {
+    background: var(--metric-nutrition);
+    width: 87%;
+  }
+
+  .metric-calories { color: var(--metric-calories); }
+  .metric-protein { color: var(--metric-protein); }
+  .metric-hydration { color: var(--metric-hydration); }
+  .metric-nutrition { color: var(--metric-nutrition); }
+  .metric-calories.warning { color: var(--warning-strong); }
+
+  @keyframes slowSheen {
+    0% { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+    12% { opacity: 0.18; }
+    50% { opacity: 0.24; }
+    88% { opacity: 0.12; }
+    100% { transform: translateX(200%) skewX(-18deg); opacity: 0; }
+  }
+
+  @keyframes softPulse {
+    0% { opacity: 0.18; transform: scale(0.98); }
+    50% { opacity: 0.38; transform: scale(1.01); }
+    100% { opacity: 0.18; transform: scale(0.98); }
+  }
+
+  .variant-a .accordion.metric-calories.warning::before {
+    background:
+      radial-gradient(circle at 18% 22%, rgba(209,122,110,0.28), transparent 30%),
+      radial-gradient(circle at 82% 24%, rgba(184,106,98,0.18), transparent 24%),
+      linear-gradient(135deg, rgba(184,106,98,0.18), rgba(255,255,255,0.03) 44%, rgba(255,255,255,0.015));
+    inset: 0;
+  }
+
+  .variant-a .accordion.metric-protein::before,
+  .variant-a .accordion.metric-hydration::before,
+  .variant-a .accordion.metric-nutrition::before {
+    inset: 0;
+  }
+
+  .variant-a .accordion.metric-protein::before {
+    background:
+      radial-gradient(circle at 18% 24%, rgba(94,186,169,0.26), transparent 32%),
+      linear-gradient(135deg, rgba(94,186,169,0.16), rgba(255,255,255,0.02) 46%, rgba(255,255,255,0.015));
+  }
+
+  .variant-a .accordion.metric-hydration::before {
+    background:
+      radial-gradient(circle at 18% 24%, rgba(120,160,200,0.26), transparent 32%),
+      linear-gradient(135deg, rgba(120,160,200,0.16), rgba(255,255,255,0.02) 46%, rgba(255,255,255,0.015));
+  }
+
+  .variant-a .accordion.metric-nutrition::before {
+    background:
+      radial-gradient(circle at 18% 24%, rgba(211,138,58,0.26), transparent 32%),
+      linear-gradient(135deg, rgba(211,138,58,0.16), rgba(255,255,255,0.02) 46%, rgba(255,255,255,0.015));
+  }
+
+  .variant-a .accordion::after {
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+    inset: 0;
+  }
+
+  .variant-b .accordion::before {
+    inset: 0;
+  }
+
+  .variant-b .accordion.metric-protein::before {
+    background:
+      radial-gradient(circle at 80% 18%, rgba(94,186,169,0.2), transparent 22%),
+      radial-gradient(circle at 14% 82%, rgba(94,186,169,0.16), transparent 24%),
+      linear-gradient(180deg, rgba(94,186,169,0.16), rgba(255,255,255,0.015) 40%, rgba(255,255,255,0.015));
+  }
+
+  .variant-b .accordion.metric-hydration::before {
+    background:
+      radial-gradient(circle at 80% 18%, rgba(120,160,200,0.2), transparent 22%),
+      radial-gradient(circle at 14% 82%, rgba(120,160,200,0.16), transparent 24%),
+      linear-gradient(180deg, rgba(120,160,200,0.16), rgba(255,255,255,0.015) 40%, rgba(255,255,255,0.015));
+  }
+
+  .variant-b .accordion.metric-nutrition::before {
+    background:
+      radial-gradient(circle at 80% 18%, rgba(211,138,58,0.2), transparent 22%),
+      radial-gradient(circle at 14% 82%, rgba(211,138,58,0.16), transparent 24%),
+      linear-gradient(180deg, rgba(211,138,58,0.16), rgba(255,255,255,0.015) 40%, rgba(255,255,255,0.015));
+  }
+
+  .variant-b .accordion.metric-calories.warning::before {
+    background:
+      radial-gradient(circle at center, rgba(209,122,110,0.26), transparent 44%),
+      linear-gradient(180deg, rgba(184,106,98,0.2), rgba(255,255,255,0.015) 46%, rgba(255,255,255,0.015));
+  }
+
+  .variant-b .accordion::after {
+    border-radius: 999px;
+    inset: auto 18px 14px 18px;
+    height: 1px;
+  }
+
+  .variant-b .accordion.metric-protein::after { background: rgba(94,186,169,0.7); box-shadow: 0 0 14px rgba(94,186,169,0.36); }
+  .variant-b .accordion.metric-hydration::after { background: rgba(120,160,200,0.7); box-shadow: 0 0 14px rgba(120,160,200,0.36); }
+  .variant-b .accordion.metric-nutrition::after { background: rgba(211,138,58,0.7); box-shadow: 0 0 14px rgba(211,138,58,0.36); }
+  .variant-b .accordion.metric-calories.warning::after { background: rgba(209,122,110,0.8); box-shadow: 0 0 16px rgba(209,122,110,0.42); }
+
+  .variant-c .accordion {
+    box-shadow: 0 18px 32px rgba(0,0,0,0.18);
+  }
+
+  .variant-c .accordion::before {
+    inset: 0;
+  }
+
+  .variant-c .accordion.metric-protein::before {
+    background:
+      linear-gradient(135deg, rgba(94,186,169,0.18), rgba(255,255,255,0.015) 46%, rgba(255,255,255,0.015)),
+      radial-gradient(circle at 28% 18%, rgba(94,186,169,0.16), transparent 24%);
+  }
+
+  .variant-c .accordion.metric-hydration::before {
+    background:
+      linear-gradient(135deg, rgba(120,160,200,0.18), rgba(255,255,255,0.015) 46%, rgba(255,255,255,0.015)),
+      radial-gradient(circle at 28% 18%, rgba(120,160,200,0.16), transparent 24%);
+  }
+
+  .variant-c .accordion.metric-nutrition::before {
+    background:
+      linear-gradient(135deg, rgba(211,138,58,0.18), rgba(255,255,255,0.015) 46%, rgba(255,255,255,0.015)),
+      radial-gradient(circle at 28% 18%, rgba(211,138,58,0.16), transparent 24%);
+  }
+
+  .variant-c .accordion.metric-calories.warning::before {
+    background:
+      linear-gradient(135deg, rgba(184,106,98,0.22), rgba(255,255,255,0.015) 48%, rgba(255,255,255,0.015)),
+      radial-gradient(circle at 26% 18%, rgba(209,122,110,0.22), transparent 24%);
+  }
+
+  .variant-c .accordion::after {
+    background: linear-gradient(95deg, transparent 0%, rgba(255,255,255,0.16) 48%, transparent 100%);
+    inset: 0 auto 0 -22%;
+    width: 54%;
+  }
+
+  .variant-d .accordion::before {
+    inset: 0;
+  }
+
+  .variant-d .accordion.metric-protein::before {
+    background:
+      radial-gradient(circle at 14% 20%, rgba(94,186,169,0.24), transparent 28%),
+      radial-gradient(circle at 84% 16%, rgba(94,186,169,0.14), transparent 22%),
+      radial-gradient(circle at 50% 110%, rgba(94,186,169,0.18), transparent 40%);
+  }
+
+  .variant-d .accordion.metric-hydration::before {
+    background:
+      radial-gradient(circle at 14% 20%, rgba(120,160,200,0.24), transparent 28%),
+      radial-gradient(circle at 84% 16%, rgba(120,160,200,0.14), transparent 22%),
+      radial-gradient(circle at 50% 110%, rgba(120,160,200,0.18), transparent 40%);
+  }
+
+  .variant-d .accordion.metric-nutrition::before {
+    background:
+      radial-gradient(circle at 14% 20%, rgba(211,138,58,0.24), transparent 28%),
+      radial-gradient(circle at 84% 16%, rgba(211,138,58,0.14), transparent 22%),
+      radial-gradient(circle at 50% 110%, rgba(211,138,58,0.18), transparent 40%);
+  }
+
+  .variant-d .accordion.metric-calories.warning::before {
+    background:
+      radial-gradient(circle at 14% 20%, rgba(209,122,110,0.28), transparent 28%),
+      radial-gradient(circle at 84% 16%, rgba(184,106,98,0.16), transparent 22%),
+      radial-gradient(circle at 50% 110%, rgba(184,106,98,0.22), transparent 40%);
+  }
+
+  .variant-a .accordion.metric-protein .fx-glow {
+    background: radial-gradient(circle at 20% 24%, rgba(94,186,169,0.28), transparent 30%);
+    box-shadow: inset 0 0 0 1px rgba(94,186,169,0.12), 0 0 22px rgba(94,186,169,0.1);
+  }
+
+  .variant-a .accordion.metric-hydration .fx-glow {
+    background: radial-gradient(circle at 20% 24%, rgba(120,160,200,0.28), transparent 30%);
+    box-shadow: inset 0 0 0 1px rgba(120,160,200,0.12), 0 0 22px rgba(120,160,200,0.1);
+  }
+
+  .variant-a .accordion.metric-nutrition .fx-glow {
+    background: radial-gradient(circle at 20% 24%, rgba(211,138,58,0.28), transparent 30%);
+    box-shadow: inset 0 0 0 1px rgba(211,138,58,0.12), 0 0 22px rgba(211,138,58,0.1);
+  }
+
+  .variant-a .accordion.metric-calories.warning .fx-glow {
+    background: radial-gradient(circle at 20% 24%, rgba(209,122,110,0.28), transparent 30%);
+    box-shadow: inset 0 0 0 1px rgba(209,122,110,0.14), 0 0 24px rgba(209,122,110,0.12);
+  }
+
+  .variant-a .accordion .fx-sheen {
+    animation: slowSheen 7s linear infinite;
+    background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%);
+    inset: 0 auto 0 -26%;
+    width: 44%;
+  }
+
+  .variant-b .accordion.metric-protein .fx-glow,
+  .variant-b .accordion.metric-hydration .fx-glow,
+  .variant-b .accordion.metric-nutrition .fx-glow,
+  .variant-b .accordion.metric-calories.warning .fx-glow {
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.04), 0 0 28px rgba(255,255,255,0.04);
+  }
+
+  .variant-c .accordion .fx-sheen {
+    animation: slowSheen 5.8s linear infinite;
+    background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%);
+    inset: 0 auto 0 -24%;
+    width: 54%;
+  }
+
+  .variant-c .accordion.metric-calories.warning .fx-glow {
+    box-shadow: inset 0 0 0 1px rgba(209,122,110,0.14), 0 0 30px rgba(209,122,110,0.12);
+  }
+
+  .variant-c .accordion.metric-protein .fx-glow {
+    box-shadow: inset 0 0 0 1px rgba(94,186,169,0.12), 0 0 30px rgba(94,186,169,0.1);
+  }
+
+  .variant-c .accordion.metric-hydration .fx-glow {
+    box-shadow: inset 0 0 0 1px rgba(120,160,200,0.12), 0 0 30px rgba(120,160,200,0.1);
+  }
+
+  .variant-c .accordion.metric-nutrition .fx-glow {
+    box-shadow: inset 0 0 0 1px rgba(211,138,58,0.12), 0 0 30px rgba(211,138,58,0.1);
+  }
+
+  .variant-d .accordion .fx-pulse {
+    animation: softPulse 3.2s ease-in-out infinite;
+  }
+
+  .variant-d .accordion.metric-protein .fx-pulse {
+    background: radial-gradient(circle at 24% 28%, rgba(94,186,169,0.22), transparent 34%);
+  }
+
+  .variant-d .accordion.metric-hydration .fx-pulse {
+    background: radial-gradient(circle at 24% 28%, rgba(120,160,200,0.22), transparent 34%);
+  }
+
+  .variant-d .accordion.metric-nutrition .fx-pulse {
+    background: radial-gradient(circle at 24% 28%, rgba(211,138,58,0.22), transparent 34%);
+  }
+
+  .variant-d .accordion.metric-calories.warning .fx-pulse {
+    background: radial-gradient(circle at 24% 28%, rgba(209,122,110,0.26), transparent 34%);
+  }
+
+  .footer-note {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 14px;
+  }
+
+  @media (max-width: 860px) {
+    .board {
+      grid-template-columns: minmax(280px, 390px);
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <div class="eyebrow">Storyboard Reset</div>
+      <h1>Premium shell effects, no extra progress bar.</h1>
+      <p class="summary">
+        These mockups keep the current Home accordion structure intact. No added progress row, no visible macro progress bar on the card. The entire shell carries the treatment instead: metric-tinted gradients, gentle sheen, soft radiance, and a calories-only red warning state once it goes over the chosen threshold.
+      </p>
+      <div class="legend">
+        <div class="legend-chip">Current card structure stays intact</div>
+        <div class="legend-chip">Full shell carries the effect</div>
+        <div class="legend-chip">Metric color family preserved</div>
+        <div class="legend-chip">Calories warning flips to red</div>
+      </div>
+    </header>
+
+    <main class="board">
+      <section class="panel">
+        <div class="panel-label">A. Satin Drift</div>
+        <div class="panel-copy">The card gets a metric-tinted atmospheric wash and a very soft sheen path across the shell. Feels closest to the earlier “luxury sheen” idea, just moved up to the whole card.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="micro">Pacific/Honolulu</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+            <div class="section">
+              <div class="section-label">Home Accordions</div>
+
+              <div class="accordion metric-calories warning variant-a">
+                <div class="fx-glow"></div>
+                <div class="fx-sheen"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Calories</div>
+                    <div class="metric-percent">(&gt;100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">2,246 / 2,000 kcal</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="status-strip">
+                    <div class="status-chip warning">Over target</div>
+                  </div>
+                </div>
+                <div class="detail">
+                  <div class="detail-copy">Meals driving the most calorie load today.</div>
+                  <div class="contributor">
+                    <div class="contributor-name">Lunch bowl</div>
+                    <div class="contributor-meta">1,120 kcal · 56%</div>
+                    <div class="mini-track"><div class="mini-fill calories"></div></div>
+                  </div>
+                  <div class="contributor">
+                    <div class="contributor-name">Protein shake</div>
+                    <div class="contributor-meta">340 kcal · 17%</div>
+                    <div class="mini-track"><div class="mini-fill calories" style="width:17%"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-protein variant-a">
+                <div class="fx-glow"></div>
+                <div class="fx-sheen"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Protein</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">151 / 150 g</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="status-strip">
+                    <div class="status-chip">On target</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-hydration variant-a">
+                <div class="fx-glow"></div>
+                <div class="fx-sheen"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Hydration</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">11 / 11 cups</div>
+                    <div class="chevron"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-nutrition variant-a">
+                <div class="fx-glow"></div>
+                <div class="fx-sheen"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Nutrition</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">Coverage complete</div>
+                    <div class="chevron"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="footer-note">Use this if the old sheen language was right, but the extra row placement was wrong.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">B. Underlit Frame</div>
+        <div class="panel-copy">The shell feels lit from within. Less about a moving sweep, more about a premium underglow and a thin illuminated base line. Cleaner and more architectural.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="micro">Pacific/Honolulu</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+            <div class="section">
+              <div class="section-label">Home Accordions</div>
+
+              <div class="accordion metric-calories warning variant-b">
+                <div class="fx-glow"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Calories</div>
+                    <div class="metric-percent">(&gt;100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">2,246 / 2,000 kcal</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="status-strip">
+                    <div class="status-chip warning">Over target</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-protein variant-b">
+                <div class="fx-glow"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Protein</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">151 / 150 g</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="status-strip">
+                    <div class="status-chip">On target</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-hydration variant-b">
+                <div class="fx-glow"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Hydration</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">11 / 11 cups</div>
+                    <div class="chevron"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-nutrition variant-b">
+                <div class="fx-glow"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Nutrition</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">Coverage complete</div>
+                    <div class="chevron"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="footer-note">Most restrained. Probably the easiest to make feel expensive without becoming flashy.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">C. Sweep Glass</div>
+        <div class="panel-copy">This leans hardest into the horizontal motion idea. The shell is still clean, but it reads like a polished glass surface catching a slow pass of light.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="micro">Pacific/Honolulu</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+            <div class="section">
+              <div class="section-label">Home Accordions</div>
+
+              <div class="accordion metric-calories warning variant-c">
+                <div class="fx-glow"></div>
+                <div class="fx-sheen"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Calories</div>
+                    <div class="metric-percent">(&gt;100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">2,246 / 2,000 kcal</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="status-strip">
+                    <div class="status-chip warning">Over target</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-protein variant-c">
+                <div class="fx-glow"></div>
+                <div class="fx-sheen"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Protein</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">151 / 150 g</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="status-strip">
+                    <div class="status-chip">On target</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-hydration variant-c">
+                <div class="fx-glow"></div>
+                <div class="fx-sheen"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Hydration</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">11 / 11 cups</div>
+                    <div class="chevron"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-nutrition variant-c">
+                <div class="fx-glow"></div>
+                <div class="fx-sheen"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Nutrition</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">Coverage complete</div>
+                    <div class="chevron"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="footer-note">This is the highest-motion direction. Good if you want the premium read to be obvious without adding any new structure.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">D. Aura Chamber</div>
+        <div class="panel-copy">More radiance, less sheen. The shell feels energized from behind with colored pockets of light. Calories warning becomes a warmer alert field instead of a line or stripe.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="micro">Pacific/Honolulu</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+            <div class="section">
+              <div class="section-label">Home Accordions</div>
+
+              <div class="accordion metric-calories warning variant-d">
+                <div class="fx-pulse"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Calories</div>
+                    <div class="metric-percent">(&gt;100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">2,246 / 2,000 kcal</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="status-strip">
+                    <div class="status-chip warning">Over target</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-protein variant-d">
+                <div class="fx-pulse"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Protein</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">151 / 150 g</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="status-strip">
+                    <div class="status-chip">On target</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-hydration variant-d">
+                <div class="fx-pulse"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Hydration</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">11 / 11 cups</div>
+                    <div class="chevron"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion metric-nutrition variant-d">
+                <div class="fx-pulse"></div>
+                <div class="card-top">
+                  <div class="title-row">
+                    <div class="metric-title">Nutrition</div>
+                    <div class="metric-percent">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">Coverage complete</div>
+                    <div class="chevron"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="footer-note">Best if you want the shell to feel rich and alive without the motion reading as a literal sweep.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -228,7 +228,16 @@ export function WeeklyTrendChart({
                     />
                   ) : null}
                 </View>
-                <ThemedText size="sm" style={{ color: isFuture ? theme.textMuted : config.color }}>
+                <ThemedText
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.75}
+                  numberOfLines={1}
+                  size="sm"
+                  style={[
+                    styles.heatStripValueLabel,
+                    { color: isFuture ? theme.textMuted : config.color },
+                  ]}
+                >
                   {isFuture ? "—" : `${displayPercent}%`}
                 </ThemedText>
               </View>
@@ -279,6 +288,10 @@ const styles = StyleSheet.create({
   },
   heatStripDayLabel: {
     textAlign: "center",
+  },
+  heatStripValueLabel: {
+    textAlign: "center",
+    width: "100%",
   },
   hiddenMarker: {
     height: 0,

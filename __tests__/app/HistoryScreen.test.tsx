@@ -26,10 +26,13 @@ describe("HistoryScreen", () => {
         {
           calories: 745,
           dateKey: "2026-03-29",
+          entryCount: 3,
+          footerLabel: "3 logged items • 1 supplement",
           hydrationCups: 2,
           mealCount: 2,
           nutritionCoveragePercent: 18,
           protein: 23,
+          supplementCount: 1,
           wellnessScore: 64,
         },
       ],
@@ -45,6 +48,20 @@ describe("HistoryScreen", () => {
     expect(getByText("23g protein")).toBeTruthy();
     expect(getByText("2.0 cups")).toBeTruthy();
     expect(getByText("18%")).toBeTruthy();
-    expect(getByText("2 meals")).toBeTruthy();
+    expect(getByText("3 logged items • 1 supplement")).toBeTruthy();
+  });
+
+  it("mentions supplements in the empty-state copy", () => {
+    mockUsePaginatedQuery.mockReturnValue({
+      loadMore: jest.fn(),
+      results: [],
+      status: "Exhausted",
+    });
+
+    const { getByText } = render(<HistoryScreen />);
+
+    expect(
+      getByText("Logged days will appear here once meals, drinks, hydration, or supplements are saved.")
+    ).toBeTruthy();
   });
 });

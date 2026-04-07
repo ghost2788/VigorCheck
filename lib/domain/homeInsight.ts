@@ -66,6 +66,10 @@ export function getNutritionCoverageDescriptor(coveragePercent: number) {
   return "Getting started";
 }
 
+export function getNutritionCoverageDetailCopy() {
+  return "Coverage reflects foods with tracked nutrients across the expanded vitamin, mineral, and nutrient set.";
+}
+
 export function getTargetRelativeBarPercent({
   target,
   value,

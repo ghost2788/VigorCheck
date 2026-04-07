@@ -19,6 +19,11 @@ const micronutrientFields = {
   magnesium: v.number(),
   zinc: v.number(),
   phosphorus: v.number(),
+  omega3: v.optional(v.number()),
+  choline: v.optional(v.number()),
+  selenium: v.optional(v.number()),
+  copper: v.optional(v.number()),
+  manganese: v.optional(v.number()),
 };
 
 const fullNutritionFields = {
@@ -32,6 +37,46 @@ const fullNutritionFields = {
   ...micronutrientFields,
 };
 
+const rememberedEntryPortionUnitValidator = v.union(
+  v.literal("g"),
+  v.literal("ml"),
+  v.literal("oz"),
+  v.literal("serving")
+);
+
+const rememberedMealItemSnapshotFields = {
+  barcodeValue: v.optional(v.string()),
+  foodName: v.string(),
+  nutrition: v.object(fullNutritionFields),
+  portionAmount: v.number(),
+  portionUnit: rememberedEntryPortionUnitValidator,
+  prepMethod: v.optional(v.string()),
+  source: v.union(
+    v.literal("usda"),
+    v.literal("ai_estimated"),
+    v.literal("manual"),
+    v.literal("barcode_catalog")
+  ),
+  usdaFoodId: v.optional(v.string()),
+};
+
+const rememberedMealSnapshotFields = {
+  items: v.array(v.object(rememberedMealItemSnapshotFields)),
+  mealType: v.union(
+    v.literal("breakfast"),
+    v.literal("lunch"),
+    v.literal("dinner"),
+    v.literal("snack"),
+    v.literal("drink")
+  ),
+};
+
+const rememberedHydrationSnapshotFields = {
+  amountOz: v.number(),
+  beverageKind: v.union(v.literal("water"), v.literal("drink")),
+  label: v.string(),
+};
+
 const goalsMetFields = {
   calories: v.boolean(),
   protein: v.boolean(),
@@ -41,7 +86,14 @@ const goalsMetFields = {
   sugar: v.boolean(),
 };
 
-const supplementNutrients = {
+const supplementNutritionFields = {
+  calories: v.optional(v.number()),
+  protein: v.optional(v.number()),
+  carbs: v.optional(v.number()),
+  fat: v.optional(v.number()),
+  fiber: v.optional(v.number()),
+  sodium: v.optional(v.number()),
+  sugar: v.optional(v.number()),
   vitaminA: v.optional(v.number()),
   vitaminC: v.optional(v.number()),
   vitaminD: v.optional(v.number()),
@@ -60,6 +112,17 @@ const supplementNutrients = {
   zinc: v.optional(v.number()),
   phosphorus: v.optional(v.number()),
   omega3: v.optional(v.number()),
+  choline: v.optional(v.number()),
+  selenium: v.optional(v.number()),
+  copper: v.optional(v.number()),
+  manganese: v.optional(v.number()),
+};
+
+const supplementActiveIngredientFields = {
+  amount: v.optional(v.number()),
+  name: v.string(),
+  note: v.optional(v.string()),
+  unit: v.optional(v.string()),
 };
 
 export default defineSchema({
@@ -69,6 +132,8 @@ export default defineSchema({
     tokenIdentifier: v.optional(v.string()),
     themePalette: v.optional(v.string()),
     timeZone: v.string(),
+    aiQuotaTimeZone: v.optional(v.string()),
+    rememberedEntriesMigrationVersion: v.optional(v.number()),
     age: v.number(),
     weight: v.number(),
     height: v.number(),
@@ -143,7 +208,8 @@ export default defineSchema({
       v.literal("breakfast"),
       v.literal("lunch"),
       v.literal("dinner"),
-      v.literal("snack")
+      v.literal("snack"),
+      v.literal("drink")
     ),
     entryMethod: v.union(
       v.literal("manual"),
@@ -153,6 +219,8 @@ export default defineSchema({
       v.literal("barcode"),
       v.literal("saved_meal")
     ),
+    rememberedEntryId: v.optional(v.id("rememberedEntries")),
+    rememberedReplayId: v.optional(v.string()),
     photoStorageId: v.optional(v.id("_storage")),
     aiConfidence: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
     totalCalories: v.number(),
@@ -163,7 +231,11 @@ export default defineSchema({
     totalSodium: v.number(),
     totalSugar: v.number(),
     ...micronutrientFields,
-  }).index("by_user_date", ["userId", "timestamp"]),
+    })
+      .index("by_user_date", ["userId", "timestamp"])
+      .index("by_remembered_entry_id", ["rememberedEntryId"])
+      .index("by_remembered_replay_id", ["rememberedReplayId"])
+      .index("by_remembered_entry_id_and_timestamp", ["rememberedEntryId", "timestamp"]),
 
   mealItems: defineTable({
     mealId: v.id("meals"),
@@ -194,9 +266,16 @@ export default defineSchema({
     userId: v.id("users"),
     timestamp: v.number(),
     amountOz: v.number(),
+    rememberedEntryId: v.optional(v.id("rememberedEntries")),
+    rememberedReplayId: v.optional(v.string()),
     shortcutId: v.optional(v.id("hydrationShortcuts")),
     shortcutLabel: v.optional(v.string()),
-  }).index("by_user_date", ["userId", "timestamp"]),
+  })
+    .index("by_user_date", ["userId", "timestamp"])
+    .index("by_shortcut_id", ["shortcutId"])
+    .index("by_remembered_entry_id", ["rememberedEntryId"])
+    .index("by_remembered_replay_id", ["rememberedReplayId"])
+    .index("by_remembered_entry_id_and_timestamp", ["rememberedEntryId", "timestamp"]),
 
   hydrationShortcuts: defineTable({
     userId: v.id("users"),
@@ -216,7 +295,8 @@ export default defineSchema({
         v.literal("breakfast"),
         v.literal("lunch"),
         v.literal("dinner"),
-        v.literal("snack")
+        v.literal("snack"),
+        v.literal("drink")
       )
     ),
     calories: v.number(),
@@ -224,9 +304,26 @@ export default defineSchema({
     carbs: v.number(),
     fat: v.number(),
     nutritionProfile: v.optional(v.object(fullNutritionFields)),
+    })
+      .index("by_user", ["userId"])
+      .index("by_user_recent", ["userId", "lastUsedAt"]),
+
+  rememberedEntries: defineTable({
+    displayLabel: v.string(),
+    favorited: v.boolean(),
+    fingerprint: v.string(),
+    hydrationSnapshot: v.optional(v.object(rememberedHydrationSnapshotFields)),
+    lastUsedAt: v.number(),
+    mealSnapshot: v.optional(v.object(rememberedMealSnapshotFields)),
+    replayKind: v.union(
+      v.literal("meal_only"),
+      v.literal("hydration_only"),
+      v.literal("meal_and_hydration")
+    ),
+    userId: v.id("users"),
   })
-    .index("by_user", ["userId"])
-    .index("by_user_recent", ["userId", "lastUsedAt"]),
+    .index("by_user_and_fingerprint", ["userId", "fingerprint"])
+    .index("by_user_and_favorited_and_last_used_at", ["userId", "favorited", "lastUsedAt"]),
 
   dailySummaries: defineTable({
     userId: v.id("users"),
@@ -282,24 +379,132 @@ export default defineSchema({
     name: v.string(),
     brand: v.optional(v.string()),
     category: v.string(),
-    nutrients: v.object(supplementNutrients),
-  }).searchIndex("by_name", {
-    searchField: "name",
-  }),
+    nutritionProfile: v.optional(v.object(supplementNutritionFields)),
+    nutrients: v.optional(v.object(supplementNutritionFields)),
+    searchText: v.optional(v.string()),
+    servingLabel: v.optional(v.string()),
+  })
+    .searchIndex("by_name", {
+      searchField: "name",
+    })
+    .searchIndex("by_search_text", {
+      searchField: "searchText",
+    }),
 
   userSupplements: defineTable({
     userId: v.id("users"),
     supplementId: v.optional(v.id("supplements")),
+    brand: v.optional(v.string()),
+    productFingerprint: v.optional(v.string()),
+    fingerprintKind: v.optional(v.union(v.literal("strong"), v.literal("provisional"))),
+    sourceKind: v.optional(v.union(v.literal("scanned"), v.literal("custom"), v.literal("legacy"))),
+    activeIngredients: v.optional(v.array(v.object(supplementActiveIngredientFields))),
+    lastScannedAt: v.optional(v.number()),
+    scanPhotoCount: v.optional(v.number()),
+    displayName: v.optional(v.string()),
     frequency: v.union(v.literal("daily"), v.literal("as_needed")),
+    servingLabel: v.optional(v.string()),
+    nutritionProfile: v.optional(v.object(supplementNutritionFields)),
+    status: v.optional(v.union(v.literal("active"), v.literal("archived"))),
+    archivedAt: v.optional(v.number()),
     customName: v.optional(v.string()),
-    customNutrients: v.optional(v.object(supplementNutrients)),
-  }).index("by_user", ["userId"]),
+    customNutrients: v.optional(v.object(supplementNutritionFields)),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_status_and_frequency", ["userId", "status", "frequency"])
+    .index("by_user_and_product_fingerprint", ["userId", "productFingerprint"]),
 
   supplementLogs: defineTable({
     userId: v.id("users"),
     userSupplementId: v.id("userSupplements"),
+    loggedDisplayName: v.optional(v.string()),
+    loggedServingLabel: v.optional(v.string()),
+    loggedActiveIngredients: v.optional(v.array(v.object(supplementActiveIngredientFields))),
+    loggedNutritionProfile: v.optional(v.object(supplementNutritionFields)),
     timestamp: v.number(),
-  }).index("by_user_date", ["userId", "timestamp"]),
+  })
+    .index("by_user_date", ["userId", "timestamp"])
+    .index("by_user_supplement_id_and_timestamp", ["userSupplementId", "timestamp"]),
+
+  aiUsageCounters: defineTable({
+    photoScanCount: v.number(),
+    textEntryCount: v.number(),
+    updatedAt: v.number(),
+    userId: v.id("users"),
+    windowKey: v.string(),
+    windowKind: v.union(
+      v.literal("trial_lifetime"),
+      v.literal("calendar_month"),
+      v.literal("daily_scan")
+    ),
+  }).index("by_user_id_and_window_kind_and_window_key", ["userId", "windowKind", "windowKey"]),
+
+  aiRequestEvents: defineTable({
+    blockedLimitKind: v.optional(
+      v.union(
+        v.literal("trial_lifetime"),
+        v.literal("calendar_month"),
+        v.literal("daily_scan")
+      )
+    ),
+    cachedInputTokens: v.optional(v.number()),
+    callKind: v.union(
+      v.literal("photo_scan"),
+      v.literal("supplement_scan"),
+      v.literal("text_entry"),
+      v.literal("drink_estimate")
+    ),
+    completedAt: v.number(),
+    createdAt: v.number(),
+    estimatedCostUsdMicros: v.optional(v.number()),
+    featureKind: v.union(v.literal("photo_scan"), v.literal("text_ai")),
+    inputTokens: v.optional(v.number()),
+    model: v.string(),
+    outputTokens: v.optional(v.number()),
+    pricingVersion: v.string(),
+    reasoningTokens: v.optional(v.number()),
+    resultStatus: v.union(
+      v.literal("completed"),
+      v.literal("blocked_quota"),
+      v.literal("provider_error"),
+      v.literal("postprocess_error")
+    ),
+    totalTokens: v.optional(v.number()),
+    usageState: v.union(v.literal("present"), v.literal("missing"), v.literal("not_applicable")),
+    userId: v.id("users"),
+  }).index("by_user_and_created_at", ["userId", "createdAt"]),
+
+  aiDailyDiagnosticsRollups: defineTable({
+    blockedCount: v.number(),
+    cachedInputTokens: v.number(),
+    callKind: v.union(
+      v.literal("photo_scan"),
+      v.literal("supplement_scan"),
+      v.literal("text_entry"),
+      v.literal("drink_estimate")
+    ),
+    completedCount: v.number(),
+    estimatedCostUsdMicros: v.number(),
+    inputTokens: v.number(),
+    localDateKey: v.string(),
+    outputTokens: v.number(),
+    postprocessErrorCount: v.number(),
+    pricingVersion: v.string(),
+    providerErrorCount: v.number(),
+    reasoningTokens: v.number(),
+    requestCount: v.number(),
+    totalTokens: v.number(),
+    updatedAt: v.number(),
+    usageMissingCount: v.number(),
+    userId: v.id("users"),
+  })
+    .index("by_user_and_local_date_key", ["userId", "localDateKey"])
+    .index("by_user_and_local_date_key_and_call_kind_and_pricing_version", [
+      "userId",
+      "localDateKey",
+      "callKind",
+      "pricingVersion",
+    ]),
 
   usdaFoods: defineTable({
     fdcId: v.string(),
@@ -329,6 +534,11 @@ export default defineSchema({
     magnesiumPer100g: v.number(),
     zincPer100g: v.number(),
     phosphorusPer100g: v.number(),
+    omega3Per100g: v.optional(v.number()),
+    cholinePer100g: v.optional(v.number()),
+    seleniumPer100g: v.optional(v.number()),
+    copperPer100g: v.optional(v.number()),
+    manganesePer100g: v.optional(v.number()),
   })
     .index("by_fdc_id", ["fdcId"])
     .searchIndex("by_name", {

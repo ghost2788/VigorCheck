@@ -1,6 +1,14 @@
 import { v } from "convex/values";
 import { createEmptyNutrition } from "../lib/domain/scan";
+import {
+  getDefaultHydrationShortcutMealType,
+  resolveHydrationShortcutMealType,
+} from "../lib/domain/hydrationShortcuts";
 import { mutation, query, QueryCtx } from "./_generated/server";
+import {
+  createRememberedReplayId,
+  upsertRememberedEntryFromReplaySources,
+} from "./lib/rememberedEntries";
 import { findCurrentUser, requireCurrentUser } from "./lib/devIdentity";
 import {
   mealTypeValidator,
@@ -80,7 +88,7 @@ export const ensureSeeded = mutation({
       label: "Water 8 oz",
       lastUsedAt: now,
       logMode: "hydration_only",
-      mealType: "snack",
+      mealType: getDefaultHydrationShortcutMealType(),
       pinned: true,
       protein: 0,
       userId: user._id,
@@ -95,7 +103,7 @@ export const ensureSeeded = mutation({
       label: "Water 16 oz",
       lastUsedAt: now - 1,
       logMode: "hydration_only",
-      mealType: "snack",
+      mealType: getDefaultHydrationShortcutMealType(),
       pinned: true,
       protein: 0,
       userId: user._id,
@@ -141,7 +149,7 @@ export const createShortcut = mutation({
       label: args.label.trim(),
       lastUsedAt: now,
       logMode: args.logMode,
-      mealType: args.mealType ?? "snack",
+      mealType: resolveHydrationShortcutMealType(args.mealType),
       nutritionProfile,
       pinned: true,
       protein: args.protein,
@@ -186,6 +194,7 @@ export const logShortcut = mutation({
 
     const timestamp = Date.now();
     const amountOz = Math.max(1, Math.round(shortcut.defaultAmountOz));
+    const rememberedReplayId = createRememberedReplayId();
     const nutrition = buildNutritionProfile({
       calories: shortcut.calories,
       carbs: shortcut.carbs,
@@ -196,6 +205,8 @@ export const logShortcut = mutation({
 
     const hydrationLogId = await ctx.db.insert("hydrationLogs", {
       amountOz,
+      rememberedEntryId: undefined,
+      rememberedReplayId,
       shortcutId: shortcut._id,
       shortcutLabel: shortcut.label,
       timestamp,
@@ -215,16 +226,22 @@ export const logShortcut = mutation({
       b12: nutrition.b12,
       b6: nutrition.b6,
       calcium: nutrition.calcium,
+      choline: nutrition.choline,
+      copper: nutrition.copper,
       entryMethod: "saved_meal",
       folate: nutrition.folate,
       iron: nutrition.iron,
       label: shortcut.label,
       magnesium: nutrition.magnesium,
-      mealType: shortcut.mealType ?? "snack",
+      manganese: nutrition.manganese,
+      mealType: resolveHydrationShortcutMealType(shortcut.mealType),
       niacin: nutrition.niacin,
+      omega3: nutrition.omega3,
       phosphorus: nutrition.phosphorus,
       photoStorageId: undefined,
       potassium: nutrition.potassium,
+      rememberedEntryId: undefined,
+      rememberedReplayId,
       riboflavin: nutrition.riboflavin,
       thiamin: nutrition.thiamin,
       timestamp,
@@ -236,6 +253,7 @@ export const logShortcut = mutation({
       totalSodium: nutrition.sodium,
       totalSugar: nutrition.sugar,
       userId: user._id,
+      selenium: nutrition.selenium,
       vitaminA: nutrition.vitaminA,
       vitaminC: nutrition.vitaminC,
       vitaminD: nutrition.vitaminD,
@@ -250,7 +268,9 @@ export const logShortcut = mutation({
       calcium: nutrition.calcium,
       calories: nutrition.calories,
       carbs: nutrition.carbs,
+      choline: nutrition.choline,
       confidence: undefined,
+      copper: nutrition.copper,
       fat: nutrition.fat,
       fiber: nutrition.fiber,
       folate: nutrition.folate,
@@ -258,7 +278,9 @@ export const logShortcut = mutation({
       iron: nutrition.iron,
       magnesium: nutrition.magnesium,
       mealId,
+      manganese: nutrition.manganese,
       niacin: nutrition.niacin,
+      omega3: nutrition.omega3,
       phosphorus: nutrition.phosphorus,
       portionSize: amountOz,
       portionUnit: "oz",
@@ -266,6 +288,7 @@ export const logShortcut = mutation({
       prepMethod: undefined,
       protein: nutrition.protein,
       riboflavin: nutrition.riboflavin,
+      selenium: nutrition.selenium,
       sodium: nutrition.sodium,
       source: "manual",
       sugar: nutrition.sugar,
@@ -277,6 +300,12 @@ export const logShortcut = mutation({
       vitaminE: nutrition.vitaminE,
       vitaminK: nutrition.vitaminK,
       zinc: nutrition.zinc,
+    });
+
+    await upsertRememberedEntryFromReplaySources(ctx, {
+      hydrationLogId,
+      mealId,
+      replayId: rememberedReplayId,
     });
 
     return { hydrationLogId, mealId };

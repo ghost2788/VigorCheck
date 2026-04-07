@@ -11,7 +11,12 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "closedtesting": {
+      "extends": "production"
+    },
+    "production": {
+      "autoIncrement": true
+    }
   },
   "submit": {
     "production": {}

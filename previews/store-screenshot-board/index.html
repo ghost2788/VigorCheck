@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VigorCheck Store Screenshot Board</title>
+    <style>
+      :root {
+        --bg: #14120f;
+        --panel: #1d1a16;
+        --panel-soft: #221f1a;
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #f4f0ea;
+        --muted: #b5ada2;
+        --amber: #d19a52;
+        --amber-soft: rgba(209, 154, 82, 0.2);
+        --mint: #8be2cf;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Inter, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(209, 154, 82, 0.12), transparent 34%),
+          radial-gradient(circle at bottom right, rgba(139, 226, 207, 0.08), transparent 24%),
+          #100e0c;
+      }
+
+      .page {
+        min-height: 100vh;
+        padding: 40px 32px 56px;
+      }
+
+      .hero {
+        margin: 0 auto 28px;
+        max-width: 1180px;
+      }
+
+      .eyebrow {
+        color: var(--amber);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        margin: 0 0 10px;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        font-size: clamp(32px, 4vw, 52px);
+        font-weight: 300;
+        letter-spacing: -0.04em;
+        margin: 0 0 12px;
+      }
+
+      .intro {
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.5;
+        margin: 0;
+        max-width: 760px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 22px;
+        grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+        margin: 0 auto;
+        max-width: 1180px;
+      }
+
+      .sequence-grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        margin: 34px auto 0;
+        max-width: 1180px;
+      }
+
+      .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        min-height: 760px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .card.clean {
+        padding: 26px 26px 32px;
+      }
+
+      .sequence-card.clean {
+        min-height: 0;
+        padding: 18px 18px 22px;
+      }
+
+      .card.poster {
+        background:
+          linear-gradient(180deg, rgba(19, 17, 14, 0.86), rgba(19, 17, 14, 0.96)),
+          radial-gradient(circle at 20% 16%, rgba(209, 154, 82, 0.2), transparent 28%),
+          linear-gradient(135deg, #181511, #0d0b09);
+        padding: 0;
+      }
+
+      .sequence-card.poster {
+        min-height: 0;
+      }
+
+      .card-header {
+        margin-bottom: 24px;
+      }
+
+      .style-tag {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+      }
+
+      .headline {
+        font-size: clamp(34px, 4vw, 52px);
+        font-weight: 300;
+        letter-spacing: -0.045em;
+        line-height: 0.96;
+        margin: 0 0 12px;
+      }
+
+      .subhead {
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.45;
+        margin: 0;
+        max-width: 320px;
+      }
+
+      .clean-body {
+        align-items: center;
+        display: grid;
+        gap: 28px;
+        grid-template-columns: minmax(0, 1fr) 290px;
+        min-height: 610px;
+      }
+
+      .phone-shell {
+        border-radius: 44px;
+        padding: 12px;
+        position: relative;
+      }
+
+      .clean .phone-shell {
+        background: linear-gradient(180deg, #27231d, #0f0d0a);
+        box-shadow:
+          0 28px 70px rgba(0, 0, 0, 0.45),
+          0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+      }
+
+      .poster .phone-shell {
+        background: linear-gradient(180deg, rgba(60, 49, 34, 0.9), rgba(12, 10, 8, 0.95));
+        box-shadow:
+          0 36px 90px rgba(0, 0, 0, 0.58),
+          0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+          0 0 100px rgba(209, 154, 82, 0.16);
+      }
+
+      .phone {
+        aspect-ratio: 9 / 19.5;
+        background: #000;
+        border-radius: 34px;
+        overflow: hidden;
+        position: relative;
+        width: 100%;
+      }
+
+      .phone::before {
+        background: rgba(0, 0, 0, 0.82);
+        border-radius: 0 0 18px 18px;
+        content: "";
+        height: 24px;
+        left: 50%;
+        position: absolute;
+        top: 0;
+        transform: translateX(-50%);
+        width: 34%;
+        z-index: 2;
+      }
+
+      .phone img {
+        display: block;
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
+      }
+
+      .clean-copy {
+        align-self: stretch;
+        background:
+          linear-gradient(180deg, rgba(209, 154, 82, 0.08), transparent 46%),
+          var(--panel-soft);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 100%;
+        padding: 26px 24px;
+      }
+
+      .benefit {
+        color: var(--amber);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        margin-bottom: 14px;
+        text-transform: uppercase;
+      }
+
+      .clean-copy h3 {
+        font-size: 30px;
+        font-weight: 350;
+        letter-spacing: -0.04em;
+        line-height: 1.02;
+        margin: 0 0 14px;
+      }
+
+      .clean-copy p {
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      .feature-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .feature-pill {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 999px;
+        color: #e8dfd3;
+        font-size: 14px;
+        padding: 10px 14px;
+      }
+
+      .poster-layout {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        height: 100%;
+        padding: 34px 30px 32px;
+      }
+
+      .poster-topline {
+        color: var(--amber);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        margin-bottom: 18px;
+        text-transform: uppercase;
+      }
+
+      .poster-headline {
+        font-size: clamp(46px, 6vw, 66px);
+        font-weight: 320;
+        letter-spacing: -0.055em;
+        line-height: 0.9;
+        margin: 0 0 12px;
+        max-width: 420px;
+      }
+
+      .poster-subhead {
+        color: #d5cdc2;
+        font-size: 18px;
+        line-height: 1.45;
+        margin: 0;
+        max-width: 440px;
+      }
+
+      .poster-body {
+        align-items: end;
+        display: grid;
+        grid-template-columns: 1fr 314px;
+        min-height: 520px;
+      }
+
+      .poster-copy {
+        align-self: center;
+        padding-right: 28px;
+      }
+
+      .poster-kicker {
+        color: var(--mint);
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+      }
+
+      .poster-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .poster-pills span {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        color: #f3eee7;
+        font-size: 14px;
+        padding: 10px 14px;
+      }
+
+      .footer-note {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 22px auto 0;
+        max-width: 1180px;
+      }
+
+      .section-title {
+        font-size: clamp(28px, 3.4vw, 42px);
+        font-weight: 320;
+        letter-spacing: -0.04em;
+        margin: 38px auto 10px;
+        max-width: 1180px;
+      }
+
+      .section-copy {
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.5;
+        margin: 0 auto;
+        max-width: 1180px;
+      }
+
+      .sequence-card .phone-shell {
+        margin: 0 auto;
+        max-width: 240px;
+      }
+
+      .sequence-card.clean .phone-shell {
+        margin-top: 12px;
+      }
+
+      .sequence-card .style-tag {
+        font-size: 11px;
+        margin-bottom: 10px;
+      }
+
+      .sequence-title-row {
+        align-items: baseline;
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .sequence-number {
+        color: var(--amber);
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .sequence-headline {
+        font-size: clamp(30px, 4.2vw, 42px);
+        font-weight: 320;
+        letter-spacing: -0.045em;
+        line-height: 0.96;
+        margin: 0 0 10px;
+      }
+
+      .sequence-subhead {
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.45;
+        margin: 0 0 16px;
+      }
+
+      .sequence-card.poster .poster-layout {
+        gap: 18px;
+        padding: 20px 18px 22px;
+      }
+
+      .sequence-card.poster .poster-topline {
+        font-size: 11px;
+        margin-bottom: 12px;
+      }
+
+      .sequence-card.poster .poster-headline {
+        font-size: clamp(34px, 5vw, 44px);
+        margin-bottom: 10px;
+      }
+
+      .sequence-card.poster .poster-subhead {
+        font-size: 15px;
+        max-width: none;
+      }
+
+      .sequence-card.poster .poster-body {
+        gap: 18px;
+        grid-template-columns: 1fr;
+        min-height: 0;
+      }
+
+      .sequence-card.poster .poster-copy {
+        padding-right: 0;
+      }
+
+      .sequence-card.poster .poster-kicker {
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .sequence-card.poster .poster-pills {
+        margin-top: 16px;
+      }
+
+      .sequence-card.poster .poster-pills span {
+        font-size: 13px;
+        padding: 8px 12px;
+      }
+
+      .sequence-card.clean .clean-copy {
+        min-height: 0;
+        padding: 18px 18px 20px;
+      }
+
+      .sequence-card.clean .benefit {
+        font-size: 11px;
+        margin-bottom: 10px;
+      }
+
+      .sequence-card.clean .clean-copy h3 {
+        font-size: 26px;
+        margin-bottom: 10px;
+      }
+
+      .sequence-card.clean .clean-copy p {
+        font-size: 15px;
+      }
+
+      .sequence-card.clean .feature-list {
+        margin-top: 18px;
+      }
+
+      .sequence-card.clean .feature-pill {
+        font-size: 13px;
+        padding: 8px 12px;
+      }
+
+      @media (max-width: 1120px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          padding: 24px 16px 40px;
+        }
+
+        .clean-body,
+        .poster-body {
+          grid-template-columns: 1fr;
+        }
+
+        .clean-copy,
+        .poster-copy {
+          order: 2;
+          padding-right: 0;
+        }
+
+        .phone-shell {
+          margin: 0 auto;
+          max-width: 330px;
+        }
+
+        .card {
+          min-height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">Store Screenshot Exploration</p>
+        <h1>Two packaging directions for VigorCheck</h1>
+        <p class="intro">
+          Same screenshots, two visual treatments. The left side stays closer to traditional app-store composition.
+          The right side pushes harder into premium ad-poster territory.
+        </p>
+      </section>
+
+      <section class="grid">
+        <article class="card clean">
+          <div class="card-header">
+            <div class="style-tag">Clean App-Store</div>
+            <h2 class="headline">A better way to track nutrition</h2>
+            <p class="subhead">Brand-first and calm. Strong hierarchy, lots of whitespace, and the app itself stays central.</p>
+          </div>
+          <div class="clean-body">
+            <div class="clean-copy">
+              <div>
+                <div class="benefit">Welcome Opener</div>
+                <h3>Lead with brand and instant clarity</h3>
+                <p>
+                  This treatment feels polished and store-native. The headline explains the promise, and the phone frame
+                  keeps the app interface doing the proof.
+                </p>
+              </div>
+              <div class="feature-list">
+                <div class="feature-pill">Low clutter</div>
+                <div class="feature-pill">Clear value prop</div>
+                <div class="feature-pill">Premium but restrained</div>
+              </div>
+            </div>
+            <div class="phone-shell">
+              <div class="phone">
+                <img src="./images/welcome.jpg" alt="VigorCheck welcome screen" />
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card poster">
+          <div class="poster-layout">
+            <div>
+              <div class="poster-topline">Poster Treatment</div>
+              <h2 class="poster-headline">A better way to track nutrition</h2>
+              <p class="poster-subhead">More dramatic, more campaign-like, and more opinionated about the VigorCheck vibe.</p>
+            </div>
+            <div class="poster-body">
+              <div class="poster-copy">
+                <div class="poster-kicker">Onboarding Energy</div>
+                <p class="poster-subhead">
+                  This version treats the screenshot like a launch graphic. It sells mood and identity first, with the
+                  app interface framed as the artifact.
+                </p>
+                <div class="poster-pills">
+                  <span>Higher drama</span>
+                  <span>Brand-forward</span>
+                  <span>Campaign feel</span>
+                </div>
+              </div>
+              <div class="phone-shell">
+                <div class="phone">
+                  <img src="./images/welcome.jpg" alt="VigorCheck welcome screen poster variant" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card clean">
+          <div class="card-header">
+            <div class="style-tag">Clean App-Store</div>
+            <h2 class="headline">Hit your daily targets</h2>
+            <p class="subhead">Dashboard-focused and easy to scan. The packaging supports the screenshot instead of competing with it.</p>
+          </div>
+          <div class="clean-body">
+            <div class="clean-copy">
+              <div>
+                <div class="benefit">Daily Dashboard</div>
+                <h3>Let the rings sell the payoff</h3>
+                <p>
+                  This one works best if you want the store listing to feel clean, helpful, and trustworthy. It gives the
+                  raw UI more room to do the persuasion.
+                </p>
+              </div>
+              <div class="feature-list">
+                <div class="feature-pill">Daily vigor score</div>
+                <div class="feature-pill">Macro + hydration rings</div>
+                <div class="feature-pill">Readable at a glance</div>
+              </div>
+            </div>
+            <div class="phone-shell">
+              <div class="phone">
+                <img src="./images/dashboard.jpg" alt="VigorCheck dashboard hero" />
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card poster">
+          <div class="poster-layout">
+            <div>
+              <div class="poster-topline">Poster Treatment</div>
+              <h2 class="poster-headline">Hit your daily targets</h2>
+              <p class="poster-subhead">Sharper store-theater treatment with a stronger headline and more emotional framing.</p>
+            </div>
+            <div class="poster-body">
+              <div class="poster-copy">
+                <div class="poster-kicker">Daily Payoff</div>
+                <p class="poster-subhead">
+                  The dashboard shot becomes a hero moment here. Better if you want the store listing to feel more like a
+                  launch campaign than a standard utility app page.
+                </p>
+                <div class="poster-pills">
+                  <span>Score-driven</span>
+                  <span>High contrast</span>
+                  <span>More cinematic</span>
+                </div>
+              </div>
+              <div class="phone-shell">
+                <div class="phone">
+                  <img src="./images/dashboard.jpg" alt="VigorCheck dashboard poster variant" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <p class="footer-note">
+        If one direction wins, I’ll apply that treatment across the full screenshot set next.
+      </p>
+
+      <h2 class="section-title">Recommended hybrid sequence</h2>
+      <p class="section-copy">
+        Poster treatment leads the listing with brand and emotional payoff. The rest switches to cleaner proof-first
+        packaging so the app still feels credible and useful in the nutrition category.
+      </p>
+
+      <section class="sequence-grid">
+        <article class="card poster sequence-card">
+          <div class="poster-layout">
+            <div>
+              <div class="sequence-title-row">
+                <div class="poster-topline">Poster Treatment</div>
+                <div class="sequence-number">01</div>
+              </div>
+              <h3 class="poster-headline">Hit your daily targets</h3>
+              <p class="poster-subhead">Lead with product payoff, not onboarding. This is the strongest first impression for Play.</p>
+            </div>
+            <div class="poster-body">
+              <div class="poster-copy">
+                <div class="poster-kicker">Daily Payoff</div>
+                <p class="poster-subhead">The rings, score, and dashboard all land in one glance. This is the clearest category-friendly hero.</p>
+                <div class="poster-pills">
+                  <span>Rings</span>
+                  <span>Score</span>
+                  <span>Dashboard</span>
+                </div>
+              </div>
+              <div class="phone-shell">
+                <div class="phone">
+                  <img src="./images/dashboard.jpg" alt="Dashboard hero screenshot" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card poster sequence-card">
+          <div class="poster-layout">
+            <div>
+              <div class="sequence-title-row">
+                <div class="poster-topline">Poster Treatment</div>
+                <div class="sequence-number">02</div>
+              </div>
+              <h3 class="poster-headline">A better way to track nutrition</h3>
+              <p class="poster-subhead">Use the opener right after the dashboard so the listing picks up VigorCheck’s personality.</p>
+            </div>
+            <div class="poster-body">
+              <div class="poster-copy">
+                <div class="poster-kicker">Brand Energy</div>
+                <p class="poster-subhead">This keeps the game-UI heart and the vibe you’ve built without making it carry the entire listing.</p>
+                <div class="poster-pills">
+                  <span>Brand-led</span>
+                  <span>Heart icon</span>
+                  <span>Strong mood</span>
+                </div>
+              </div>
+              <div class="phone-shell">
+                <div class="phone">
+                  <img src="./images/welcome.jpg" alt="Welcome opener screenshot" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card clean sequence-card">
+          <div class="style-tag">Clean Proof-First</div>
+          <div class="sequence-title-row">
+            <h3 class="sequence-headline">Log meals in seconds</h3>
+            <div class="sequence-number">03</div>
+          </div>
+          <p class="sequence-subhead">Now switch into utility proof. This is where the listing starts answering how the app actually works.</p>
+          <div class="phone-shell">
+            <div class="phone">
+              <img src="./images/log.jpg" alt="Logging screen screenshot" />
+            </div>
+          </div>
+        </article>
+
+        <article class="card clean sequence-card">
+          <div class="style-tag">Clean Proof-First</div>
+          <div class="sequence-title-row">
+            <h3 class="sequence-headline">Review AI-drafted meals before saving</h3>
+            <div class="sequence-number">04</div>
+          </div>
+          <p class="sequence-subhead">This is the strongest proof that the AI flow is controllable, editable, and not a black box.</p>
+          <div class="phone-shell">
+            <div class="phone">
+              <img src="./images/review.jpg" alt="Review meal screenshot" />
+            </div>
+          </div>
+        </article>
+
+        <article class="card clean sequence-card">
+          <div class="style-tag">Clean Proof-First</div>
+          <div class="sequence-title-row">
+            <h3 class="sequence-headline">Track weekly momentum</h3>
+            <div class="sequence-number">05</div>
+          </div>
+          <p class="sequence-subhead">By screenshot five, the store page should be selling retention and progress, not just logging.</p>
+          <div class="phone-shell">
+            <div class="phone">
+              <img src="./images/trends.jpg" alt="Weekly trends screenshot" />
+            </div>
+          </div>
+        </article>
+
+        <article class="card clean sequence-card">
+          <div class="style-tag">Clean Proof-First</div>
+          <div class="sequence-title-row">
+            <h3 class="sequence-headline">Go beyond calories</h3>
+            <div class="sequence-number">06</div>
+          </div>
+          <p class="sequence-subhead">Finish by proving nutrient depth. This is the screenshot that separates VigorCheck from generic calorie trackers.</p>
+          <div class="phone-shell">
+            <div class="phone">
+              <img src="./images/nutrients.jpg" alt="Nutrient detail screenshot" />
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,17 +1,23 @@
 import { buildTodayDashboard, DashboardTargets, NutritionRow } from "./dashboard";
+import { MealTimelineEntryMethod } from "./mealTimeline";
 import {
   buildGroupedNutrientDetails,
+  buildNutrientInsights,
   createEmptyDetailedNutrientTotals,
+  DetailedNutrientTargets,
   type DetailedNutrientInput,
   type DetailedNutrientKey,
   type NutrientDetailGroup,
 } from "./nutrients";
 import { NutritionAmounts, NutritionKey, getNutritionKeys, ouncesToCups } from "./wellness";
+import { MealType } from "./meals";
+import { SupplementLogSnapshot } from "./supplements";
 
 type TrendMealInput = {
+  entryMethod: MealTimelineEntryMethod;
   id: string;
   label?: string;
-  mealType: "breakfast" | "lunch" | "dinner" | "snack";
+  mealType: MealType;
   nutrients: NutritionAmounts & DetailedNutrientInput;
   timestamp: number;
   totals: {
@@ -53,7 +59,8 @@ export type WeeklyNutritionSummary = {
     key: NutritionKey;
     target: number;
   }>;
-  recurringGaps: NutritionKey[];
+  recurringGaps: DetailedNutrientKey[];
+  recurringWins: DetailedNutrientKey[];
 };
 
 function formatShortLabel(dateKey: string) {
@@ -63,13 +70,17 @@ function formatShortLabel(dateKey: string) {
   });
 }
 
-function formatNutritionLabel(key: NutritionKey) {
+function formatNutritionLabel(key: DetailedNutrientKey) {
   if (key === "vitaminC") {
     return "vitamin C";
   }
 
   if (key === "vitaminD") {
     return "vitamin D";
+  }
+
+  if (key === "omega3") {
+    return "omega-3";
   }
 
   return key;
@@ -88,18 +99,21 @@ export function buildTrendDay({
   hydrationLogs,
   isFuture,
   meals,
+  supplementLogs = [],
   targets,
 }: {
   dateKey: string;
   hydrationLogs: TrendHydrationLogInput[];
   isFuture: boolean;
   meals: TrendMealInput[];
+  supplementLogs?: SupplementLogSnapshot[];
   targets: DashboardTargets;
 }): TrendDay {
   const dashboard = buildTodayDashboard({
     hydrationLogs,
     mealItems: [],
     meals,
+    supplementLogs,
     targets,
   });
 
@@ -107,7 +121,7 @@ export function buildTrendDay({
     calories: dashboard.totals.calories,
     caloriesScore: dashboard.cards.calories.score,
     dateKey,
-    didLogAnything: meals.length > 0 || hydrationLogs.length > 0,
+    didLogAnything: meals.length > 0 || hydrationLogs.length > 0 || supplementLogs.length > 0,
     hydrationCups: dashboard.cards.hydration.consumedCups,
     hydrationScore: dashboard.cards.hydration.score,
     isFuture,
@@ -148,17 +162,7 @@ export function summarizeWeeklyNutrition({
     };
   });
 
-  const recurringGaps = [...nutrientSummaries]
-    .sort((left, right) => {
-      if (left.averageRatio !== right.averageRatio) {
-        return left.averageRatio - right.averageRatio;
-      }
-
-      return getNutritionKeys().indexOf(left.key) - getNutritionKeys().indexOf(right.key);
-    })
-    .slice(0, 2)
-    .map((entry) => entry.key);
-  const averageDetailTotals = elapsedDays.reduce((totals, day) => {
+  const weeklyDetailTotals = elapsedDays.reduce((totals, day) => {
     for (const group of day.nutrientDetailGroups ?? []) {
       for (const nutrient of group.nutrients) {
         totals[nutrient.key as DetailedNutrientKey] += nutrient.value;
@@ -168,22 +172,59 @@ export function summarizeWeeklyNutrition({
     return totals;
   }, createEmptyDetailedNutrientTotals());
 
-  for (const key of Object.keys(averageDetailTotals) as DetailedNutrientKey[]) {
-    averageDetailTotals[key] =
-      elapsedDays.length === 0 ? 0 : Math.round((averageDetailTotals[key] / elapsedDays.length) * 10) / 10;
+  for (const key of Object.keys(weeklyDetailTotals) as DetailedNutrientKey[]) {
+    weeklyDetailTotals[key] = Math.round(weeklyDetailTotals[key] * 10) / 10;
   }
+  const detailTargets = elapsedDays.reduce<DetailedNutrientTargets | null>((targets, day) => {
+    if (targets) {
+      return targets;
+    }
+
+    const nextTargets = {} as DetailedNutrientTargets;
+
+    for (const group of day.nutrientDetailGroups ?? []) {
+      for (const nutrient of group.nutrients) {
+        nextTargets[nutrient.key] = nutrient.target;
+      }
+    }
+
+    return Object.keys(nextTargets).length > 0 ? nextTargets : null;
+  }, null);
+  const weeklyDetailTargets =
+    detailTargets === null
+      ? null
+      : (Object.fromEntries(
+          Object.entries(detailTargets).map(([key, value]) => [
+            key,
+            Math.round(value * elapsedDays.length * 10) / 10,
+          ])
+        ) as DetailedNutrientTargets);
+  const detailInsights =
+    weeklyDetailTargets === null
+      ? { biggestGaps: [], topWins: [] }
+      : buildNutrientInsights({
+          targets: weeklyDetailTargets,
+          totals: weeklyDetailTotals,
+        });
 
   return {
     averageCoveragePercent: Math.round(
       average(nutrientSummaries.map((nutrient) => nutrient.averagePercent))
     ),
-    detailGroups: buildGroupedNutrientDetails(averageDetailTotals),
+    detailGroups:
+      weeklyDetailTargets === null
+        ? []
+        : buildGroupedNutrientDetails({
+            targets: weeklyDetailTargets,
+            totals: weeklyDetailTotals,
+          }),
     nutrients: nutrientSummaries.map(({ averagePercent, key, target }) => ({
       averagePercent,
       key,
       target,
     })),
-    recurringGaps,
+    recurringGaps: detailInsights.biggestGaps.map((entry) => entry.key),
+    recurringWins: detailInsights.topWins.map((entry) => entry.key),
   };
 }
 
@@ -192,7 +233,7 @@ export function buildWeeklyOverview({
   recurringGaps,
 }: {
   days: TrendDay[];
-  recurringGaps: NutritionKey[];
+  recurringGaps: DetailedNutrientKey[];
 }) {
   const elapsedDays = days.filter((day) => !day.isFuture);
   const averageCalories = Math.round(average(elapsedDays.map((day) => day.calories)));

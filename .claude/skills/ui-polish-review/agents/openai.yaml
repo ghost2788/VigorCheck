@@ -1,0 +1,11 @@
+interface:
+  display_name: "UI Polish Review"
+  short_description: "Audit screens, show browser previews, and gate UI polish behind approval."
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  brand_color: "#5ebaa9"
+  default_prompt: "Help me polish this UI. First audit the target screens against the repo UI patterns and theme tokens, then show me a browser preview before proposing implementation."
+
+policy:
+  allow_implicit_invocation: true
+

@@ -34,6 +34,22 @@ backButton: {
 
 ## Cards & Layout
 
+### Full-shell accordion effects
+
+When an accordion card gets a shell treatment, the effect must be rendered at the **card container layer**, not as a header-only accent. The effect has to span the collapsed header and the expanded detail body as one surface.
+
+Required layer stack:
+- `top veil` for polish and light catch
+- `middle chamber core` so the expanded body never has a dead zone
+- `lower glow / heat band` to anchor the shell near the bottom
+
+Rules:
+- Do not rely on only top and bottom layers; that leaves the middle of expanded cards visually empty.
+- Keep the effect mounted on the shared accordion card container (`shellEffect`) so expansion does not break the shell continuity.
+- Keep each card in its own metric color family unless the state intentionally flips into a warning palette.
+
+**Where it lives:** `WellnessAccordionList.tsx`, `WellnessAccordionShellEffect.tsx`
+
 ### Summary card with action link
 
 Compact read-only card showing key-value pairs in a 2-column grid. Title on the left, "Edit >" action on the right. No subtitles.
@@ -365,6 +381,17 @@ Don't add sublabels that repeat information already obvious from context. Exampl
 
 How to approach surgical UI improvements across screens. This is the process used to produce the cross-screen polish changes above.
 
+### Artifact path
+
+- Create new pre-implementation UI approval artifacts in `C:/caltracker/mockups/` by default.
+- Default artifact shape: standalone HTML mockup at phone width (`390px max-width`), served through the repo mockup launcher on port `3999`.
+- Use `C:/caltracker/previews/` only when extending an existing preview app that already lives there.
+
+### Skill discovery
+
+- Repo-local skill source of truth lives under `.agents/skills/<skill>/`.
+- `.claude/skills/` and `.windsurf/skills/` are junction mirrors for discovery, not direct edit targets.
+
 ### Phase 1: Screen-by-screen audit
 
 Read the source code for every target screen and cross-reference against:
@@ -395,9 +422,9 @@ Order: small text/spacing tweaks first, then medium-effort changes, then larger 
 ### Phase 4: Mockup-first approval
 
 For each change:
-1. Create an **HTML mockup** showing before/after side-by-side using the app's actual design tokens (dark theme colors, fonts, radii)
+1. Create an **HTML mockup** under `C:/caltracker/mockups/` showing before/after side-by-side using the app's actual design tokens (dark theme colors, fonts, radii)
 2. Serve locally for review at phone width (390px `max-width`)
-3. **Only implement after explicit approval** — small self-evident changes (spacing, font bumps) can skip mockups if the user says so
+3. **Only implement after explicit approval**
 
 ### Phase 5: Design exploration (for larger changes)
 
@@ -409,10 +436,10 @@ When a simple fix reveals a bigger opportunity:
 ### Phase 6: Implementation + review
 
 For each approved change:
-1. Dispatch an **implementer subagent** with complete specs
+1. Implement the approved change without expanding scope
 2. Run **spec compliance review** — catch missing requirements, over/under-building
 3. Run **code quality review** — catch edge cases, duplicated utilities, missing tests
-4. Fix issues, re-review, then commit
+4. Fix issues, re-review, then run the relevant verification before commit
 
 ---
 

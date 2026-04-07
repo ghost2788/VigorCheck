@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalTracker - History Preview</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="preview-shell" data-theme="dark">
+    <section class="intro">
+      <p class="eyebrow">CalTracker history concept</p>
+      <h1>Recent-day history feed with a day detail timeline and direct edit access.</h1>
+      <p class="summary">
+        This keeps Trends analytics-focused and gives logging a proper audit trail.
+        The feed is simple, the day view is chronological, and meal plus hydration edits stay explicit.
+      </p>
+
+      <div class="control-row">
+        <div class="control-group">
+          <span class="control-label">Theme</span>
+          <div class="chip-set">
+            <button class="chip is-active" data-theme-target="dark" type="button">Dark</button>
+            <button class="chip" data-theme-target="light" type="button">Light</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage">
+      <aside class="notes">
+        <article class="note-card">
+          <p class="note-title">History feed</p>
+          <ul>
+            <li>One card per day, newest first.</li>
+            <li>Daily wellness stays visible, but secondary to the day’s logs.</li>
+            <li>Infinite scroll is implied, not called out.</li>
+          </ul>
+        </article>
+
+        <article class="note-card">
+          <p class="note-title">Day detail</p>
+          <ul>
+            <li>Meals and hydration share one descending timeline.</li>
+            <li>Each row exposes edit and delete immediately.</li>
+            <li>FoodScan, Text entry, and manual stay visible as source badges.</li>
+          </ul>
+        </article>
+      </aside>
+
+      <div class="phone-grid">
+        <div class="phone-frame">
+          <div class="phone">
+            <section class="screen">
+              <header class="screen-header">
+                <span class="header-title">History</span>
+              </header>
+
+              <section class="date-jump">
+                <span class="date-jump-label">Recent days</span>
+                <button class="date-jump-button" type="button">Jump to date</button>
+              </section>
+
+              <section class="feed">
+                <article class="day-card">
+                  <div class="day-card-head">
+                    <div>
+                      <p class="day-card-date">Today</p>
+                      <p class="day-card-sub">Tue, Apr 1</p>
+                    </div>
+                    <div class="score-pill score-good">
+                      <strong>74</strong>
+                      <span>/ 100</span>
+                    </div>
+                  </div>
+
+                  <div class="metric-strip">
+                    <div>
+                      <label class="metric-calories">Calories</label>
+                      <strong>1,420 kcal</strong>
+                    </div>
+                    <div>
+                      <label class="metric-protein">Protein</label>
+                      <strong>98g</strong>
+                    </div>
+                    <div>
+                      <label class="metric-hydration">Hydration</label>
+                      <strong>5.0 cups</strong>
+                    </div>
+                    <div>
+                      <label class="metric-nutrition">Nutrition</label>
+                      <strong>18%</strong>
+                    </div>
+                  </div>
+
+                  <div class="day-card-foot">
+                    <span>3 meals</span>
+                  </div>
+                </article>
+
+                <article class="day-card is-active">
+                  <div class="day-card-head">
+                    <div>
+                      <p class="day-card-date">Yesterday</p>
+                      <p class="day-card-sub">Mon, Mar 31</p>
+                    </div>
+                    <div class="score-pill score-fair">
+                      <strong>58</strong>
+                      <span>/ 100</span>
+                    </div>
+                  </div>
+
+                  <div class="metric-strip">
+                    <div>
+                      <label class="metric-calories">Calories</label>
+                      <strong>745 kcal</strong>
+                    </div>
+                    <div>
+                      <label class="metric-protein">Protein</label>
+                      <strong>23g</strong>
+                    </div>
+                    <div>
+                      <label class="metric-hydration">Hydration</label>
+                      <strong>2.0 cups</strong>
+                    </div>
+                    <div>
+                      <label class="metric-nutrition">Nutrition</label>
+                      <strong>18%</strong>
+                    </div>
+                  </div>
+
+                  <div class="day-card-foot">
+                    <span>1 meal</span>
+                  </div>
+                </article>
+
+                <article class="day-card">
+                  <div class="day-card-head">
+                    <div>
+                      <p class="day-card-date">Sun, Mar 30</p>
+                      <p class="day-card-sub">Weekend check-in</p>
+                    </div>
+                    <div class="score-pill score-strong">
+                      <strong>82</strong>
+                      <span>/ 100</span>
+                    </div>
+                  </div>
+
+                  <div class="metric-strip">
+                    <div>
+                      <label class="metric-calories">Calories</label>
+                      <strong>2,010 kcal</strong>
+                    </div>
+                    <div>
+                      <label class="metric-protein">Protein</label>
+                      <strong>136g</strong>
+                    </div>
+                    <div>
+                      <label class="metric-hydration">Hydration</label>
+                      <strong>8.0 cups</strong>
+                    </div>
+                    <div>
+                      <label class="metric-nutrition">Nutrition</label>
+                      <strong>61%</strong>
+                    </div>
+                  </div>
+
+                  <div class="day-card-foot">
+                    <span>4 meals</span>
+                  </div>
+                </article>
+              </section>
+
+              <nav class="tab-bar">
+                <span class="tab">Home</span>
+                <span class="tab">Log</span>
+                <span class="tab tab-active">History</span>
+                <span class="tab">Trends</span>
+                <span class="tab">Profile</span>
+              </nav>
+            </section>
+          </div>
+        </div>
+
+        <div class="phone-frame">
+          <div class="phone">
+            <section class="screen">
+              <header class="screen-header detail-header">
+                <span class="header-title">Mon, Mar 31</span>
+                <button class="back-button" type="button">Back</button>
+              </header>
+
+              <section class="detail-summary">
+                <div class="summary-score">
+                  <strong>58</strong>
+                  <span>/ 100</span>
+                </div>
+                <div class="summary-metrics">
+                  <div>
+                    <label>Calories</label>
+                    <strong>745 kcal</strong>
+                  </div>
+                  <div>
+                    <label>Protein</label>
+                    <strong>23g</strong>
+                  </div>
+                  <div>
+                    <label>Hydration</label>
+                    <strong>2.0 cups</strong>
+                  </div>
+                  <div>
+                    <label>Nutrition</label>
+                    <strong>18%</strong>
+                  </div>
+                </div>
+              </section>
+
+              <section class="timeline">
+                <article class="timeline-entry">
+                  <div class="timeline-badge hydration">Hydration</div>
+                  <div class="timeline-body">
+                    <div class="timeline-main">
+                      <strong>Water</strong>
+                      <span>5:12 PM</span>
+                    </div>
+                    <div class="timeline-meta">
+                      <span>16 oz</span>
+                      <span>2.0 cups</span>
+                    </div>
+                  </div>
+                  <div class="timeline-actions">
+                    <button type="button">Edit</button>
+                    <button type="button" class="danger">Delete</button>
+                  </div>
+                </article>
+
+                <article class="timeline-entry">
+                  <div class="timeline-badge scan">FoodScan</div>
+                  <div class="timeline-body">
+                    <div class="timeline-main">
+                      <strong>Breakfast scan (2 items)</strong>
+                      <span>12:21 PM</span>
+                    </div>
+                    <div class="timeline-meta">
+                      <span>320 cal</span>
+                      <span>P 23g · C 34g · F 9g</span>
+                    </div>
+                  </div>
+                  <div class="timeline-actions">
+                    <button type="button">Edit</button>
+                    <button type="button" class="danger">Delete</button>
+                  </div>
+                </article>
+
+                <article class="timeline-entry">
+                  <div class="timeline-badge text">Text entry</div>
+                  <div class="timeline-body">
+                    <div class="timeline-main">
+                      <strong>Protein shake</strong>
+                      <span>9:48 AM</span>
+                    </div>
+                    <div class="timeline-meta">
+                      <span>210 cal</span>
+                      <span>P 30g · C 10g · F 5g</span>
+                    </div>
+                  </div>
+                  <div class="timeline-actions">
+                    <button type="button">Edit</button>
+                    <button type="button" class="danger">Delete</button>
+                  </div>
+                </article>
+              </section>
+
+              <nav class="tab-bar">
+                <span class="tab">Home</span>
+                <span class="tab">Log</span>
+                <span class="tab tab-active">History</span>
+                <span class="tab">Trends</span>
+                <span class="tab">Profile</span>
+              </nav>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

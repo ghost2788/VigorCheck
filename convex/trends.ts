@@ -9,10 +9,12 @@ import {
   buildWeeklyOverview,
   summarizeWeeklyNutrition,
 } from "../lib/domain/trends";
+import { getDetailedNutrientTargets } from "../lib/domain/nutrients";
 import { resolveEffectiveTargets } from "../lib/domain/targets";
 import { getNutritionTargets } from "../lib/domain/wellness";
 import { query } from "./_generated/server";
 import { findCurrentUser } from "./lib/devIdentity";
+import { buildSupplementLogSnapshot } from "./lib/supplements";
 const WEEK_STARTS_ON = 0 as const;
 
 function buildMealNutrients(meal: {
@@ -22,10 +24,13 @@ function buildMealNutrients(meal: {
   folate: number;
   iron: number;
   magnesium: number;
+  manganese?: number;
   niacin: number;
+  omega3?: number;
   phosphorus: number;
   potassium: number;
   riboflavin: number;
+  selenium?: number;
   thiamin: number;
   totalFiber: number;
   totalSodium: number;
@@ -36,19 +41,26 @@ function buildMealNutrients(meal: {
   vitaminE: number;
   vitaminK: number;
   zinc: number;
+  choline?: number;
+  copper?: number;
 }) {
   return {
     b12: meal.b12,
     b6: meal.b6,
     calcium: meal.calcium,
+    choline: meal.choline ?? 0,
+    copper: meal.copper ?? 0,
     fiber: meal.totalFiber,
     folate: meal.folate,
     iron: meal.iron,
     magnesium: meal.magnesium,
+    manganese: meal.manganese ?? 0,
     niacin: meal.niacin,
+    omega3: meal.omega3 ?? 0,
     phosphorus: meal.phosphorus,
     potassium: meal.potassium,
     riboflavin: meal.riboflavin,
+    selenium: meal.selenium ?? 0,
     sodium: meal.totalSodium,
     sugar: meal.totalSugar,
     thiamin: meal.thiamin,
@@ -152,17 +164,31 @@ export const weekly = query({
         query.eq("userId", user._id).gte("timestamp", selectedWeekWindow.start).lt("timestamp", selectedWeekWindow.end)
       )
       .collect();
+    const selectedSupplementLogs = await ctx.db
+      .query("supplementLogs")
+      .withIndex("by_user_date", (query) =>
+        query.eq("userId", user._id).gte("timestamp", selectedWeekWindow.start).lt("timestamp", selectedWeekWindow.end)
+      )
+      .collect();
     const mealsByDate = groupByLocalDateKey(selectedMeals, user.timeZone);
     const hydrationByDate = groupByLocalDateKey(selectedHydrationLogs, user.timeZone);
+    const supplementsByDate = groupByLocalDateKey(selectedSupplementLogs, user.timeZone);
     const macroTargets = resolveEffectiveTargets(user);
     const targets = {
       calories: macroTargets.calories,
+      carbs: macroTargets.carbs,
+      detailedNutrition: getDetailedNutrientTargets({
+        age: user.age,
+        sex: user.sex,
+        targetFiber: user.targetFiber,
+      }),
       hydration: user.targetHydration,
       nutrition: getNutritionTargets({
         age: user.age,
         sex: user.sex,
         targetFiber: user.targetFiber,
       }),
+      fat: macroTargets.fat,
       protein: macroTargets.protein,
     };
     const todayDateKey = getLocalDateKey(now, user.timeZone);
@@ -176,6 +202,7 @@ export const weekly = query({
         })),
         isFuture: weekOffset === 0 && dateKey > todayDateKey,
         meals: dateKey > todayDateKey ? [] : (mealsByDate.get(dateKey) ?? []).map((meal) => ({
+          entryMethod: meal.entryMethod,
           id: meal._id,
           label: meal.label,
           mealType: meal.mealType,
@@ -188,6 +215,10 @@ export const weekly = query({
             protein: meal.totalProtein,
           },
         })),
+        supplementLogs:
+          dateKey > todayDateKey
+            ? []
+            : (supplementsByDate.get(dateKey) ?? []).map((log) => buildSupplementLogSnapshot(log)),
         targets,
       })
     );

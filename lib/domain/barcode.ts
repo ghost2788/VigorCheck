@@ -3,6 +3,7 @@ import {
   createEmptyNutrition,
   NutritionFields,
   ScanDraftItem,
+  ScanPortionUnit,
 } from "./scan";
 
 type OpenFoodFactsNutriments = Record<string, number | string | undefined>;
@@ -18,42 +19,46 @@ type OpenFoodFactsProduct = {
   serving_size?: string;
 };
 
-type PortionBasis =
-  | {
-      amount: number;
-      label: string;
-      per: "serving";
-    }
-  | {
-      amount: number;
-      label: string;
-      per: "100g";
-    };
+type PortionBasis = {
+  amount: number;
+  label: string;
+  per: "serving" | "100g" | "100ml";
+  unit: ScanPortionUnit;
+};
 
 const SUPPORTED_BARCODE_TYPES = new Set(["ean13", "upc_a"]);
 
-const GRAM_BASED_KEYS = new Set(["carbohydrates", "fat", "fiber", "proteins", "sugars"]);
+const GRAM_BASED_KEYS = new Set(["carbohydrates", "fat", "fiber", "omega-3-fat", "proteins", "sugars"]);
 const MILLIGRAM_BASED_KEYS = new Set([
   "calcium",
+  "choline",
+  "copper",
   "iron",
   "magnesium",
+  "manganese",
   "niacin",
   "phosphorus",
   "potassium",
   "sodium",
+  "vitamin-b3",
+  "vitamin-b6-pyridoxin",
+  "vitamin-pp",
+  "vitamin-b6",
   "vitamin-c",
   "vitamin-e",
   "zinc",
 ]);
 const MICROGRAM_BASED_KEYS = new Set([
   "folates",
+  "selenium",
   "vitamin-a",
+  "vitamin-b12-cobalamin",
   "vitamin-b12",
-  "vitamin-b6",
   "vitamin-b9",
   "vitamin-d",
   "vitamin-k",
 ]);
+const DECIMAL_TARGETS = new Set<keyof NutritionFields>(["copper", "manganese", "omega3"]);
 
 const NUTRIMENT_KEY_MAP: Array<{
   aliases: string[];
@@ -65,16 +70,17 @@ const NUTRIMENT_KEY_MAP: Array<{
   { aliases: ["fiber"], target: "fiber" },
   { aliases: ["sugars"], target: "sugar" },
   { aliases: ["sodium"], target: "sodium" },
+  { aliases: ["omega-3-fat", "omega-3-fatty-acids"], target: "omega3" },
   { aliases: ["vitamin-a"], target: "vitaminA" },
   { aliases: ["vitamin-c"], target: "vitaminC" },
   { aliases: ["vitamin-d"], target: "vitaminD" },
   { aliases: ["vitamin-e"], target: "vitaminE" },
   { aliases: ["vitamin-k"], target: "vitaminK" },
-  { aliases: ["vitamin-b6"], target: "b6" },
-  { aliases: ["vitamin-b12"], target: "b12" },
+  { aliases: ["vitamin-b6", "vitamin-b6-pyridoxin"], target: "b6" },
+  { aliases: ["vitamin-b12", "vitamin-b12-cobalamin"], target: "b12" },
   { aliases: ["folates", "vitamin-b9"], target: "folate" },
   { aliases: ["vitamin-b1"], target: "thiamin" },
-  { aliases: ["vitamin-pp", "niacin"], target: "niacin" },
+  { aliases: ["vitamin-b3", "vitamin-pp", "niacin"], target: "niacin" },
   { aliases: ["vitamin-b2"], target: "riboflavin" },
   { aliases: ["calcium"], target: "calcium" },
   { aliases: ["iron"], target: "iron" },
@@ -82,10 +88,45 @@ const NUTRIMENT_KEY_MAP: Array<{
   { aliases: ["magnesium"], target: "magnesium" },
   { aliases: ["zinc"], target: "zinc" },
   { aliases: ["phosphorus"], target: "phosphorus" },
+  { aliases: ["choline"], target: "choline" },
+  { aliases: ["selenium"], target: "selenium" },
+  { aliases: ["copper"], target: "copper" },
+  { aliases: ["manganese"], target: "manganese" },
 ];
 
 function roundValue(value: number) {
   return Math.round(value);
+}
+
+function roundNutritionValue(target: keyof NutritionFields, value: number) {
+  if (DECIMAL_TARGETS.has(target)) {
+    return Math.round(value * 10) / 10;
+  }
+
+  return roundValue(value);
+}
+
+function normalizePortionUnit(value?: string | null): ScanPortionUnit | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.toLowerCase().trim();
+
+  if (normalized === "ml" || normalized === "milliliter" || normalized === "milliliters") {
+    return "ml";
+  }
+
+  if (
+    normalized === "g" ||
+    normalized === "gram" ||
+    normalized === "grams" ||
+    normalized === "oz"
+  ) {
+    return "g";
+  }
+
+  return null;
 }
 
 function inferExpectedUnit(key: string) {
@@ -195,12 +236,14 @@ function parseLeadingAmount(value?: string) {
     return {
       amount: amount * 28.3495,
       display: `${roundValue(amount)} oz`,
+      unit: "g" as const,
     };
   }
 
   return {
     amount,
     display: `${roundValue(amount)} ${unit === "ml" ? "ml" : "g"}`,
+    unit: unit === "ml" ? ("ml" as const) : ("g" as const),
   };
 }
 
@@ -211,19 +254,20 @@ function getPackageFallback(product: OpenFoodFactsProduct): PortionBasis | null 
     return {
       amount: roundValue(quantityFromText.amount),
       label: `1 package fallback (${quantityFromText.display})`,
-      per: "100g",
+      per: quantityFromText.unit === "ml" ? "100ml" : "100g",
+      unit: quantityFromText.unit,
     };
   }
 
   if (typeof product.product_quantity === "number" && Number.isFinite(product.product_quantity) && product.product_quantity > 0) {
-    const unit = typeof product.product_quantity_unit === "string" ? product.product_quantity_unit.toLowerCase() : "g";
-    const display = `${roundValue(product.product_quantity)} ${unit === "ml" ? "ml" : "g"}`;
-    const amount = unit === "ml" ? product.product_quantity : product.product_quantity;
+    const unit = normalizePortionUnit(product.product_quantity_unit) ?? "g";
+    const display = `${roundValue(product.product_quantity)} ${unit}`;
 
     return {
-      amount: roundValue(amount),
+      amount: roundValue(product.product_quantity),
       label: `1 package fallback (${display})`,
-      per: "100g",
+      per: unit === "ml" ? "100ml" : "100g",
+      unit,
     };
   }
 
@@ -237,12 +281,15 @@ function getPortionBasis(product: OpenFoodFactsProduct): PortionBasis {
     product.serving_quantity > 0
   ) {
     const servingSize = product.serving_size?.trim();
+    const servingUnit =
+      parseLeadingAmount(servingSize)?.unit ?? normalizePortionUnit(product.product_quantity_unit) ?? "g";
     return {
       amount: roundValue(product.serving_quantity),
       label: servingSize
         ? `1 serving from label (${servingSize})`
-        : `1 serving from label (${roundValue(product.serving_quantity)} g)`,
+        : `1 serving from label (${roundValue(product.serving_quantity)} ${servingUnit})`,
       per: "serving",
+      unit: servingUnit,
     };
   }
 
@@ -256,7 +303,20 @@ function getPortionBasis(product: OpenFoodFactsProduct): PortionBasis {
     amount: 100,
     label: "100 g fallback serving",
     per: "100g",
+    unit: "g",
   };
+}
+
+function scalePerBasisValue({
+  amount,
+  per,
+  value,
+}: {
+  amount: number;
+  per: "100g" | "100ml" | "serving";
+  value: number;
+}) {
+  return per === "serving" ? value : (value * amount) / 100;
 }
 
 function getNumericNutriment(nutriments: OpenFoodFactsNutriments, key: string) {
@@ -270,37 +330,51 @@ function getNutrimentValue({
   aliases,
   nutriments,
   per,
+  portionUnit,
 }: {
   amount: number;
   aliases: string[];
   nutriments: OpenFoodFactsNutriments;
-  per: "100g" | "serving";
+  per: "100g" | "100ml" | "serving";
+  portionUnit: ScanPortionUnit;
 }) {
+  const densityPer = portionUnit === "ml" ? "100ml" : "100g";
+
   for (const alias of aliases) {
     if (alias === "energy-kcal") {
       const direct = getNumericNutriment(nutriments, `${alias}_${per}`);
 
       if (direct !== null) {
-        return per === "100g" ? (direct * amount) / 100 : direct;
+        return scalePerBasisValue({
+          amount,
+          per,
+          value: direct,
+        });
+      }
+
+      const kilojouleDirect = getNumericNutriment(nutriments, `energy-kj_${per}`);
+
+      if (kilojouleDirect !== null) {
+        return (
+          scalePerBasisValue({
+            amount,
+            per,
+            value: kilojouleDirect,
+          }) / 4.184
+        );
       }
 
       if (per === "serving") {
-        const per100g = getNumericNutriment(nutriments, `${alias}_100g`);
+        const densityValue = getNumericNutriment(nutriments, `${alias}_${densityPer}`);
 
-        if (per100g !== null) {
-          return (per100g * amount) / 100;
+        if (densityValue !== null) {
+          return (densityValue * amount) / 100;
         }
 
-        const kilojouleServing = getNumericNutriment(nutriments, `energy-kj_${per}`);
+        const kilojouleDensity = getNumericNutriment(nutriments, `energy-kj_${densityPer}`);
 
-        if (kilojouleServing !== null) {
-          return kilojouleServing / 4.184;
-        }
-
-        const kilojoulePer100g = getNumericNutriment(nutriments, "energy-kj_100g");
-
-        if (kilojoulePer100g !== null) {
-          return ((kilojoulePer100g * amount) / 100) / 4.184;
+        if (kilojouleDensity !== null) {
+          return ((kilojouleDensity * amount) / 100) / 4.184;
         }
       }
 
@@ -309,10 +383,14 @@ function getNutrimentValue({
 
     const unit = normalizeUnit(nutriments[`${alias}_unit`], alias);
     const expectedUnit = inferExpectedUnit(alias);
-        const direct = getNumericNutriment(nutriments, `${alias}_${per}`);
+    const direct = getNumericNutriment(nutriments, `${alias}_${per}`);
 
     if (direct !== null) {
-      const normalizedValue = per === "100g" ? (direct * amount) / 100 : direct;
+      const normalizedValue = scalePerBasisValue({
+        amount,
+        per,
+        value: direct,
+      });
 
       if (!expectedUnit) {
         return normalizedValue;
@@ -330,10 +408,10 @@ function getNutrimentValue({
     }
 
     if (per === "serving") {
-      const per100g = getNumericNutriment(nutriments, `${alias}_100g`);
+      const densityValue = getNumericNutriment(nutriments, `${alias}_${densityPer}`);
 
-      if (per100g !== null) {
-        const scaled = (per100g * amount) / 100;
+      if (densityValue !== null) {
+        const scaled = (densityValue * amount) / 100;
 
         if (!expectedUnit) {
           return scaled;
@@ -359,10 +437,12 @@ function buildNutrition({
   amount,
   nutriments,
   per,
+  portionUnit,
 }: {
   amount: number;
   nutriments: OpenFoodFactsNutriments;
-  per: "100g" | "serving";
+  per: "100g" | "100ml" | "serving";
+  portionUnit: ScanPortionUnit;
 }) {
   const nutrition = createEmptyNutrition();
   const calories = getNutrimentValue({
@@ -370,6 +450,7 @@ function buildNutrition({
     aliases: ["energy-kcal"],
     nutriments,
     per,
+    portionUnit,
   });
 
   if (calories !== null) {
@@ -382,10 +463,11 @@ function buildNutrition({
       aliases: config.aliases,
       nutriments,
       per,
+      portionUnit,
     });
 
     if (value !== null) {
-      nutrition[config.target] = roundValue(value);
+      nutrition[config.target] = roundNutritionValue(config.target, value);
     }
   }
 
@@ -428,6 +510,7 @@ export function buildBarcodeDraftFromOpenFoodFactsProduct({
     amount: portion.amount,
     nutriments,
     per: portion.per,
+    portionUnit: portion.unit,
   });
 
   if (!hasMeaningfulCore(nutrition)) {
@@ -440,6 +523,7 @@ export function buildBarcodeDraftFromOpenFoodFactsProduct({
     estimatedGrams: portion.amount,
     name,
     nutrition,
+    portionUnit: portion.unit,
     portionLabel: portion.label,
     prepMethod: undefined,
   });

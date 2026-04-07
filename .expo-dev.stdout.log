@@ -1,0 +1,8 @@
+env: load .env.local
+env: export BETTER_AUTH_SECRET CONVEX_DEPLOYMENT EXPO_PUBLIC_CONVEX_SITE_URL EXPO_PUBLIC_CONVEX_URL EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET OPENAI_API_KEY REVENUECAT_WEBHOOK_AUTH_TOKEN
+Starting project at C:\caltracker
+Starting Metro Bundler
+
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Waiting on http://localhost:8081
+Logs for your project will appear below.

@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { DashboardMeal } from "../lib/domain/dashboard";
 import { useTheme } from "../lib/theme/ThemeProvider";
 import { Card } from "./Card";
+import { NutrientSourceTagList } from "./NutrientSourceTagList";
 import { ThemedText } from "./ThemedText";
 
 type TodayMealsCardProps = {
@@ -36,6 +37,7 @@ export function TodayMealsCard({ emptyLabel, meals, title }: TodayMealsCardProps
   const chipColorByMealType: Record<DashboardMeal["mealType"], string> = {
     breakfast: theme.metricCalories,
     dinner: theme.metricHydration,
+    drink: theme.metricHydration,
     lunch: theme.metricNutrition,
     snack: theme.metricProtein,
   };
@@ -102,12 +104,14 @@ export function TodayMealsCard({ emptyLabel, meals, title }: TodayMealsCardProps
 
             <View style={styles.bottomRow}>
               <ThemedText variant="muted" size="sm">
-                {meal.totals.protein}p • {meal.totals.carbs}c • {meal.totals.fat}f
+                {meal.totals.protein}p / {meal.totals.carbs}c / {meal.totals.fat}f
               </ThemedText>
               <ThemedText variant="tertiary" size="sm">
                 {meal.itemCount} item{meal.itemCount === 1 ? "" : "s"}
               </ThemedText>
             </View>
+
+            <NutrientSourceTagList sources={meal.topNutrientSources} />
           </View>
         ))
       )}

@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Meal Timeline Alignment</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --background: #1a1814;
+    --background-alt: #15131a;
+    --text: #e8e0d4;
+    --text-secondary: rgba(255, 255, 255, 0.46);
+    --text-tertiary: rgba(255, 255, 255, 0.28);
+    --text-muted: rgba(255, 255, 255, 0.16);
+    --card: rgba(255, 255, 255, 0.035);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --surface-soft: rgba(255, 255, 255, 0.025);
+    --surface-strong: rgba(255, 255, 255, 0.05);
+    --accent1: #5ebaa9;
+    --accent2: #c4a46c;
+    --accent3: #78a0c8;
+    --metric-calories: #d8c49a;
+    --metric-protein: #75c2aa;
+    --metric-hydration: #79a6d8;
+    --metric-nutrition: #d39a57;
+    --danger: #b86a62;
+    --shadow: rgba(0,0,0,0.34);
+  }
+
+  body.light {
+    --background: #ece7df;
+    --background-alt: #f5f2ed;
+    --text: #2a2520;
+    --text-secondary: rgba(42, 37, 32, 0.58);
+    --text-tertiary: rgba(42, 37, 32, 0.4);
+    --text-muted: rgba(42, 37, 32, 0.22);
+    --card: rgba(255, 255, 255, 0.82);
+    --card-border: rgba(68, 55, 37, 0.12);
+    --surface-soft: rgba(255, 255, 255, 0.84);
+    --surface-strong: rgba(255, 255, 255, 0.9);
+    --accent1: #3a9e8a;
+    --accent2: #b8965a;
+    --accent3: #6090c0;
+    --metric-calories: #c2aa78;
+    --metric-protein: #58ab90;
+    --metric-hydration: #5d8dcb;
+    --metric-nutrition: #bf8648;
+    --danger: #a85b52;
+    --shadow: rgba(91,71,44,0.1);
+  }
+
+  html, body { min-height: 100%; }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(94,186,169,0.08), transparent 30%),
+      radial-gradient(circle at top right, rgba(196,164,108,0.08), transparent 26%),
+      var(--background);
+    color: var(--text);
+    font-family: "SF Pro Display", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 28px 20px 44px;
+  }
+
+  button { font: inherit; }
+
+  .shell {
+    margin: 0 auto;
+    max-width: 1120px;
+  }
+
+  .toolbar {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+
+  .eyebrow,
+  .panel-label,
+  .section-label,
+  .card-eyebrow,
+  .header-kicker,
+  .source-tag {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+
+  .intro h1 {
+    font-size: clamp(30px, 5vw, 44px);
+    font-weight: 300;
+    letter-spacing: -1px;
+    line-height: 1.03;
+    margin: 10px 0 12px;
+  }
+
+  .summary {
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 860px;
+  }
+
+  .theme-toggle {
+    appearance: none;
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 10px 14px;
+    white-space: nowrap;
+  }
+
+  .grid {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    margin-top: 24px;
+  }
+
+  .panel {
+    display: grid;
+    gap: 10px;
+  }
+
+  .panel-note {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .phone {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--background-alt) 72%, black 5%), var(--background));
+    border: 1px solid var(--card-border);
+    border-radius: 34px;
+    box-shadow: 0 30px 70px var(--shadow);
+    padding: 12px;
+  }
+
+  .screen {
+    background: var(--background);
+    border-radius: 24px;
+    min-height: 900px;
+    overflow: hidden;
+    padding: 22px 18px 24px;
+  }
+
+  .header-title {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    margin-bottom: 16px;
+  }
+
+  .frozen-home {
+    margin-bottom: 18px;
+  }
+
+  .hero-shell {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  .ring-stage {
+    align-items: center;
+    display: flex;
+    height: 236px;
+    justify-content: center;
+    position: relative;
+    width: 236px;
+  }
+
+  .ring {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    justify-content: center;
+    position: absolute;
+  }
+
+  .ring.calories {
+    border: 8px solid var(--metric-calories);
+    height: 236px;
+    width: 236px;
+  }
+
+  .ring.protein {
+    border: 8px solid var(--metric-protein);
+    height: 198px;
+    width: 198px;
+  }
+
+  .ring.hydration {
+    border: 8px solid var(--metric-hydration);
+    height: 160px;
+    width: 160px;
+  }
+
+  .ring.nutrition {
+    border: 8px solid var(--metric-nutrition);
+    height: 122px;
+    width: 122px;
+  }
+
+  .ring-score {
+    font-size: 26px;
+    font-weight: 500;
+  }
+
+  .legend-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .legend-item {
+    align-items: center;
+    color: var(--text-secondary);
+    display: inline-flex;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .legend-dot {
+    border-radius: 999px;
+    height: 8px;
+    width: 8px;
+  }
+
+  .legend-dot.calories { background: var(--metric-calories); }
+  .legend-dot.protein { background: var(--metric-protein); }
+  .legend-dot.hydration { background: var(--metric-hydration); }
+  .legend-dot.nutrition { background: var(--metric-nutrition); }
+
+  .insight-card,
+  .frozen-accordion,
+  .today-card,
+  .timeline-card,
+  .timeline-expanded {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+  }
+
+  .insight-card {
+    border-radius: 18px;
+    margin-bottom: 14px;
+    padding: 14px;
+  }
+
+  .insight-copy {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .accordion-stack {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .frozen-accordion {
+    align-items: center;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 16px;
+  }
+
+  .frozen-accordion-copy {
+    display: grid;
+    gap: 3px;
+  }
+
+  .frozen-accordion-title {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .frozen-accordion-summary {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .frozen-accordion-percent {
+    color: var(--metric-nutrition);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .today-card {
+    border-radius: 20px;
+    padding: 16px;
+  }
+
+  .today-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .today-title {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .meal-count {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .meal-row {
+    padding: 10px 0;
+  }
+
+  .meal-row + .meal-row {
+    border-top: 1px solid var(--card-border);
+  }
+
+  .meal-header {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .meal-name {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .meal-meta {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .meal-chip {
+    border-radius: 999px;
+    border: 1px solid;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .meal-chip.drink {
+    background: color-mix(in srgb, var(--metric-hydration) 12%, transparent);
+    border-color: color-mix(in srgb, var(--metric-hydration) 25%, transparent);
+    color: var(--metric-hydration);
+  }
+
+  .meal-chip.lunch {
+    background: color-mix(in srgb, var(--metric-nutrition) 12%, transparent);
+    border-color: color-mix(in srgb, var(--metric-nutrition) 25%, transparent);
+    color: var(--metric-nutrition);
+  }
+
+  .meal-time,
+  .item-count {
+    color: var(--text-tertiary);
+    font-size: 12px;
+  }
+
+  .calorie-pill {
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+
+  .macro-summary {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .nutrient-tag {
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    color: var(--metric-nutrition);
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .section-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+
+  .section-link {
+    color: var(--accent1);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .timeline-stack {
+    display: grid;
+    gap: 12px;
+  }
+
+  .timeline-card {
+    border-radius: 16px;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .accent-bar {
+    width: 4px;
+  }
+
+  .accent-bar.scan { background: var(--accent2); }
+  .accent-bar.manual { background: var(--text-tertiary); }
+
+  .timeline-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .collapsed {
+    padding: 14px 16px;
+  }
+
+  .collapsed-top {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .collapsed-title {
+    font-size: 15px;
+    font-weight: 500;
+    margin-right: 10px;
+  }
+
+  .chevron {
+    border-bottom: 2px solid var(--text-tertiary);
+    border-right: 2px solid var(--text-tertiary);
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+  }
+
+  .chevron.closed { transform: rotate(45deg); }
+  .chevron.open { transform: rotate(-135deg); }
+
+  .collapsed-meta {
+    align-items: center;
+    column-gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .collapsed-meta span {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .collapsed-meta .meta-sep,
+  .collapsed-meta .macro-fragment {
+    color: var(--text-muted);
+  }
+
+  .timeline-expanded {
+    border-top: 1px solid var(--card-border);
+    padding: 14px 16px;
+  }
+
+  .insight {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .insight .pct.calories { color: var(--metric-calories); }
+  .insight .pct.protein { color: var(--metric-protein); }
+  .insight .pct.carbs { color: var(--accent1); }
+
+  .nutrition-stack {
+    display: grid;
+    gap: 10px;
+  }
+
+  .nutrition-row {
+    display: grid;
+    gap: 6px;
+  }
+
+  .nutrition-top {
+    align-items: baseline;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  .nutrition-top span {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .nutrition-top strong {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .nutrition-top strong.calories { color: var(--metric-calories); }
+  .nutrition-top strong.protein { color: var(--metric-protein); }
+  .nutrition-top strong.carbs { color: var(--accent1); }
+  .nutrition-top strong.fat { color: var(--accent2); }
+  .nutrition-top strong.nutrition { color: var(--metric-nutrition); }
+
+  .track {
+    border-radius: 999px;
+    height: 4px;
+    overflow: hidden;
+  }
+
+  .track.calories { background: color-mix(in srgb, var(--metric-calories) 16%, transparent); }
+  .track.protein { background: color-mix(in srgb, var(--metric-protein) 16%, transparent); }
+  .track.carbs { background: color-mix(in srgb, var(--accent1) 16%, transparent); }
+  .track.fat { background: color-mix(in srgb, var(--accent2) 16%, transparent); }
+  .track.nutrition { background: color-mix(in srgb, var(--metric-nutrition) 16%, transparent); }
+
+  .fill {
+    border-radius: 999px;
+    height: 100%;
+  }
+
+  .fill.calories { background: var(--metric-calories); }
+  .fill.protein { background: var(--metric-protein); }
+  .fill.carbs { background: var(--accent1); }
+  .fill.fat { background: var(--accent2); }
+  .fill.nutrition { background: var(--metric-nutrition); }
+
+  .actions {
+    align-items: center;
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+
+  .action-link {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+  }
+
+  .action-link.edit { color: var(--accent1); }
+  .action-link.delete { color: var(--danger); }
+
+  .empty-state {
+    background: var(--card);
+    border: 1px dashed var(--card-border);
+    border-radius: 16px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.55;
+    margin-top: 16px;
+    padding: 16px;
+  }
+
+  @media (max-width: 820px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="toolbar">
+      <div class="intro">
+        <p class="eyebrow">Home timeline alignment</p>
+        <h1>Bring the day-details meal timeline onto Home.</h1>
+        <p class="summary">
+          To match your request, this board freezes the hero rings and the macro/nutrition accordions as existing Home context.
+          The only changed area is the bottom `Today’s meals` section.
+        </p>
+      </div>
+      <button class="theme-toggle" type="button" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? 'Dark mode' : 'Light mode';">Light mode</button>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-label">Current Home</div>
+        <p class="panel-note">The top of the screen is treated as frozen context. This shows the current flat `Today’s meals` card only.</p>
+        <div class="phone">
+          <div class="screen">
+            <div class="header-kicker">Home</div>
+            <div class="header-title">Daily Vigor</div>
+
+            <div class="frozen-home">
+              <div class="hero-shell">
+                <div class="ring-stage">
+                  <div class="ring calories"></div>
+                  <div class="ring protein"></div>
+                  <div class="ring hydration"></div>
+                  <div class="ring nutrition"><span class="ring-score">71</span></div>
+                </div>
+              </div>
+
+              <div class="legend-row">
+                <span class="legend-item"><span class="legend-dot calories"></span>Calories</span>
+                <span class="legend-item"><span class="legend-dot protein"></span>Protein</span>
+                <span class="legend-item"><span class="legend-dot hydration"></span>Hydration</span>
+                <span class="legend-item"><span class="legend-dot nutrition"></span>Nutrition</span>
+              </div>
+
+              <div class="insight-card">
+                <div class="card-eyebrow" style="margin-bottom:6px;">Today at a glance</div>
+                <div class="insight-copy">Nutrition is still your biggest opportunity today. One more protein-forward meal would move the score.</div>
+              </div>
+
+              <div class="accordion-stack">
+                <div class="frozen-accordion">
+                  <div class="frozen-accordion-copy">
+                    <span class="frozen-accordion-title">Calories</span>
+                    <span class="frozen-accordion-summary">1340 / 2723 kcal</span>
+                  </div>
+                  <span class="frozen-accordion-percent">(49%)</span>
+                </div>
+                <div class="frozen-accordion">
+                  <div class="frozen-accordion-copy">
+                    <span class="frozen-accordion-title">Protein</span>
+                    <span class="frozen-accordion-summary">82 / 122 g</span>
+                  </div>
+                  <span class="frozen-accordion-percent">(67%)</span>
+                </div>
+                <div class="frozen-accordion">
+                  <div class="frozen-accordion-copy">
+                    <span class="frozen-accordion-title">Hydration</span>
+                    <span class="frozen-accordion-summary">4.5 / 11 cups</span>
+                  </div>
+                  <span class="frozen-accordion-percent">(41%)</span>
+                </div>
+                <div class="frozen-accordion">
+                  <div class="frozen-accordion-copy">
+                    <span class="frozen-accordion-title">Nutrition</span>
+                    <span class="frozen-accordion-summary">Getting started</span>
+                  </div>
+                  <span class="frozen-accordion-percent">(42%)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="today-card">
+              <div class="today-header">
+                <div>
+                  <div class="card-eyebrow">Today</div>
+                  <div class="today-title">Today’s meals</div>
+                </div>
+                <div class="meal-count">2 meals</div>
+              </div>
+
+              <div class="meal-row">
+                <div class="meal-header">
+                  <div>
+                    <div class="meal-name">Red Bull Sugarfree</div>
+                    <div class="meal-meta">
+                      <span class="meal-chip drink">Drink</span>
+                      <span class="meal-time">4:24 PM</span>
+                    </div>
+                  </div>
+                  <div class="calorie-pill">10 cal</div>
+                </div>
+                <div class="meal-header" style="margin-bottom:0;">
+                  <span class="macro-summary">0p / 2c / 0f</span>
+                  <span class="item-count">1 item</span>
+                </div>
+                <div class="tag-row">
+                  <span class="nutrient-tag">Niacin 16mg</span>
+                  <span class="nutrient-tag">Sodium 105mg</span>
+                </div>
+              </div>
+
+              <div class="meal-row">
+                <div class="meal-header">
+                  <div>
+                    <div class="meal-name">Lunch scan</div>
+                    <div class="meal-meta">
+                      <span class="meal-chip lunch">Lunch</span>
+                      <span class="meal-time">12:19 PM</span>
+                    </div>
+                  </div>
+                  <div class="calorie-pill">330 cal</div>
+                </div>
+                <div class="meal-header" style="margin-bottom:0;">
+                  <span class="macro-summary">12p / 52c / 10f</span>
+                  <span class="item-count">2 items</span>
+                </div>
+                <div class="tag-row">
+                  <span class="nutrient-tag">Fiber 9g</span>
+                  <span class="nutrient-tag">Vitamin C 54mg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">Proposed Home</div>
+        <p class="panel-note">The top of the screen remains frozen. Only the bottom meals section changes to the history-style timeline treatment.</p>
+        <div class="phone">
+          <div class="screen">
+            <div class="header-kicker">Home</div>
+            <div class="header-title">Daily Vigor</div>
+
+            <div class="frozen-home">
+              <div class="hero-shell">
+                <div class="ring-stage">
+                  <div class="ring calories"></div>
+                  <div class="ring protein"></div>
+                  <div class="ring hydration"></div>
+                  <div class="ring nutrition"><span class="ring-score">71</span></div>
+                </div>
+              </div>
+
+              <div class="legend-row">
+                <span class="legend-item"><span class="legend-dot calories"></span>Calories</span>
+                <span class="legend-item"><span class="legend-dot protein"></span>Protein</span>
+                <span class="legend-item"><span class="legend-dot hydration"></span>Hydration</span>
+                <span class="legend-item"><span class="legend-dot nutrition"></span>Nutrition</span>
+              </div>
+
+              <div class="insight-card">
+                <div class="card-eyebrow" style="margin-bottom:6px;">Today at a glance</div>
+                <div class="insight-copy">Nutrition is still your biggest opportunity today. One more protein-forward meal would move the score.</div>
+              </div>
+
+              <div class="accordion-stack">
+                <div class="frozen-accordion">
+                  <div class="frozen-accordion-copy">
+                    <span class="frozen-accordion-title">Calories</span>
+                    <span class="frozen-accordion-summary">1340 / 2723 kcal</span>
+                  </div>
+                  <span class="frozen-accordion-percent">(49%)</span>
+                </div>
+                <div class="frozen-accordion">
+                  <div class="frozen-accordion-copy">
+                    <span class="frozen-accordion-title">Protein</span>
+                    <span class="frozen-accordion-summary">82 / 122 g</span>
+                  </div>
+                  <span class="frozen-accordion-percent">(67%)</span>
+                </div>
+                <div class="frozen-accordion">
+                  <div class="frozen-accordion-copy">
+                    <span class="frozen-accordion-title">Hydration</span>
+                    <span class="frozen-accordion-summary">4.5 / 11 cups</span>
+                  </div>
+                  <span class="frozen-accordion-percent">(41%)</span>
+                </div>
+                <div class="frozen-accordion">
+                  <div class="frozen-accordion-copy">
+                    <span class="frozen-accordion-title">Nutrition</span>
+                    <span class="frozen-accordion-summary">Getting started</span>
+                  </div>
+                  <span class="frozen-accordion-percent">(42%)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-header">
+              <span class="section-label">Today’s meals</span>
+              <div style="display:flex; gap:12px; align-items:center;">
+                <span class="meal-count">2 meals</span>
+                <span class="section-link">View day</span>
+              </div>
+            </div>
+
+            <div class="timeline-stack">
+              <article class="timeline-card">
+                <div class="accent-bar manual"></div>
+                <div class="timeline-content">
+                  <div class="collapsed">
+                    <div class="collapsed-top">
+                      <div class="collapsed-title">Red Bull Sugarfree</div>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="calorie-pill">10 cal</span>
+                        <span class="chevron closed"></span>
+                      </div>
+                    </div>
+                    <div class="collapsed-meta">
+                      <span>Barcode</span>
+                      <span class="meta-sep">/</span>
+                      <span>4:24 PM</span>
+                      <span class="meta-sep">/</span>
+                      <span class="macro-fragment">2c</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="timeline-card">
+                <div class="accent-bar.scan accent-bar"></div>
+                <div class="timeline-content">
+                  <div class="collapsed">
+                    <div class="collapsed-top">
+                      <div class="collapsed-title">Lunch scan (2 items)</div>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="calorie-pill">330 cal</span>
+                        <span class="chevron open"></span>
+                      </div>
+                    </div>
+                    <div class="collapsed-meta">
+                      <span>FoodScan</span>
+                      <span class="meta-sep">/</span>
+                      <span>12:19 PM</span>
+                      <span class="meta-sep">/</span>
+                      <span class="macro-fragment">12p / 52c / 10f</span>
+                    </div>
+                  </div>
+
+                  <div class="timeline-expanded">
+                    <p class="insight">
+                      This meal covered <span class="pct calories">12%</span> of your daily calories and
+                      <span class="pct protein"> 10%</span> of your daily protein.
+                    </p>
+
+                    <div class="nutrition-stack">
+                      <div class="nutrition-row">
+                        <div class="nutrition-top">
+                          <span>Calories</span>
+                          <strong class="calories">330 / 2723 kcal (12%)</strong>
+                        </div>
+                        <div class="track calories"><div class="fill calories" style="width:12%;"></div></div>
+                      </div>
+                      <div class="nutrition-row">
+                        <div class="nutrition-top">
+                          <span>Protein</span>
+                          <strong class="protein">12 / 122 g (10%)</strong>
+                        </div>
+                        <div class="track protein"><div class="fill protein" style="width:10%;"></div></div>
+                      </div>
+                      <div class="nutrition-row">
+                        <div class="nutrition-top">
+                          <span>Carbs</span>
+                          <strong class="carbs">52 / 354 g (15%)</strong>
+                        </div>
+                        <div class="track carbs"><div class="fill carbs" style="width:15%;"></div></div>
+                      </div>
+                      <div class="nutrition-row">
+                        <div class="nutrition-top">
+                          <span>Fat</span>
+                          <strong class="fat">10 / 91 g (11%)</strong>
+                        </div>
+                        <div class="track fat"><div class="fill fat" style="width:11%;"></div></div>
+                      </div>
+                      <div class="nutrition-row">
+                        <div class="nutrition-top">
+                          <span>Fiber</span>
+                          <strong class="nutrition">9 / 30 g (30%)</strong>
+                        </div>
+                        <div class="track nutrition"><div class="fill nutrition" style="width:30%;"></div></div>
+                      </div>
+                      <div class="nutrition-row">
+                        <div class="nutrition-top">
+                          <span>Vitamin C</span>
+                          <strong class="nutrition">54 / 90 mg (60%)</strong>
+                        </div>
+                        <div class="track nutrition"><div class="fill nutrition" style="width:60%;"></div></div>
+                      </div>
+                    </div>
+
+                    <div class="actions">
+                      <span class="action-link edit">Edit meal</span>
+                      <span class="action-link delete">Delete</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="empty-state">
+              Empty-state carryover: if there are no meals today, this section still renders with Home empty-state copy. `View day` only appears when there is any saved activity for the canonical server day.
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

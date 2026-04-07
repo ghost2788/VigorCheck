@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>#11 — Timeline Entry: Consistent Macro Format</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --textMuted: rgba(255,255,255,0.16);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --accent1: #5ebaa9;
+    --accent2: #c4a46c;
+    --accent3: #78a0c8;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 50px 20px 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    color: var(--textSecondary);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .version-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+  .context-note {
+    font-size: 11px;
+    color: var(--textTertiary);
+    margin-bottom: 14px;
+    line-height: 16px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--cardBorder);
+    margin: 28px 0;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .badge {
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--cardBorder);
+    background: var(--surfaceSoft);
+  }
+  .badge.scan { color: var(--accent2); }
+  .badge.text { color: var(--accent1); }
+  .badge.hydration { color: var(--accent3); }
+  .timestamp { font-size: 14px; color: var(--textSecondary); }
+
+  .entry-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+  }
+  .cal-value { font-weight: 500; }
+  .macro-old { color: var(--textSecondary); }
+  .macro-new { color: var(--textMuted); }
+
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --textMuted: rgba(42,37,32,0.22);
+    --card: rgba(255,255,255,0.8);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --accent1: #3a9e8a;
+    --accent2: #b8965a;
+    --accent3: #6090c0;
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? '&#9684; Dark' : '&#9684; Light'">&#9684; Light</button>
+
+<!-- ═══════════ BEFORE ═══════════ -->
+<div class="version-label">Before — "P 28g | C 45g | F 12g"</div>
+<div class="context-note">Verbose pipe-separated format feels like debug output</div>
+
+<div class="card">
+  <div class="header">
+    <span class="badge scan">Photo Scan</span>
+    <span class="timestamp">8:15 AM</span>
+  </div>
+  <div class="entry-title">Greek yogurt bowl</div>
+  <div class="meta-row">
+    <span class="cal-value">420 cal</span>
+    <span class="macro-old">P 32g | C 48g | F 12g</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="header">
+    <span class="badge text">AI Text</span>
+    <span class="timestamp">12:30 PM</span>
+  </div>
+  <div class="entry-title">Chicken salad wrap</div>
+  <div class="meta-row">
+    <span class="cal-value">580 cal</span>
+    <span class="macro-old">P 38g | C 52g | F 18g</span>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════ AFTER ═══════════ -->
+<div class="version-label">After — "32p / 48c / 12f"</div>
+<div class="context-note">Matches TodayMealsCard format — compact, scannable, consistent</div>
+
+<div class="card">
+  <div class="header">
+    <span class="badge scan">Photo Scan</span>
+    <span class="timestamp">8:15 AM</span>
+  </div>
+  <div class="entry-title">Greek yogurt bowl</div>
+  <div class="meta-row">
+    <span class="cal-value">420 cal</span>
+    <span class="macro-new">32p / 48c / 12f</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="header">
+    <span class="badge text">AI Text</span>
+    <span class="timestamp">12:30 PM</span>
+  </div>
+  <div class="entry-title">Chicken salad wrap</div>
+  <div class="meta-row">
+    <span class="cal-value">580 cal</span>
+    <span class="macro-new">38p / 52c / 18f</span>
+  </div>
+</div>
+
+</body>
+</html>

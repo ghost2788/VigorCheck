@@ -1,13 +1,32 @@
 import React from "react";
 import { render, RenderOptions } from "@testing-library/react-native";
-import { ThemeProvider } from "./theme/ThemeProvider";
+import { ThemePreference, ThemeProvider } from "./theme/ThemeProvider";
 
-function AllProviders({ children }: { children: React.ReactNode }) {
-  return <ThemeProvider>{children}</ThemeProvider>;
-}
+type CustomRenderOptions = RenderOptions & {
+  hydrateTheme?: boolean;
+  initialThemePreference?: ThemePreference;
+};
 
-const customRender = (ui: React.ReactElement, options?: RenderOptions) =>
-  render(ui, { wrapper: AllProviders, ...options });
+const customRender = (
+  ui: React.ReactElement,
+  {
+    hydrateTheme = false,
+    initialThemePreference = "dark",
+    ...options
+  }: CustomRenderOptions = {}
+) => {
+  function AllProviders({ children }: { children: React.ReactNode }) {
+    return (
+      <ThemeProvider
+        initialThemePreference={hydrateTheme ? undefined : initialThemePreference}
+      >
+        {children}
+      </ThemeProvider>
+    );
+  }
+
+  return render(ui, { wrapper: AllProviders, ...options });
+};
 
 export * from "@testing-library/react-native";
 export { customRender as render };

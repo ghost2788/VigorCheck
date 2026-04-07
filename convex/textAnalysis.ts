@@ -16,6 +16,10 @@ import {
   ScanDraftItem,
 } from "../lib/domain/scan";
 import { MealType, resolveDraftMealType } from "../lib/domain/meals";
+import {
+  buildAiObservabilityRecordArgs,
+  recordAiRequestSafely,
+} from "./lib/aiObservability";
 import { mealTypeValidator } from "./lib/validators";
 
 const OPENAI_TEXT_MODEL = "gpt-4.1-mini";
@@ -194,81 +198,151 @@ export const analyzeMealDescription = action({
       throw new Error("OPENAI_API_KEY is not configured in Convex.");
     }
 
+    const requestStartedAt = Date.now();
+    const reserveResult = await ctx.runMutation(internal.aiUsage.reserve, {
+      featureKind: "text_ai",
+    });
+
+    if (!reserveResult.allowed) {
+      await recordAiRequestSafely(
+        ctx,
+        buildAiObservabilityRecordArgs({
+          blockedLimitKind: reserveResult.blockingLimitKind,
+          callKind: "text_entry",
+          completedAt: Date.now(),
+          createdAt: requestStartedAt,
+          featureKind: "text_ai",
+          model: OPENAI_TEXT_MODEL,
+          resultStatus: "blocked_quota",
+          usageState: "not_applicable",
+        })
+      );
+      throw new Error(reserveResult.message ?? "AI text entries are unavailable right now.");
+    }
+
     const client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const response = await client.responses.create({
-      input: [
-        {
-          content: [
-            {
-              text: `${textPrompt} Meal description: ${args.description}`,
-              type: "input_text",
-            },
-          ],
-          role: "user",
-        },
-      ],
-      model: OPENAI_TEXT_MODEL,
-      text: {
-        format: {
-          name: "caltracker_text_meal",
-          schema: textResponseSchema,
-          strict: true,
-          type: "json_schema",
-        },
-      },
-    });
+    let response: Awaited<ReturnType<OpenAI["responses"]["create"]>>;
 
-    const outputText = response.output_text?.trim();
-
-    if (!outputText) {
-      throw new Error("OpenAI text meal response did not include structured output.");
+    try {
+      response = await client.responses.create({
+        input: [
+          {
+            content: [
+              {
+                text: `${textPrompt} Meal description: ${args.description}`,
+                type: "input_text",
+              },
+            ],
+            role: "user",
+          },
+        ],
+        model: OPENAI_TEXT_MODEL,
+        text: {
+          format: {
+            name: "caltracker_text_meal",
+            schema: textResponseSchema,
+            strict: true,
+            type: "json_schema",
+          },
+        },
+      });
+    } catch (error) {
+      await recordAiRequestSafely(
+        ctx,
+        buildAiObservabilityRecordArgs({
+          callKind: "text_entry",
+          completedAt: Date.now(),
+          createdAt: requestStartedAt,
+          featureKind: "text_ai",
+          model: OPENAI_TEXT_MODEL,
+          resultStatus: "provider_error",
+          usageState: "not_applicable",
+        })
+      );
+      throw error;
     }
 
-    const parsed = JSON.parse(outputText) as {
-      items?: ParsedTextItem[];
-      overallConfidence?: unknown;
-    };
+    try {
+      const outputText = response.output_text?.trim();
 
-    const normalizedComponents = buildNormalizedScanDraftComponents(
-      (parsed.items ?? []).map((item) => ({
-        ...item,
-        prepMethod: item.prepMethod ?? undefined,
-      }))
-    );
+      if (!outputText) {
+        throw new Error("OpenAI text meal response did not include structured output.");
+      }
 
-    if (!normalizedComponents.length) {
-      throw new Error("No usable food items were detected from that description.");
+      const parsed = JSON.parse(outputText) as {
+        items?: ParsedTextItem[];
+        overallConfidence?: unknown;
+      };
+
+      const normalizedComponents = buildNormalizedScanDraftComponents(
+        (parsed.items ?? []).map((item) => ({
+          ...item,
+          prepMethod: item.prepMethod ?? undefined,
+        }))
+      );
+
+      if (!normalizedComponents.length) {
+        throw new Error("No usable food items were detected from that description.");
+      }
+
+      const matchedComponents: ScanDraftItem[] = await Promise.all(
+        normalizedComponents.map(async (item) => {
+          const candidates = (await ctx.runQuery(internal.usda.searchByName, {
+            term: item.name,
+          })) as UsdaSearchCandidate[];
+          const match = findBestUsdaMatch(item.name, candidates);
+
+          if (!match) {
+            return item;
+          }
+
+          return promoteDraftItemToUsda(item, match.fdcId, nutritionFromUsdaPer100g(match));
+        })
+      );
+      const groupedItems = groupAssembledFoodDraftItems(matchedComponents);
+      const matchedItems = mergeDuplicateStandaloneDraftItems(groupedItems);
+      const result = {
+        entryMethod: "ai_text" as const,
+        items: matchedItems,
+        mealType: resolveDraftMealType({
+          itemNames: matchedItems.map((item) => item.name),
+          seedMealType: args.mealType,
+          source: "text",
+        }),
+        overallConfidence: normalizeScanConfidence(parsed.overallConfidence),
+      };
+
+      await recordAiRequestSafely(
+        ctx,
+        buildAiObservabilityRecordArgs({
+          callKind: "text_entry",
+          completedAt: Date.now(),
+          createdAt: requestStartedAt,
+          featureKind: "text_ai",
+          model: OPENAI_TEXT_MODEL,
+          resultStatus: "completed",
+          usage: response.usage,
+        })
+      );
+
+      return result;
+    } catch (error) {
+      await recordAiRequestSafely(
+        ctx,
+        buildAiObservabilityRecordArgs({
+          callKind: "text_entry",
+          completedAt: Date.now(),
+          createdAt: requestStartedAt,
+          featureKind: "text_ai",
+          model: OPENAI_TEXT_MODEL,
+          resultStatus: "postprocess_error",
+          usage: response.usage,
+        })
+      );
+      throw error;
     }
-
-    const matchedComponents: ScanDraftItem[] = await Promise.all(
-      normalizedComponents.map(async (item) => {
-        const candidates = (await ctx.runQuery(internal.usda.searchByName, {
-          term: item.name,
-        })) as UsdaSearchCandidate[];
-        const match = findBestUsdaMatch(item.name, candidates);
-
-        if (!match) {
-          return item;
-        }
-
-        return promoteDraftItemToUsda(item, match.fdcId, nutritionFromUsdaPer100g(match));
-      })
-    );
-    const groupedItems = groupAssembledFoodDraftItems(matchedComponents);
-    const matchedItems = mergeDuplicateStandaloneDraftItems(groupedItems);
-
-    return {
-      entryMethod: "ai_text",
-      items: matchedItems,
-      mealType: resolveDraftMealType({
-        itemNames: matchedItems.map((item) => item.name),
-        seedMealType: args.mealType,
-        source: "text",
-      }),
-      overallConfidence: normalizeScanConfidence(parsed.overallConfidence),
-    };
   },
 });

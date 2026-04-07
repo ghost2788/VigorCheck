@@ -1,17 +1,26 @@
 import React, { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useTheme } from "../lib/theme/ThemeProvider";
+import {
+  getWellnessAccordionShellContainerColors,
+  WellnessAccordionShellEffect,
+  type WellnessAccordionShellEffectConfig,
+} from "./WellnessAccordionShellEffect";
 import { ThemedText } from "./ThemedText";
 
 export type WellnessAccordionItem = {
   accentColor: string;
+  contentTestID?: string;
   detail: React.ReactNode;
   headerActionLabel?: string;
+  headerBadge?: React.ReactNode;
   headerPercentLabel?: React.ReactNode;
   key: string;
   onHeaderActionPress?: () => void;
+  shellEffect?: WellnessAccordionShellEffectConfig;
   summary: React.ReactNode;
   title: string;
+  triggerTestID?: string;
 };
 
 type WellnessAccordionListProps = {
@@ -28,7 +37,7 @@ function hexToRgba(hex: string, alpha: number) {
 }
 
 export function WellnessAccordionList({ items }: WellnessAccordionListProps) {
-  const { theme } = useTheme();
+  const { mode, theme } = useTheme();
   const [openKey, setOpenKey] = useState<string | null>(null);
   const toggleItem = (key: string) => {
     setOpenKey((current) => (current === key ? null : key));
@@ -38,24 +47,33 @@ export function WellnessAccordionList({ items }: WellnessAccordionListProps) {
     <View style={styles.list}>
       {items.map((item) => {
         const isOpen = item.key === openKey;
+        const shellContainerColors = item.shellEffect
+          ? getWellnessAccordionShellContainerColors(item.shellEffect, mode)
+          : null;
 
         return (
           <View
             key={item.key}
+            testID={`wellness-accordion-card-${item.key}`}
             style={[
               styles.card,
               {
-                backgroundColor: theme.card,
-                borderColor: theme.cardBorder,
-                shadowColor: theme.shadow,
+                backgroundColor: shellContainerColors?.backgroundColor ?? theme.card,
+                borderColor: shellContainerColors?.borderColor ?? theme.cardBorder,
+                shadowColor: shellContainerColors?.shadowColor ?? theme.shadow,
               },
             ]}
           >
+            {item.shellEffect ? (
+              <WellnessAccordionShellEffect effect={item.shellEffect} itemKey={item.key} />
+            ) : null}
+
             <View style={styles.headerRow}>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => toggleItem(item.key)}
                 style={styles.trigger}
+                testID={item.triggerTestID}
               >
                 <View style={styles.copy}>
                   <View style={styles.titleRow}>
@@ -80,6 +98,9 @@ export function WellnessAccordionList({ items }: WellnessAccordionListProps) {
                   ) : (
                     <View style={styles.summaryContainer}>{item.summary}</View>
                   )}
+                  {item.headerBadge ? (
+                    <View style={styles.headerBadgeWrap}>{item.headerBadge}</View>
+                  ) : null}
                 </View>
               </Pressable>
 
@@ -122,7 +143,11 @@ export function WellnessAccordionList({ items }: WellnessAccordionListProps) {
               </Pressable>
             </View>
 
-            {isOpen ? <View style={styles.detail}>{item.detail}</View> : null}
+            {isOpen ? (
+              <View style={styles.detail} testID={item.contentTestID}>
+                {item.detail}
+              </View>
+            ) : null}
           </View>
         );
       })}
@@ -201,6 +226,10 @@ const styles = StyleSheet.create({
   headerPercent: {
     letterSpacing: 0,
     textTransform: "none",
+  },
+  headerBadgeWrap: {
+    alignSelf: "flex-start",
+    marginTop: 10,
   },
   trigger: {
     alignItems: "center",

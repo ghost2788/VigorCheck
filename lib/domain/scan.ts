@@ -1,5 +1,6 @@
 export type ScanConfidence = "high" | "medium" | "low";
 export type ScanItemSource = "ai_estimated" | "manual" | "usda" | "barcode_catalog";
+export type ScanPortionUnit = "g" | "ml" | "oz" | "serving";
 
 export type NutritionFields = {
   calories: number;
@@ -49,6 +50,7 @@ export type ScanDraftItem = {
   name: string;
   normalizedName: string;
   portionLabel: string;
+  portionUnit: ScanPortionUnit;
   estimatedGrams: number;
   baseEstimatedGrams: number;
   prepMethod?: string;
@@ -445,6 +447,7 @@ function buildNormalizedScanDraftComponent(
     normalizedName,
     nutrition: normalizedNutrition,
     portionLabel,
+    portionUnit: "g",
     prepMethod: item.prepMethod?.trim() || undefined,
     source: "ai_estimated" as const,
   };
@@ -559,6 +562,7 @@ function createMergedDraftItem(
     nutrition: baseNutrition,
     per100g: mergedSource.per100g,
     portionLabel: options.portionLabel,
+    portionUnit: items[0]?.portionUnit ?? "g",
     prepMethod: getCombinedPrepMethod(items),
     source: mergedSource.source,
     usdaFoodId: mergedSource.usdaFoodId,
@@ -1040,7 +1044,12 @@ export function scaleDraftItem(item: ScanDraftItem, multiplier: number): ScanDra
   };
 }
 
-type CreateDraftItemInput = Omit<ScanDraftItem, "baseEstimatedGrams" | "baseNutrition" | "id" | "multiplier" | "normalizedName" | "source">;
+type CreateDraftItemInput = Omit<
+  ScanDraftItem,
+  "baseEstimatedGrams" | "baseNutrition" | "id" | "multiplier" | "normalizedName" | "portionUnit" | "source"
+> & {
+  portionUnit?: ScanPortionUnit;
+};
 
 export function createAiEstimatedDraftItem(input: CreateDraftItemInput): ScanDraftItem {
   return {
@@ -1050,6 +1059,7 @@ export function createAiEstimatedDraftItem(input: CreateDraftItemInput): ScanDra
     id: buildDraftId(normalizeFoodName(input.name), 0),
     multiplier: 1,
     normalizedName: normalizeFoodName(input.name),
+    portionUnit: input.portionUnit ?? "g",
     source: "ai_estimated",
   };
 }
@@ -1064,6 +1074,7 @@ export function createUsdaDraftItem(
     id: buildDraftId(normalizeFoodName(input.name), 0),
     multiplier: 1,
     normalizedName: normalizeFoodName(input.name),
+    portionUnit: input.portionUnit ?? "g",
     source: "usda",
   };
 }
@@ -1076,6 +1087,7 @@ export function createManualDraftItem(input: CreateDraftItemInput): ScanDraftIte
     id: buildDraftId(normalizeFoodName(input.name), 0),
     multiplier: 1,
     normalizedName: normalizeFoodName(input.name),
+    portionUnit: input.portionUnit ?? "g",
     source: "manual",
   };
 }
@@ -1090,6 +1102,7 @@ export function createBarcodeDraftItem(
     id: buildDraftId(normalizeFoodName(input.name), 0),
     multiplier: 1,
     normalizedName: normalizeFoodName(input.name),
+    portionUnit: input.portionUnit ?? "g",
     source: "barcode_catalog",
   };
 }

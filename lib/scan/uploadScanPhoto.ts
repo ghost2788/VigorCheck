@@ -1,18 +1,39 @@
-import { toByteArray } from "base64-js";
 import { Id } from "../../convex/_generated/dataModel";
-import { PendingScanPhoto } from "./types";
 
-function createPhotoBlob(photo: PendingScanPhoto): Blob {
-  const bytes = toByteArray(photo.base64);
-  const buffer = bytes.buffer.slice(
-    bytes.byteOffset,
-    bytes.byteOffset + bytes.byteLength
-  ) as ArrayBuffer;
-  return new Blob([buffer], { type: photo.mimeType });
+type UploadablePhoto = {
+  base64: string;
+  mimeType: string;
+  uri?: string;
+};
+
+async function createPhotoBlob(photo: UploadablePhoto): Promise<Blob> {
+  const trimmedBase64 = photo.base64.trim();
+  const source =
+    trimmedBase64.length > 0
+      ? `data:${photo.mimeType};base64,${trimmedBase64}`
+      : photo.uri;
+
+  if (!source) {
+    throw new Error("The selected photo could not be read for upload.");
+  }
+
+  let localResponse: Response;
+
+  try {
+    localResponse = await fetch(source);
+  } catch {
+    throw new Error("The selected photo could not be read for upload.");
+  }
+
+  if (!localResponse.ok) {
+    throw new Error("The selected photo could not be read for upload.");
+  }
+
+  return localResponse.blob();
 }
 
-export async function uploadScanPhoto(uploadUrl: string, photo: PendingScanPhoto): Promise<Id<"_storage">> {
-  const blob = createPhotoBlob(photo);
+export async function uploadScanPhoto(uploadUrl: string, photo: UploadablePhoto): Promise<Id<"_storage">> {
+  const blob = await createPhotoBlob(photo);
   let uploadResponse: Response;
 
   try {
@@ -24,11 +45,11 @@ export async function uploadScanPhoto(uploadUrl: string, photo: PendingScanPhoto
       method: "POST",
     });
   } catch {
-    throw new Error("Meal photo upload could not reach Convex storage.");
+    throw new Error("Photo upload could not reach Convex storage.");
   }
 
   if (!uploadResponse.ok) {
-    throw new Error("Meal photo upload failed.");
+    throw new Error("Photo upload failed.");
   }
 
   const payload = (await uploadResponse.json()) as { storageId?: Id<"_storage"> };

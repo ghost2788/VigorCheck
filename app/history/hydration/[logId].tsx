@@ -156,7 +156,7 @@ export default function HydrationEditScreen() {
           value={amountOz}
         />
         <ThemedText size="sm" variant="secondary">
-          {hydrationLog.shortcutLabel?.trim() || "Hydration"} entry, measured in ounces.
+          {hydrationLog.displayLabel.trim()} entry, measured in ounces.
         </ThemedText>
       </Card>
 

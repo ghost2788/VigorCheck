@@ -2,7 +2,6 @@ import React from "react";
 import { render } from "../../lib/test-utils";
 import { WelcomeHudHero } from "../../components/auth/WelcomeHudHero";
 
-const DEFAULT_HEART_SOURCE = require("../../assets/branding/vigorcheck-heart-core.png");
 const FLAGSHIP_HEART_SOURCE = require("../../assets/branding/vigorcheck-heart-flagship.png");
 
 describe("WelcomeHudHero", () => {
@@ -11,7 +10,7 @@ describe("WelcomeHudHero", () => {
 
     expect(getByTestId("welcome-hud-hero")).toBeTruthy();
     expect(getByTestId("welcome-heart-image")).toBeTruthy();
-    expect(getByTestId("welcome-heart-image").props.source).toBe(DEFAULT_HEART_SOURCE);
+    expect(getByTestId("welcome-heart-image").props.source).toBe(FLAGSHIP_HEART_SOURCE);
     expect(queryByTestId("welcome-heart-svg")).toBeNull();
     expect(queryByTestId("welcome-hud-svg")).toBeNull();
     expect(queryByTestId("welcome-hud-frame-core")).toBeNull();

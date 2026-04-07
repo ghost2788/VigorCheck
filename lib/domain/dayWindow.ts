@@ -132,6 +132,24 @@ export function getLocalDateKey(timestamp: number, timeZone: string) {
   return formatDateKey({ day, month, year });
 }
 
+export function getRelativeLocalDateKey({
+  dayOffset,
+  timeZone,
+  timestamp,
+}: {
+  dayOffset: number;
+  timeZone: string;
+  timestamp: number;
+}) {
+  const current = getTimeZoneDateParts(timestamp, timeZone);
+  return formatDateKey(addUtcDays(current, dayOffset));
+}
+
+export function getLocalMonthKey(timestamp: number, timeZone: string) {
+  const { month, year } = getTimeZoneDateParts(timestamp, timeZone);
+  return `${year}-${pad(month)}`;
+}
+
 export function getDayWindowForTimestamp(timestamp: number, timeZone: string) {
   const current = getTimeZoneDateParts(timestamp, timeZone);
   const next = addUtcDays(current, 1);

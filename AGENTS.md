@@ -43,6 +43,18 @@ Available Codex gstack skills in this environment:
 - `gstack-unfreeze`
 - `gstack-upgrade`
 
+## UI polish workflow
+
+For UI polish, visual cleanup, redesign, consistency passes, or requests to see changes in the browser before coding:
+- Treat the work as mockup-first, not code-first.
+- Audit the target screens against `docs/ui-patterns.md`, the theme token system, and existing component patterns before proposing changes.
+- Create a browser-visible preview before editing app code. New approval artifacts go in `C:/caltracker/mockups/` by default and should be shown with the repo's browser workflow.
+- Use `C:/caltracker/previews/` only when extending an existing preview app rooted there.
+- Wait for explicit approval before implementation.
+- After approval, implement the approved change, run review, and verify tests before claiming completion.
+
+Repo-local skill source of truth lives under `.agents/skills/<skill>/`. Do not edit `.claude/skills/` or `.windsurf/skills/` directly; those trees are junction mirrors for discovery.
+
 <!-- convex-ai-start -->
 This project uses [Convex](https://convex.dev) as its backend.
 

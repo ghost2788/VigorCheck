@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as aiObservability from "../aiObservability.js";
+import type * as aiUsage from "../aiUsage.js";
 import type * as auth from "../auth.js";
 import type * as barcode from "../barcode.js";
 import type * as dashboard from "../dashboard.js";
@@ -16,13 +18,22 @@ import type * as history from "../history.js";
 import type * as http from "../http.js";
 import type * as hydration from "../hydration.js";
 import type * as hydrationShortcuts from "../hydrationShortcuts.js";
+import type * as lib_aiObservability from "../lib/aiObservability.js";
 import type * as lib_devIdentity from "../lib/devIdentity.js";
+import type * as lib_rememberedEntries from "../lib/rememberedEntries.js";
+import type * as lib_supplements from "../lib/supplements.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as meals from "../meals.js";
+import type * as migrations from "../migrations.js";
+import type * as rememberedEntries from "../rememberedEntries.js";
 import type * as scanAnalysis from "../scanAnalysis.js";
+import type * as scanReview from "../scanReview.js";
 import type * as scans from "../scans.js";
 import type * as status from "../status.js";
 import type * as subscriptions from "../subscriptions.js";
+import type * as supplementScan from "../supplementScan.js";
+import type * as supplements from "../supplements.js";
+import type * as testing from "../testing.js";
 import type * as textAnalysis from "../textAnalysis.js";
 import type * as trends from "../trends.js";
 import type * as usda from "../usda.js";
@@ -35,6 +46,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  aiObservability: typeof aiObservability;
+  aiUsage: typeof aiUsage;
   auth: typeof auth;
   barcode: typeof barcode;
   dashboard: typeof dashboard;
@@ -43,13 +56,22 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   hydration: typeof hydration;
   hydrationShortcuts: typeof hydrationShortcuts;
+  "lib/aiObservability": typeof lib_aiObservability;
   "lib/devIdentity": typeof lib_devIdentity;
+  "lib/rememberedEntries": typeof lib_rememberedEntries;
+  "lib/supplements": typeof lib_supplements;
   "lib/validators": typeof lib_validators;
   meals: typeof meals;
+  migrations: typeof migrations;
+  rememberedEntries: typeof rememberedEntries;
   scanAnalysis: typeof scanAnalysis;
+  scanReview: typeof scanReview;
   scans: typeof scans;
   status: typeof status;
   subscriptions: typeof subscriptions;
+  supplementScan: typeof supplementScan;
+  supplements: typeof supplements;
+  testing: typeof testing;
   textAnalysis: typeof textAnalysis;
   trends: typeof trends;
   usda: typeof usda;
@@ -83,6 +105,93 @@ export declare const internal: FilterApi<
 >;
 
 export declare const components: {
+  migrations: {
+    lib: {
+      cancel: FunctionReference<
+        "mutation",
+        "internal",
+        { name: string },
+        {
+          batchSize?: number;
+          cursor?: string | null;
+          error?: string;
+          isDone: boolean;
+          latestEnd?: number;
+          latestStart: number;
+          name: string;
+          next?: Array<string>;
+          processed: number;
+          state: "inProgress" | "success" | "failed" | "canceled" | "unknown";
+        }
+      >;
+      cancelAll: FunctionReference<
+        "mutation",
+        "internal",
+        { sinceTs?: number },
+        Array<{
+          batchSize?: number;
+          cursor?: string | null;
+          error?: string;
+          isDone: boolean;
+          latestEnd?: number;
+          latestStart: number;
+          name: string;
+          next?: Array<string>;
+          processed: number;
+          state: "inProgress" | "success" | "failed" | "canceled" | "unknown";
+        }>
+      >;
+      clearAll: FunctionReference<
+        "mutation",
+        "internal",
+        { before?: number },
+        null
+      >;
+      getStatus: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; names?: Array<string> },
+        Array<{
+          batchSize?: number;
+          cursor?: string | null;
+          error?: string;
+          isDone: boolean;
+          latestEnd?: number;
+          latestStart: number;
+          name: string;
+          next?: Array<string>;
+          processed: number;
+          state: "inProgress" | "success" | "failed" | "canceled" | "unknown";
+        }>
+      >;
+      migrate: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          batchSize?: number;
+          cursor?: string | null;
+          dryRun: boolean;
+          fnHandle: string;
+          name: string;
+          next?: Array<{ fnHandle: string; name: string }>;
+          oneBatchOnly?: boolean;
+          reset?: boolean;
+        },
+        {
+          batchSize?: number;
+          cursor?: string | null;
+          error?: string;
+          isDone: boolean;
+          latestEnd?: number;
+          latestStart: number;
+          name: string;
+          next?: Array<string>;
+          processed: number;
+          state: "inProgress" | "success" | "failed" | "canceled" | "unknown";
+        }
+      >;
+    };
+  };
   betterAuth: {
     adapter: {
       create: FunctionReference<

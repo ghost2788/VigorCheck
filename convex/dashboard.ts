@@ -1,9 +1,11 @@
 import { buildTodayDashboard } from "../lib/domain/dashboard";
 import { getDayWindowForTimestamp, getLocalDateKey } from "../lib/domain/dayWindow";
+import { getDetailedNutrientTargets } from "../lib/domain/nutrients";
 import { getNutritionTargets } from "../lib/domain/wellness";
 import { resolveEffectiveTargets } from "../lib/domain/targets";
 import { query, QueryCtx } from "./_generated/server";
 import { findCurrentUser } from "./lib/devIdentity";
+import { buildSupplementLogSnapshot } from "./lib/supplements";
 
 async function loadTodayEntries({
   ctx,
@@ -28,9 +30,23 @@ async function loadTodayEntries({
     )
     .collect();
   const orderedHydrationLogs = [...hydrationLogs].sort((left, right) => right.timestamp - left.timestamp);
+  const supplementLogs = await ctx.db
+    .query("supplementLogs")
+    .withIndex("by_user_date", (query) =>
+      query.eq("userId", user._id).gte("timestamp", start).lt("timestamp", end)
+    )
+    .collect();
+  const orderedSupplementLogs = [...supplementLogs].sort((left, right) => right.timestamp - left.timestamp);
   const macroTargets = resolveEffectiveTargets(user);
   const targets = {
     calories: macroTargets.calories,
+    carbs: macroTargets.carbs,
+    detailedNutrition: getDetailedNutrientTargets({
+      age: user.age,
+      sex: user.sex,
+      targetFiber: user.targetFiber,
+    }),
+    fat: macroTargets.fat,
     hydration: user.targetHydration,
     nutrition: getNutritionTargets({
       age: user.age,
@@ -45,6 +61,7 @@ async function loadTodayEntries({
     now,
     orderedHydrationLogs,
     orderedMeals,
+    orderedSupplementLogs,
     start,
     targets,
   };
@@ -57,12 +74,15 @@ function buildMealNutrients(meal: {
   folate: number;
   iron: number;
   magnesium: number;
+  manganese?: number;
   niacin: number;
+  omega3?: number;
   phosphorus: number;
   potassium: number;
   riboflavin: number;
-  sodium?: number;
-  sugar?: number;
+  selenium?: number;
+  totalSodium?: number;
+  totalSugar?: number;
   thiamin: number;
   totalFiber: number;
   vitaminA: number;
@@ -71,21 +91,28 @@ function buildMealNutrients(meal: {
   vitaminE: number;
   vitaminK: number;
   zinc: number;
+  choline?: number;
+  copper?: number;
 }) {
   return {
     b12: meal.b12,
     b6: meal.b6,
     calcium: meal.calcium,
+    choline: meal.choline ?? 0,
+    copper: meal.copper ?? 0,
     fiber: meal.totalFiber,
     folate: meal.folate,
     iron: meal.iron,
     magnesium: meal.magnesium,
+    manganese: meal.manganese ?? 0,
     niacin: meal.niacin,
+    omega3: meal.omega3 ?? 0,
     phosphorus: meal.phosphorus,
     potassium: meal.potassium,
     riboflavin: meal.riboflavin,
-    sodium: meal.sodium ?? 0,
-    sugar: meal.sugar ?? 0,
+    selenium: meal.selenium ?? 0,
+    sodium: meal.totalSodium ?? 0,
+    sugar: meal.totalSugar ?? 0,
     thiamin: meal.thiamin,
     vitaminA: meal.vitaminA,
     vitaminC: meal.vitaminC,
@@ -105,7 +132,8 @@ export const today = query({
       return null;
     }
 
-    const { macroTargets, now, orderedHydrationLogs, orderedMeals, targets } = await loadTodayEntries({
+    const { macroTargets, now, orderedHydrationLogs, orderedMeals, orderedSupplementLogs, targets } =
+      await loadTodayEntries({
       ctx,
       user,
     });
@@ -130,6 +158,7 @@ export const today = query({
         mealId: item.mealId,
       })),
       meals: orderedMeals.map((meal) => ({
+        entryMethod: meal.entryMethod,
         id: meal._id,
         label: meal.label,
         mealType: meal.mealType,
@@ -142,6 +171,7 @@ export const today = query({
           protein: meal.totalProtein,
         },
       })),
+      supplementLogs: orderedSupplementLogs.map((log) => buildSupplementLogSnapshot(log)),
       targets,
     });
 
@@ -150,6 +180,8 @@ export const today = query({
       displayName: user.displayName,
       targets: {
         calories: macroTargets.calories,
+        carbs: macroTargets.carbs,
+        fat: macroTargets.fat,
         hydration: user.targetHydration,
         protein: macroTargets.protein,
       },
@@ -168,7 +200,8 @@ export const reminderSnapshot = query({
       return null;
     }
 
-    const { macroTargets, now, orderedHydrationLogs, orderedMeals, targets } = await loadTodayEntries({
+    const { macroTargets, now, orderedHydrationLogs, orderedMeals, orderedSupplementLogs, targets } =
+      await loadTodayEntries({
       ctx,
       user,
     });
@@ -180,6 +213,7 @@ export const reminderSnapshot = query({
       })),
       mealItems: [],
       meals: orderedMeals.map((meal) => ({
+        entryMethod: meal.entryMethod,
         id: meal._id,
         label: meal.label,
         mealType: meal.mealType,
@@ -192,6 +226,7 @@ export const reminderSnapshot = query({
           protein: meal.totalProtein,
         },
       })),
+      supplementLogs: orderedSupplementLogs.map((log) => buildSupplementLogSnapshot(log)),
       targets,
     });
 

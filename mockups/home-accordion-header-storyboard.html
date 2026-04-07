@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Accordion Header Storyboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --background: #1a1814;
+    --background-alt: #15131a;
+    --text: #e8e0d4;
+    --text-secondary: rgba(255,255,255,0.45);
+    --text-tertiary: rgba(255,255,255,0.28);
+    --card: rgba(255,255,255,0.035);
+    --card-border: rgba(255,255,255,0.08);
+    --surface-soft: rgba(255,255,255,0.025);
+    --surface-strong: rgba(255,255,255,0.05);
+    --metric-calories: #d8c49a;
+    --metric-protein: #5ebaa9;
+    --metric-hydration: #78a0c8;
+    --metric-nutrition: #d38a3a;
+    --danger-soft: #b86a62;
+    --danger-strong: #d17a6e;
+    --shadow: rgba(0,0,0,0.34);
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(94,186,169,0.08), transparent 28%),
+      radial-gradient(circle at top right, rgba(196,164,108,0.06), transparent 24%),
+      var(--background);
+    color: var(--text);
+    font-family: "SF Pro Display", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 30px 18px 42px;
+  }
+
+  .shell {
+    margin: 0 auto;
+    max-width: 1320px;
+  }
+
+  .eyebrow,
+  .panel-label,
+  .section-label,
+  .micro,
+  .status-chip {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: clamp(30px, 5vw, 42px);
+    font-weight: 300;
+    letter-spacing: -1px;
+    line-height: 1.03;
+    margin: 10px 0 12px;
+  }
+
+  .summary {
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.55;
+    max-width: 900px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .legend-chip {
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    padding: 7px 10px;
+  }
+
+  .board {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 390px));
+    justify-content: center;
+  }
+
+  .panel {
+    display: grid;
+    gap: 10px;
+  }
+
+  .panel-copy {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .phone {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--background-alt) 78%, black 4%), var(--background));
+    border: 1px solid var(--card-border);
+    border-radius: 34px;
+    box-shadow: 0 28px 70px var(--shadow);
+    padding: 12px;
+  }
+
+  .screen {
+    background: var(--background);
+    border-radius: 24px;
+    min-height: 820px;
+    overflow: hidden;
+    padding: 20px 18px 24px;
+  }
+
+  .topline {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .hero-title {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    margin-bottom: 18px;
+  }
+
+  .section {
+    margin-top: 18px;
+  }
+
+  .section-label {
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .accordion + .accordion {
+    margin-top: 14px;
+  }
+
+  .header-zone {
+    padding: 14px 15px 13px;
+    position: relative;
+  }
+
+  .detail-zone {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 14px 15px 16px;
+  }
+
+  .title-row {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .metric-title {
+    color: var(--metric-calories);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+  }
+
+  .metric-title.protein {
+    color: var(--metric-protein);
+  }
+
+  .percent {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .percent.calories {
+    color: var(--danger-strong);
+  }
+
+  .percent.protein {
+    color: var(--metric-protein);
+  }
+
+  .summary-row {
+    align-items: center;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .summary-value {
+    font-size: 13px;
+  }
+
+  .chevron {
+    border-bottom: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    color: var(--text-tertiary);
+    height: 10px;
+    transform: rotate(-135deg);
+    width: 10px;
+  }
+
+  .chip-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+  }
+
+  .status-chip {
+    background: rgba(184,106,98,0.12);
+    border: 1px solid rgba(184,106,98,0.18);
+    border-radius: 999px;
+    color: var(--danger-strong);
+    padding: 4px 8px 3px;
+  }
+
+  .track {
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    height: 7px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .fill {
+    border-radius: 999px;
+    height: 100%;
+  }
+
+  .fill.calories {
+    background: linear-gradient(90deg, #c06b62, #d17a6e);
+    width: 100%;
+  }
+
+  .fill.protein {
+    background: linear-gradient(90deg, #49a896, #5ebaa9);
+    width: 100%;
+  }
+
+  .contributors {
+    display: grid;
+    gap: 12px;
+  }
+
+  .contributor-name {
+    font-size: 13px;
+  }
+
+  .contributor-meta {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    margin-top: 3px;
+  }
+
+  .mini-track {
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    height: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .mini-fill {
+    border-radius: 999px;
+    height: 100%;
+  }
+
+  .mini-fill.calories {
+    background: var(--metric-calories);
+  }
+
+  .mini-fill.protein {
+    background: var(--metric-protein);
+  }
+
+  .divider-note {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 1.45;
+    margin-top: 12px;
+  }
+
+  .variant-a .header-zone {
+    background:
+      radial-gradient(circle at top right, rgba(209,122,110,0.18), transparent 42%),
+      rgba(255,255,255,0.018);
+  }
+
+  .variant-a .header-zone.reward {
+    background:
+      radial-gradient(circle at top left, rgba(94,186,169,0.16), transparent 44%),
+      rgba(255,255,255,0.018);
+  }
+
+  .variant-a .track {
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+  }
+
+  .variant-b .header-zone {
+    background: rgba(255,255,255,0.016);
+    padding-left: 18px;
+  }
+
+  .variant-b .header-zone::before {
+    background: rgba(209,122,110,0.78);
+    border-radius: 999px;
+    bottom: 12px;
+    content: "";
+    left: 0;
+    position: absolute;
+    top: 12px;
+    width: 2px;
+  }
+
+  .variant-b .header-zone.reward::before {
+    background: rgba(94,186,169,0.7);
+  }
+
+  .variant-c .header-zone {
+    background: rgba(255,255,255,0.012);
+    padding-bottom: 18px;
+  }
+
+  .variant-c .header-zone .track {
+    bottom: 0;
+    height: 10px;
+    left: 0;
+    position: absolute;
+    right: 0;
+  }
+
+  .variant-c .summary-row {
+    margin-bottom: 16px;
+  }
+
+  .variant-d .header-zone {
+    background: rgba(255,255,255,0.014);
+  }
+
+  .variant-d .title-row {
+    margin-bottom: 12px;
+  }
+
+  .variant-d .summary-row {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+  }
+
+  .trend-note {
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 18px;
+    padding: 11px 12px;
+  }
+
+  @media (max-width: 860px) {
+    .board {
+      grid-template-columns: minmax(280px, 390px);
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <div class="eyebrow">Storyboard</div>
+      <h1>Make the accordion header itself feel alive.</h1>
+      <p class="summary">
+        These directions keep the effect on the existing top section of the Home accordion card instead of adding a separate inset row inside the expanded detail. Each phone shows a calories advisory card and a finished protein card, with the expanded body staying plain underneath. Trends stays as currently implemented.
+      </p>
+      <div class="legend">
+        <div class="legend-chip">Header-integrated, not detail-inserted</div>
+        <div class="legend-chip">Previous inset-row treatment added back for comparison</div>
+        <div class="legend-chip">Calories only gets the warning treatment</div>
+        <div class="legend-chip">Protein / Hydration / Nutrition stay positive-only</div>
+        <div class="legend-chip">Trends nutrition stays as shipped</div>
+      </div>
+    </header>
+
+    <main class="board">
+      <section class="panel">
+        <div class="panel-label">Previous. Inset Summary Row</div>
+        <div class="panel-copy">This is the earlier implementation direction. The special treatment appears only after expansion as its own inserted row above the contributors. Useful as a reference point for what felt too separate.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="micro">Pacific/Honolulu</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+            <div class="section">
+              <div class="section-label">Earlier Effect Placement</div>
+
+              <div class="card accordion variant-a">
+                <div class="header-zone" style="background: transparent;">
+                  <div class="title-row">
+                    <div class="metric-title">Calories</div>
+                    <div class="percent calories">(&gt;100%)</div>
+                  </div>
+                  <div class="summary-row" style="margin-bottom: 0;">
+                    <div class="summary-value">2,001 / 2,000 kcal</div>
+                    <div class="chevron"></div>
+                  </div>
+                </div>
+                <div class="detail-zone">
+                  <div class="card" style="background: rgba(184,106,98,0.085); border-color: rgba(184,106,98,0.18); border-radius: 14px; margin-bottom: 14px; padding: 10px 11px 11px; position: relative;">
+                    <div style="background: rgba(184,106,98,0.78); border-radius: 999px; bottom: 10px; left: 0; position: absolute; top: 10px; width: 2px;"></div>
+                    <div class="chip-row" style="margin-bottom: 7px; position: relative; z-index: 1;">
+                      <div class="status-chip">Over target</div>
+                    </div>
+                    <div class="track" style="position: relative; z-index: 1;">
+                      <div class="fill calories"></div>
+                    </div>
+                  </div>
+                  <div class="contributors">
+                    <div>
+                      <div class="contributor-name">Lunch bowl</div>
+                      <div class="contributor-meta">2,001 kcal · 100%</div>
+                      <div class="mini-track"><div class="mini-fill calories" style="width:100%"></div></div>
+                    </div>
+                    <div class="divider-note">This makes the effect feel like a second component inside the accordion, which is the part you pushed back on.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card accordion variant-a">
+                <div class="header-zone" style="background: transparent;">
+                  <div class="title-row">
+                    <div class="metric-title protein">Protein</div>
+                    <div class="percent protein">(100%)</div>
+                  </div>
+                  <div class="summary-row" style="margin-bottom: 0;">
+                    <div class="summary-value">151 / 150 g</div>
+                    <div class="chevron" style="transform: rotate(45deg);"></div>
+                  </div>
+                </div>
+                <div class="detail-zone">
+                  <div class="card" style="background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); border-radius: 14px; margin-bottom: 14px; padding: 10px 11px 11px;">
+                    <div class="chip-row" style="margin-bottom: 7px;">
+                      <div class="status-chip" style="background: rgba(94,186,169,0.14); border-color: rgba(94,186,169,0.18); color: var(--metric-protein);">100%</div>
+                    </div>
+                    <div class="track">
+                      <div class="fill protein"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">Previous. Effect Row Language</div>
+        <div class="panel-copy">This keeps the old row-level visual language itself, but detached from the accordion shell question. Useful if what you liked was the row treatment, just not where it was placed.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">Effect Reference</div>
+              <div class="micro">Row treatment only</div>
+            </div>
+            <div class="section">
+              <div class="section-label">Old Row Treatment</div>
+
+              <div class="card" style="padding: 14px;">
+                <div class="micro" style="margin-bottom: 12px;">Calories advisory row</div>
+                <div class="card" style="background: rgba(184,106,98,0.085); border-color: rgba(184,106,98,0.18); border-radius: 14px; padding: 10px 11px 11px; position: relative;">
+                  <div style="background: rgba(184,106,98,0.78); border-radius: 999px; bottom: 10px; left: 0; position: absolute; top: 10px; width: 2px;"></div>
+                  <div class="title-row" style="margin-bottom: 8px; position: relative; z-index: 1;">
+                    <div class="micro" style="color: var(--text);">Calories</div>
+                    <div class="percent calories">112%</div>
+                  </div>
+                  <div class="chip-row" style="margin-bottom: 7px; position: relative; z-index: 1;">
+                    <div class="status-chip">Over target</div>
+                  </div>
+                  <div class="track" style="position: relative; z-index: 1;">
+                    <div class="fill calories"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card" style="margin-top: 14px; padding: 14px;">
+                <div class="micro" style="margin-bottom: 12px;">Protein reward row</div>
+                <div class="card" style="background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); border-radius: 14px; padding: 10px 11px 11px;">
+                  <div class="title-row" style="margin-bottom: 8px;">
+                    <div class="micro" style="color: var(--text);">Protein</div>
+                    <div class="status-chip" style="background: rgba(94,186,169,0.14); border-color: rgba(94,186,169,0.18); color: var(--metric-protein);">100%</div>
+                  </div>
+                  <div class="track">
+                    <div class="fill protein"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider-note">If this row language still feels right, we can figure out a cleaner way to embed it into the accordion top section instead of dropping it in as a separate body row.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">A. Tinted Header</div>
+        <div class="panel-copy">Closest to the app today. The header gets a soft atmospheric wash and the progress bar sits inside that same top zone, so it reads like one surface instead of a nested row.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="micro">Pacific/Honolulu</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+            <div class="section">
+              <div class="section-label">Home Accordion</div>
+
+              <div class="card accordion variant-a">
+                <div class="header-zone">
+                  <div class="title-row">
+                    <div class="metric-title">Calories</div>
+                    <div class="percent calories">(&gt;100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">2,001 / 2,000 kcal</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="chip-row">
+                    <div class="status-chip">Over target</div>
+                  </div>
+                  <div class="track">
+                    <div class="fill calories"></div>
+                  </div>
+                </div>
+                <div class="detail-zone">
+                  <div class="contributors">
+                    <div>
+                      <div class="contributor-name">Lunch bowl</div>
+                      <div class="contributor-meta">2,001 kcal · 100%</div>
+                      <div class="mini-track"><div class="mini-fill calories" style="width:100%"></div></div>
+                    </div>
+                    <div class="divider-note">Top section holds the effect. Expanded detail stays focused on meal contributors.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card accordion variant-a">
+                <div class="header-zone reward">
+                  <div class="title-row">
+                    <div class="metric-title protein">Protein</div>
+                    <div class="percent protein">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">151 / 150 g</div>
+                    <div class="chevron" style="transform: rotate(45deg);"></div>
+                  </div>
+                  <div class="track">
+                    <div class="fill protein"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="trend-note">Trends nutrition card stays as currently implemented, static finish only.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">B. Advisory Spine</div>
+        <div class="panel-copy">Pushes the warning rail directly into the header shell. Feels more structural and a little sharper, especially for calories, while reward cards get a calmer matching spine.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="micro">Pacific/Honolulu</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+            <div class="section">
+              <div class="section-label">Home Accordion</div>
+
+              <div class="card accordion variant-b">
+                <div class="header-zone">
+                  <div class="title-row">
+                    <div class="metric-title">Calories</div>
+                    <div class="percent calories">(&gt;100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">2,001 / 2,000 kcal</div>
+                    <div class="chevron"></div>
+                  </div>
+                  <div class="chip-row">
+                    <div class="status-chip">Over target</div>
+                  </div>
+                  <div class="track">
+                    <div class="fill calories"></div>
+                  </div>
+                </div>
+                <div class="detail-zone">
+                  <div class="contributors">
+                    <div>
+                      <div class="contributor-name">Lunch bowl</div>
+                      <div class="contributor-meta">2,001 kcal · 100%</div>
+                      <div class="mini-track"><div class="mini-fill calories" style="width:100%"></div></div>
+                    </div>
+                    <div class="divider-note">The left spine keeps the alert readable even before expansion.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card accordion variant-b">
+                <div class="header-zone reward">
+                  <div class="title-row">
+                    <div class="metric-title protein">Protein</div>
+                    <div class="percent protein">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">151 / 150 g</div>
+                    <div class="chevron" style="transform: rotate(45deg);"></div>
+                  </div>
+                  <div class="track">
+                    <div class="fill protein"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">C. Meter Crown</div>
+        <div class="panel-copy">The header remains mostly clean, then the progress treatment becomes a crown line at the base of the top section. More graphic, less atmospheric.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="micro">Pacific/Honolulu</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+            <div class="section">
+              <div class="section-label">Home Accordion</div>
+
+              <div class="card accordion variant-c">
+                <div class="header-zone">
+                  <div class="title-row">
+                    <div class="metric-title">Calories</div>
+                    <div class="percent calories">(&gt;100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">2,001 / 2,000 kcal</div>
+                    <div class="status-chip">Over target</div>
+                  </div>
+                  <div class="track">
+                    <div class="fill calories"></div>
+                  </div>
+                </div>
+                <div class="detail-zone">
+                  <div class="contributors">
+                    <div>
+                      <div class="contributor-name">Lunch bowl</div>
+                      <div class="contributor-meta">2,001 kcal · 100%</div>
+                      <div class="mini-track"><div class="mini-fill calories" style="width:100%"></div></div>
+                    </div>
+                    <div class="divider-note">Best if you want the header to stay cleaner and let the meter do most of the signaling.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card accordion variant-c">
+                <div class="header-zone reward">
+                  <div class="title-row">
+                    <div class="metric-title protein">Protein</div>
+                    <div class="percent protein">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">151 / 150 g</div>
+                    <div class="micro">Complete</div>
+                  </div>
+                  <div class="track">
+                    <div class="fill protein"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">D. Signal Shelf</div>
+        <div class="panel-copy">Builds a more composed top section. The summary line becomes a soft shelf, then the bar sits below it. Most refined, but also the most “designed.”</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="micro">Pacific/Honolulu</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+            <div class="section">
+              <div class="section-label">Home Accordion</div>
+
+              <div class="card accordion variant-d">
+                <div class="header-zone">
+                  <div class="title-row">
+                    <div class="metric-title">Calories</div>
+                    <div class="percent calories">(&gt;100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">2,001 / 2,000 kcal</div>
+                    <div class="status-chip">Over target</div>
+                  </div>
+                  <div class="track">
+                    <div class="fill calories"></div>
+                  </div>
+                </div>
+                <div class="detail-zone">
+                  <div class="contributors">
+                    <div>
+                      <div class="contributor-name">Lunch bowl</div>
+                      <div class="contributor-meta">2,001 kcal · 100%</div>
+                      <div class="mini-track"><div class="mini-fill calories" style="width:100%"></div></div>
+                    </div>
+                    <div class="divider-note">Feels premium and intentional, but maybe the furthest from the current app.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card accordion variant-d">
+                <div class="header-zone reward">
+                  <div class="title-row">
+                    <div class="metric-title protein">Protein</div>
+                    <div class="percent protein">(100%)</div>
+                  </div>
+                  <div class="summary-row">
+                    <div class="summary-value">151 / 150 g</div>
+                    <div class="micro">Complete</div>
+                  </div>
+                  <div class="track">
+                    <div class="fill protein"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -9,10 +9,12 @@ import {
   GoalPace,
   PreferredUnitSystem,
   PrimaryTrackingChallenge,
+  requiresGoalPace,
   computeBaseTargets,
   resolveEditableTargets,
   resolveEffectiveTargets,
 } from "../lib/domain/targets";
+import { mergePlanSettings, toPlanSettings } from "../lib/domain/profileSettings";
 import { mutation, query } from "./_generated/server";
 import { findCurrentUser, getCurrentTokenIdentifier, requireCurrentUser, resetCurrentDevUser } from "./lib/devIdentity";
 
@@ -240,6 +242,59 @@ export const upsertCurrent = mutation({
       goalPace: existingUser.goalPace,
       preferredUnitSystem: existingUser.preferredUnitSystem ?? "imperial",
       primaryTrackingChallenge: existingUser.primaryTrackingChallenge ?? "consistency",
+    });
+
+    await ctx.db.patch(existingUser._id, {
+      ...patch,
+      themePalette: existingUser.themePalette ?? "default",
+    });
+
+    return existingUser._id;
+  },
+});
+
+export const updateCurrentPlanSettings = mutation({
+  args: {
+    activityLevel: v.optional(activityLevelValidator),
+    age: v.optional(v.number()),
+    goalPace: v.optional(goalPaceValidator),
+    goalType: v.optional(goalTypeValidator),
+    height: v.optional(v.number()),
+    preferredUnitSystem: v.optional(preferredUnitSystemValidator),
+    primaryTrackingChallenge: v.optional(primaryTrackingChallengeValidator),
+    sex: v.optional(sexValidator),
+    targets: v.optional(editableTargetsValidator),
+    timeZone: v.optional(v.string()),
+    weight: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const existingUser = await requireCurrentUser(ctx);
+    const mergedSettings = mergePlanSettings(toPlanSettings({
+      activityLevel: existingUser.activityLevel,
+      age: existingUser.age,
+      goalPace: existingUser.goalPace,
+      goalType: existingUser.goalType,
+      height: existingUser.height,
+      preferredUnitSystem: existingUser.preferredUnitSystem,
+      primaryTrackingChallenge: existingUser.primaryTrackingChallenge,
+      sex: existingUser.sex,
+      targets: resolveEffectiveTargets(existingUser),
+      timeZone: existingUser.timeZone,
+      weight: existingUser.weight,
+    }), args);
+    const patch = buildUserPatch({
+      activityLevel: mergedSettings.activityLevel,
+      age: mergedSettings.age,
+      displayName: existingUser.displayName,
+      goalPace: requiresGoalPace(mergedSettings.goalType) ? mergedSettings.goalPace : undefined,
+      goalType: mergedSettings.goalType,
+      height: mergedSettings.height,
+      preferredUnitSystem: mergedSettings.preferredUnitSystem,
+      primaryTrackingChallenge: mergedSettings.primaryTrackingChallenge,
+      sex: mergedSettings.sex,
+      targets: mergedSettings.targets,
+      timeZone: mergedSettings.timeZone,
+      weight: mergedSettings.weight,
     });
 
     await ctx.db.patch(existingUser._id, {

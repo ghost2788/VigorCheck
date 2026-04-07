@@ -3,6 +3,7 @@ import { Text } from "react-native";
 import { fireEvent, render, waitFor } from "../../lib/test-utils";
 import HomeScreen from "../../app/(tabs)/index";
 import { buildTodayDashboard } from "../../lib/domain/dashboard";
+import { getDetailedNutrientTargets } from "../../lib/domain/nutrients";
 import { OnboardingFlowProvider } from "../../lib/onboarding/OnboardingFlowProvider";
 
 const mockUseQuery = jest.fn();
@@ -52,6 +53,13 @@ describe("HomeScreen onboarding CTA", () => {
     mockUseMutation.mockReturnValue(jest.fn());
     mockUseQuery.mockReturnValue({
       dateKey: "2026-03-29",
+      targets: {
+        calories: 2200,
+        carbs: 240,
+        fat: 75,
+        hydration: 8,
+        protein: 140,
+      },
       timeZone: "Pacific/Honolulu",
       ...buildTodayDashboard({
         hydrationLogs: [],
@@ -59,6 +67,7 @@ describe("HomeScreen onboarding CTA", () => {
         meals: [],
         targets: {
           calories: 2200,
+          carbs: 240,
           hydration: 8,
           nutrition: {
             calcium: 100,
@@ -68,6 +77,12 @@ describe("HomeScreen onboarding CTA", () => {
             vitaminC: 100,
             vitaminD: 10,
           },
+          detailedNutrition: getDetailedNutrientTargets({
+            age: 30,
+            sex: "male",
+            targetFiber: 20,
+          }),
+          fat: 75,
           protein: 140,
         },
       }),

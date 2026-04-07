@@ -35,7 +35,7 @@ export default function HistoryScreen() {
             No history yet
           </ThemedText>
           <ThemedText variant="secondary">
-            Logged days will appear here once meals or hydration entries are saved.
+            Logged days will appear here once meals, drinks, hydration, or supplements are saved.
           </ThemedText>
         </Card>
       }

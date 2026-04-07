@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useMutation } from "convex/react";
+import React, { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -15,81 +14,28 @@ import { Card } from "../../components/Card";
 import { ScanReviewItemCard } from "../../components/ScanReviewItemCard";
 import { ThemedText } from "../../components/ThemedText";
 import { api } from "../../convex/_generated/api";
-import { MEAL_TYPE_OPTIONS } from "../../lib/domain/meals";
+import { buildMealNutritionRows } from "../../lib/domain/mealNutritionRows";
 import { ScanDraftItem } from "../../lib/domain/scan";
 import { useScanFlow } from "../../lib/scan/ScanFlowProvider";
 import { useTheme } from "../../lib/theme/ThemeProvider";
-
-function MealTypePill({
-  active,
-  label,
-  onPress,
-}: {
-  active: boolean;
-  label: string;
-  onPress: () => void;
-}) {
-  const { theme } = useTheme();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={[
-        styles.typePill,
-        {
-          backgroundColor: active ? theme.surfaceStrong : theme.surfaceSoft,
-          borderColor: active ? theme.accent1 : theme.cardBorder,
-        },
-      ]}
-    >
-      <ThemedText size="sm" variant={active ? "accent1" : "secondary"}>
-        {label}
-      </ThemedText>
-    </Pressable>
-  );
-}
 
 export default function ScanReviewScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { activeReviewJob, clearActiveReview, completeReviewJob, updateActiveDraft } = useScanFlow();
+  const {
+    activeReviewJob,
+    announceReviewedSave,
+    clearActiveReview,
+    completeReviewJob,
+    updateActiveDraft,
+  } = useScanFlow();
   const saveAiEntry = useMutation(api.meals.saveAiEntry);
+  const reviewContext = useQuery(api.scanReview.getContext);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [expandedItemIds, setExpandedItemIds] = useState<Record<string, boolean>>({});
+  const [expandedItemId, setExpandedItemId] = useState<string | null | undefined>(undefined);
   const currentDraft = activeReviewJob?.draft ?? null;
-
-  useEffect(() => {
-    if (!currentDraft?.items.length) {
-      return;
-    }
-
-    setExpandedItemIds((current) => {
-      const next: Record<string, boolean> = {};
-      let changed = false;
-
-      currentDraft.items.forEach((item, index) => {
-        next[item.id] = current[item.id] ?? index === 0;
-
-        if (current[item.id] !== next[item.id]) {
-          changed = true;
-        }
-      });
-
-      if (Object.keys(current).some((itemId) => !(itemId in next))) {
-        changed = true;
-      }
-
-      if (!currentDraft.items.some((item) => next[item.id])) {
-        next[currentDraft.items[0].id] = true;
-        changed = true;
-      }
-
-      return changed ? next : current;
-    });
-  }, [currentDraft?.items]);
 
   if (!currentDraft) {
     return (
@@ -108,6 +54,15 @@ export default function ScanReviewScreen() {
     );
   }
 
+  const effectiveExpandedItemId =
+    expandedItemId === undefined
+      ? currentDraft.items[0]?.id ?? null
+      : expandedItemId === null
+        ? null
+        : currentDraft.items.some((item) => item.id === expandedItemId)
+          ? expandedItemId
+          : currentDraft.items[0]?.id ?? null;
+
   const updateItem = (targetId: string, nextItem: ScanDraftItem) => {
     updateActiveDraft((draft) => ({
       ...draft,
@@ -116,18 +71,14 @@ export default function ScanReviewScreen() {
   };
 
   const removeItem = (targetId: string) => {
-    const nextExpandedItemId = currentDraft.items.find((item) => item.id !== targetId)?.id;
+    const removedIndex = currentDraft.items.findIndex((item) => item.id === targetId);
+    const remainingItems = currentDraft.items.filter((item) => item.id !== targetId);
 
-    setExpandedItemIds((current) => {
-      const next = { ...current };
-      delete next[targetId];
-
-      if (nextExpandedItemId && !Object.values(next).some(Boolean)) {
-        next[nextExpandedItemId] = true;
-      }
-
-      return next;
-    });
+    if (effectiveExpandedItemId === targetId) {
+      const replacementItem =
+        remainingItems[removedIndex] ?? remainingItems[Math.max(removedIndex - 1, 0)] ?? null;
+      setExpandedItemId(replacementItem?.id ?? null);
+    }
 
     updateActiveDraft((draft) => ({
       ...draft,
@@ -152,69 +103,64 @@ export default function ScanReviewScreen() {
         showsVerticalScrollIndicator={false}
         style={{ flex: 1 }}
       >
-        <ThemedText size="xl" style={styles.title}>
-          Review meal
-        </ThemedText>
-
-        <View
-          style={[
-            styles.summaryStrip,
-            {
-              backgroundColor: theme.surfaceSoft,
-              borderColor: theme.cardBorder,
-            },
-          ]}
-          testID="scan-review-summary-strip"
-        >
-          <View style={styles.summaryHeader}>
-            <ThemedText size="sm">Meal type</ThemedText>
-            <View
-              style={[
-                styles.confidenceChip,
-                {
-                  backgroundColor: theme.card,
-                  borderColor: theme.cardBorder,
-                },
-              ]}
-            >
-              <ThemedText size="xs" variant="secondary">
-                {`${currentDraft.overallConfidence.charAt(0).toUpperCase()}${currentDraft.overallConfidence.slice(1)} confidence`}
-              </ThemedText>
-            </View>
-          </View>
-
-          <View style={styles.typeRow}>
-            {MEAL_TYPE_OPTIONS.map((option) => (
-              <MealTypePill
-                active={currentDraft.mealType === option.value}
-                key={option.value}
-                label={option.label}
-                onPress={() =>
-                  updateActiveDraft((draft) => ({
-                    ...draft,
-                    mealType: option.value,
-                  }))
-                }
-              />
-            ))}
+        <View style={styles.headerRow}>
+          <ThemedText size="xl" style={styles.title}>
+            Review meal
+          </ThemedText>
+          <View
+            style={[
+              styles.confidenceChip,
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.cardBorder,
+              },
+            ]}
+          >
+            <ThemedText size="xs" variant="secondary">
+              {`${currentDraft.overallConfidence.charAt(0).toUpperCase()}${currentDraft.overallConfidence.slice(1)} confidence`}
+            </ThemedText>
           </View>
         </View>
 
-        {currentDraft.items.map((item) => (
-          <ScanReviewItemCard
-            expanded={expandedItemIds[item.id] ?? false}
-            item={item}
-            key={item.id}
-            onChange={(nextItem) => updateItem(item.id, nextItem)}
-            onRemove={() => removeItem(item.id)}
-            onToggleExpand={() =>
-              setExpandedItemIds((current) => ({
-                ...current,
-                [item.id]: !current[item.id],
-              }))
-            }
-          />
-        ))}
+        {currentDraft.items.map((item) => {
+          const nutritionRows = buildMealNutritionRows({
+            detailedNutritionTargets: reviewContext?.detailedNutritionTargets,
+            macroTargets: reviewContext?.macroTargets,
+            nutrients: item.nutrition,
+            totals: {
+              calories: item.nutrition.calories,
+              carbs: item.nutrition.carbs,
+              fat: item.nutrition.fat,
+              protein: item.nutrition.protein,
+            },
+          });
+
+          return (
+            <ScanReviewItemCard
+              expanded={effectiveExpandedItemId === item.id}
+              item={item}
+              key={item.id}
+              mealType={currentDraft.mealType}
+              nutritionRows={nutritionRows}
+              onChange={(nextItem) => updateItem(item.id, nextItem)}
+              onMealTypeChange={(nextMealType) =>
+                updateActiveDraft((draft) => ({
+                  ...draft,
+                  mealType: nextMealType,
+                }))
+              }
+              onRemove={() => removeItem(item.id)}
+              onToggleExpand={() =>
+                setExpandedItemId((current) => {
+                  const currentExpanded =
+                    current === undefined ? currentDraft.items[0]?.id ?? null : current;
+
+                  return currentExpanded === item.id ? null : item.id;
+                })
+              }
+            />
+          );
+        })}
       </ScrollView>
 
       <View
@@ -268,10 +214,11 @@ export default function ScanReviewScreen() {
                   items: currentDraft.items.map((item) => ({
                     barcodeValue: item.barcodeValue,
                     confidence: item.confidence,
-                    estimatedGrams: item.estimatedGrams,
                     name: item.name.trim(),
                     nutrition: item.nutrition,
+                    portionAmount: item.estimatedGrams,
                     portionLabel: item.portionLabel,
+                    portionUnit: item.portionUnit,
                     prepMethod: item.prepMethod || undefined,
                     source: item.source,
                     usdaFoodId: item.usdaFoodId || undefined,
@@ -283,6 +230,7 @@ export default function ScanReviewScreen() {
                 if (activeReviewJob) {
                   completeReviewJob(activeReviewJob.id);
                 }
+                announceReviewedSave(currentDraft.mealType === "drink" ? "Drink added" : "Meal added");
                 router.replace("/(tabs)/log");
               } catch (error) {
                 setSaveError(
@@ -353,31 +301,13 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  summaryHeader: {
+  headerRow: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 6,
-  },
-  summaryStrip: {
-    borderRadius: 20,
-    borderWidth: 1,
     marginBottom: 18,
-    padding: 14,
   },
   title: {
-    marginBottom: 18,
-  },
-  typePill: {
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  typeRow: {
-    columnGap: 8,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    rowGap: 8,
+    flex: 1,
   },
 });

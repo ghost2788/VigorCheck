@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option A Iterations — Accordion Timeline Cards</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --textMuted: rgba(255,255,255,0.16);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --surfaceStrong: rgba(255,255,255,0.05);
+    --accent1: #5ebaa9;
+    --accent2: #c4a46c;
+    --accent3: #78a0c8;
+    --destructiveText: #B86A62;
+    --destructiveBorder: rgba(184,106,98,0.24);
+    --destructiveSurface: rgba(184,106,98,0.08);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 50px 20px 60px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    color: var(--textSecondary);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .version-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 6px;
+    padding-left: 2px;
+  }
+  .context-note {
+    font-size: 11px;
+    color: var(--textTertiary);
+    margin-bottom: 14px;
+    line-height: 16px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--cardBorder);
+    margin: 32px 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     SHARED ACCENT BAR CARD STRUCTURE
+     ═══════════════════════════════════════════ */
+  .acard {
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    display: flex;
+  }
+  .acard .bar {
+    width: 4px;
+    flex-shrink: 0;
+  }
+  .acard .wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ─── Collapsed header (shared) ─── */
+  .acard .collapsed {
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .acard .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .acard .title {
+    font-size: 15px;
+    font-weight: 500;
+    flex: 1;
+    margin-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .acard .cal {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-right: 8px;
+  }
+  .acard .chevron {
+    font-size: 16px;
+    color: var(--textTertiary);
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .acard .chevron.open {
+    transform: rotate(90deg);
+  }
+  .acard .meta-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--textTertiary);
+  }
+  .acard .meta-sep {
+    color: var(--textMuted);
+  }
+
+  /* ─── Expanded panel ─── */
+  .acard .expanded {
+    border-top: 1px solid var(--cardBorder);
+    padding: 14px 16px;
+  }
+
+  /* ─── Action links ─── */
+  .action-link {
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+  }
+  .action-link.edit { color: var(--accent1); }
+  .action-link.delete { color: var(--destructiveText); }
+
+  /* ═══════════════════════════════════════════
+     A1 — Detail + nutrient sources + actions
+     ═══════════════════════════════════════════ */
+  .a1-detail-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .a1-detail-chip {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--surfaceStrong);
+    border: 1px solid var(--cardBorder);
+    color: var(--textSecondary);
+  }
+  .a1-macro-grid {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .a1-macro-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .a1-macro-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+  }
+  .a1-macro-value {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .a1-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--cardBorder);
+  }
+
+  /* ═══════════════════════════════════════════
+     A2 — Inline mini-edit fields
+     ═══════════════════════════════════════════ */
+  .a2-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .a2-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .a2-field-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+  }
+  .a2-field-input {
+    background: var(--surfaceSoft);
+    border: 1px solid var(--cardBorder);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .a2-field-row {
+    display: flex;
+    gap: 8px;
+  }
+  .a2-field-row .a2-field {
+    flex: 1;
+  }
+  .a2-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .a2-save-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: rgba(94,186,169,0.18);
+    border: 1px solid rgba(94,186,169,0.28);
+    color: var(--accent1);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    text-align: center;
+    cursor: pointer;
+  }
+  .a2-delete-link {
+    padding: 10px 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     A3 — Summary expand with progress bars
+     ═══════════════════════════════════════════ */
+  .a3-insight {
+    font-size: 12px;
+    color: var(--textSecondary);
+    line-height: 18px;
+    margin-bottom: 12px;
+  }
+  .a3-bar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .a3-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .a3-bar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .a3-bar-label {
+    font-size: 11px;
+    color: var(--textTertiary);
+  }
+  .a3-bar-value {
+    font-size: 11px;
+    color: var(--textSecondary);
+  }
+  .a3-bar-track {
+    height: 6px;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .a3-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+  }
+  .a3-source-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .a3-source-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--surfaceStrong);
+    border: 1px solid var(--cardBorder);
+    color: var(--textSecondary);
+  }
+  .a3-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--cardBorder);
+  }
+
+  /* Light theme */
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --textMuted: rgba(42,37,32,0.22);
+    --card: rgba(255,255,255,0.8);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --surfaceStrong: rgba(255,255,255,0.88);
+    --accent1: #3a9e8a;
+    --accent2: #b8965a;
+    --accent3: #6090c0;
+    --destructiveText: #A85B52;
+    --destructiveBorder: rgba(168,91,82,0.24);
+    --destructiveSurface: rgba(168,91,82,0.08);
+  }
+  body.light .a2-save-btn {
+    background: rgba(58,158,138,0.14);
+    border-color: rgba(58,158,138,0.24);
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? '&#9684; Dark' : '&#9684; Light'">&#9684; Light</button>
+
+<!-- ═══════════════════════════════════════════════════
+     A1 — Accordion → Detail + nutrient sources
+     ═══════════════════════════════════════════════════ -->
+<div class="version-label">A1 — Detail accordion</div>
+<div class="context-note">Tap to expand macro breakdown, top nutrient sources, and actions. Collapsed state is scannable. Expanded gives full picture without leaving the page.</div>
+
+<!-- Collapsed -->
+<div class="acard">
+  <div class="bar" style="background:var(--accent1)"></div>
+  <div class="wrap">
+    <div class="collapsed">
+      <div class="top-row">
+        <div class="title">Chicken salad wrap</div>
+        <div class="cal">580 cal</div>
+        <span class="chevron">&#8250;</span>
+      </div>
+      <div class="meta-left">
+        <span>AI Text</span>
+        <span class="meta-sep">&middot;</span>
+        <span>12:30 PM</span>
+        <span class="meta-sep">&middot;</span>
+        <span>38p / 52c / 18f</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Expanded -->
+<div class="acard">
+  <div class="bar" style="background:var(--accent2)"></div>
+  <div class="wrap">
+    <div class="collapsed">
+      <div class="top-row">
+        <div class="title">Greek yogurt bowl</div>
+        <div class="cal">420 cal</div>
+        <span class="chevron open">&#8250;</span>
+      </div>
+      <div class="meta-left">
+        <span>Photo Scan</span>
+        <span class="meta-sep">&middot;</span>
+        <span>8:15 AM</span>
+        <span class="meta-sep">&middot;</span>
+        <span>32p / 48c / 12f</span>
+      </div>
+    </div>
+    <div class="expanded">
+      <div class="a1-macro-grid">
+        <div class="a1-macro-item">
+          <span class="a1-macro-label">Calories</span>
+          <span class="a1-macro-value">420</span>
+        </div>
+        <div class="a1-macro-item">
+          <span class="a1-macro-label">Protein</span>
+          <span class="a1-macro-value">32g</span>
+        </div>
+        <div class="a1-macro-item">
+          <span class="a1-macro-label">Carbs</span>
+          <span class="a1-macro-value">48g</span>
+        </div>
+        <div class="a1-macro-item">
+          <span class="a1-macro-label">Fat</span>
+          <span class="a1-macro-value">12g</span>
+        </div>
+      </div>
+      <div class="a1-detail-row">
+        <span class="a1-detail-chip">Calcium 18%</span>
+        <span class="a1-detail-chip">Vitamin D 12%</span>
+        <span class="a1-detail-chip">Potassium 8%</span>
+      </div>
+      <div class="a1-actions">
+        <span class="action-link edit">Edit meal</span>
+        <span class="action-link delete">Delete</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Collapsed hydration -->
+<div class="acard">
+  <div class="bar" style="background:var(--accent3)"></div>
+  <div class="wrap">
+    <div class="collapsed">
+      <div class="top-row">
+        <div class="title">Water</div>
+        <div class="cal">16 oz</div>
+        <span class="chevron">&#8250;</span>
+      </div>
+      <div class="meta-left">
+        <span>Hydration</span>
+        <span class="meta-sep">&middot;</span>
+        <span>2:00 PM</span>
+        <span class="meta-sep">&middot;</span>
+        <span>2.0 cups</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════
+     A2 — Accordion → Inline edit fields
+     ═══════════════════════════════════════════════════ -->
+<div class="version-label">A2 — Inline edit accordion</div>
+<div class="context-note">Tap to expand editable fields right inside the card. Save without leaving the timeline. Full edit-in-place experience.</div>
+
+<!-- Collapsed -->
+<div class="acard">
+  <div class="bar" style="background:var(--accent1)"></div>
+  <div class="wrap">
+    <div class="collapsed">
+      <div class="top-row">
+        <div class="title">Chicken salad wrap</div>
+        <div class="cal">580 cal</div>
+        <span class="chevron">&#8250;</span>
+      </div>
+      <div class="meta-left">
+        <span>AI Text</span>
+        <span class="meta-sep">&middot;</span>
+        <span>12:30 PM</span>
+        <span class="meta-sep">&middot;</span>
+        <span>38p / 52c / 18f</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Expanded with edit fields -->
+<div class="acard">
+  <div class="bar" style="background:var(--accent2)"></div>
+  <div class="wrap">
+    <div class="collapsed">
+      <div class="top-row">
+        <div class="title">Greek yogurt bowl</div>
+        <div class="cal">420 cal</div>
+        <span class="chevron open">&#8250;</span>
+      </div>
+      <div class="meta-left">
+        <span>Photo Scan</span>
+        <span class="meta-sep">&middot;</span>
+        <span>8:15 AM</span>
+      </div>
+    </div>
+    <div class="expanded">
+      <div class="a2-field-group">
+        <div class="a2-field">
+          <span class="a2-field-label">Meal name</span>
+          <input class="a2-field-input" type="text" value="Greek yogurt bowl" readonly>
+        </div>
+        <div class="a2-field-row">
+          <div class="a2-field">
+            <span class="a2-field-label">Calories</span>
+            <input class="a2-field-input" type="text" value="420" readonly>
+          </div>
+          <div class="a2-field">
+            <span class="a2-field-label">Protein</span>
+            <input class="a2-field-input" type="text" value="32g" readonly>
+          </div>
+        </div>
+        <div class="a2-field-row">
+          <div class="a2-field">
+            <span class="a2-field-label">Carbs</span>
+            <input class="a2-field-input" type="text" value="48g" readonly>
+          </div>
+          <div class="a2-field">
+            <span class="a2-field-label">Fat</span>
+            <input class="a2-field-input" type="text" value="12g" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="a2-actions">
+        <button class="a2-save-btn">Save changes</button>
+        <span class="action-link delete a2-delete-link">Delete</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Collapsed hydration -->
+<div class="acard">
+  <div class="bar" style="background:var(--accent3)"></div>
+  <div class="wrap">
+    <div class="collapsed">
+      <div class="top-row">
+        <div class="title">Water</div>
+        <div class="cal">16 oz</div>
+        <span class="chevron">&#8250;</span>
+      </div>
+      <div class="meta-left">
+        <span>Hydration</span>
+        <span class="meta-sep">&middot;</span>
+        <span>2:00 PM</span>
+        <span class="meta-sep">&middot;</span>
+        <span>2.0 cups</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════
+     A3 — Accordion → Progress bars + sources (home-style)
+     ═══════════════════════════════════════════════════ -->
+<div class="version-label">A3 — Home-style progress accordion</div>
+<div class="context-note">Mirrors the home screen accordion cards. Expand to see how this meal contributed to your daily targets via progress bars and nutrient source tags. Edit link at bottom.</div>
+
+<!-- Collapsed -->
+<div class="acard">
+  <div class="bar" style="background:var(--accent1)"></div>
+  <div class="wrap">
+    <div class="collapsed">
+      <div class="top-row">
+        <div class="title">Chicken salad wrap</div>
+        <div class="cal">580 cal</div>
+        <span class="chevron">&#8250;</span>
+      </div>
+      <div class="meta-left">
+        <span>AI Text</span>
+        <span class="meta-sep">&middot;</span>
+        <span>12:30 PM</span>
+        <span class="meta-sep">&middot;</span>
+        <span>38p / 52c / 18f</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Expanded with progress bars -->
+<div class="acard">
+  <div class="bar" style="background:var(--accent2)"></div>
+  <div class="wrap">
+    <div class="collapsed">
+      <div class="top-row">
+        <div class="title">Greek yogurt bowl</div>
+        <div class="cal">420 cal</div>
+        <span class="chevron open">&#8250;</span>
+      </div>
+      <div class="meta-left">
+        <span>Photo Scan</span>
+        <span class="meta-sep">&middot;</span>
+        <span>8:15 AM</span>
+        <span class="meta-sep">&middot;</span>
+        <span>32p / 48c / 12f</span>
+      </div>
+    </div>
+    <div class="expanded">
+      <div class="a3-insight">This meal covered 21% of your daily calories and 21% of protein.</div>
+
+      <div class="a3-bar-group">
+        <div class="a3-bar-row">
+          <div class="a3-bar-header">
+            <span class="a3-bar-label">Calories</span>
+            <span class="a3-bar-value">420 / 2,000 kcal (21%)</span>
+          </div>
+          <div class="a3-bar-track" style="background:rgba(232,165,90,0.12)">
+            <div class="a3-bar-fill" style="width:21%;background:#e8a55a"></div>
+          </div>
+        </div>
+        <div class="a3-bar-row">
+          <div class="a3-bar-header">
+            <span class="a3-bar-label">Protein</span>
+            <span class="a3-bar-value">32 / 150g (21%)</span>
+          </div>
+          <div class="a3-bar-track" style="background:rgba(108,180,238,0.12)">
+            <div class="a3-bar-fill" style="width:21%;background:#6cb4ee"></div>
+          </div>
+        </div>
+        <div class="a3-bar-row">
+          <div class="a3-bar-header">
+            <span class="a3-bar-label">Carbs</span>
+            <span class="a3-bar-value">48 / 200g (24%)</span>
+          </div>
+          <div class="a3-bar-track" style="background:rgba(94,186,169,0.12)">
+            <div class="a3-bar-fill" style="width:24%;background:#5ebaa9"></div>
+          </div>
+        </div>
+        <div class="a3-bar-row">
+          <div class="a3-bar-header">
+            <span class="a3-bar-label">Fat</span>
+            <span class="a3-bar-value">12 / 67g (18%)</span>
+          </div>
+          <div class="a3-bar-track" style="background:rgba(196,164,108,0.12)">
+            <div class="a3-bar-fill" style="width:18%;background:#c4a46c"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="a3-source-tags">
+        <span class="a3-source-tag">Calcium 18%</span>
+        <span class="a3-source-tag">Vitamin D 12%</span>
+        <span class="a3-source-tag">Potassium 8%</span>
+      </div>
+
+      <div class="a3-actions">
+        <span class="action-link edit">Edit meal</span>
+        <span class="action-link delete">Delete</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Collapsed hydration -->
+<div class="acard">
+  <div class="bar" style="background:var(--accent3)"></div>
+  <div class="wrap">
+    <div class="collapsed">
+      <div class="top-row">
+        <div class="title">Water</div>
+        <div class="cal">16 oz</div>
+        <span class="chevron">&#8250;</span>
+      </div>
+      <div class="meta-left">
+        <span>Hydration</span>
+        <span class="meta-sep">&middot;</span>
+        <span>2:00 PM</span>
+        <span class="meta-sep">&middot;</span>
+        <span>2.0 cups</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { useRouter } from "expo-router";
+import { useIsFocused, useRouter } from "expo-router";
 import { ActivityIndicator, Modal, ScrollView, StyleSheet, View } from "react-native";
 import { AiTextMealCard } from "../../components/AiTextMealCard";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
-import { RememberedHydrationShortcutsCard } from "../../components/RememberedHydrationShortcutsCard";
+import { MySupplementsCard } from "../../components/MySupplementsCard";
+import { RememberedEntriesCard } from "../../components/RememberedEntriesCard";
 import { ScanEntryActions } from "../../components/ScanEntryActions";
 import { ThemedText } from "../../components/ThemedText";
 import { api } from "../../convex/_generated/api";
@@ -15,25 +16,46 @@ import { useScanLauncher } from "../../lib/scan/useScanLauncher";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 import { AnalysisQueueList } from "../../components/AnalysisQueueList";
 
+function hexToRgba(hex: string, alpha: number) {
+  const normalized = hex.replace("#", "");
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export default function LogScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const isFocused = useIsFocused();
   const scrollViewRef = useRef<ScrollView>(null);
   const dashboard = useQuery(api.dashboard.today);
-  const shortcuts = useQuery(api.hydrationShortcuts.listForCurrentUser);
-  const ensureSeeded = useMutation(api.hydrationShortcuts.ensureSeeded);
-  const createShortcut = useMutation(api.hydrationShortcuts.createShortcut);
-  const logShortcut = useMutation(api.hydrationShortcuts.logShortcut);
+  const supplementStack = useQuery(api.supplements.currentStack);
+  const [favoriteLimit, setFavoriteLimit] = useState(4);
+  const [recentLimit, setRecentLimit] = useState(4);
+  const rememberedEntries = useQuery(api.rememberedEntries.listForCurrentUser, {
+    favoriteLimit,
+    recentLimit,
+  });
+  const ensureMigrated = useMutation(api.rememberedEntries.ensureMigrated);
+  const ensureSupplementsReady = useMutation(api.supplements.ensureReady);
+  const logRememberedEntry = useMutation(api.rememberedEntries.logRememberedEntry);
+  const toggleFavorite = useMutation(api.rememberedEntries.toggleFavorite);
+  const logSupplementToday = useMutation(api.supplements.logToday);
+  const unlogSupplementToday = useMutation(api.supplements.unlogToday);
   const logManualMeal = useMutation(api.meals.logManual);
   const { isPreparing, scanLauncherError, startScan } = useScanLauncher();
   const {
     barcodeFallback,
     clearBarcodeFallback,
+    clearReviewedSaveAnnouncement,
     dismissJob,
     enqueueTextJob,
     getJobsForOrigin,
     jobs,
     openReviewJob,
+    reviewedSaveAnnouncement,
     retryJob,
   } = useScanFlow();
   const [quickAddExpansionSignal, setQuickAddExpansionSignal] = useState(0);
@@ -42,14 +64,45 @@ export default function LogScreen() {
   const textJobs = getJobsForOrigin("text");
 
   useEffect(() => {
-    if (dashboard && shortcuts && shortcuts.length === 0) {
-      void ensureSeeded({});
+    if (dashboard) {
+      void ensureMigrated({});
+      void ensureSupplementsReady({});
     }
-  }, [dashboard, ensureSeeded, shortcuts]);
+  }, [dashboard, ensureMigrated, ensureSupplementsReady]);
 
-  if (dashboard === undefined || shortcuts === undefined) {
+  useEffect(() => {
+    if (!isFocused || !reviewedSaveAnnouncement) {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      clearReviewedSaveAnnouncement();
+    }, 1600);
+
+    return () => clearTimeout(timeout);
+  }, [clearReviewedSaveAnnouncement, isFocused, reviewedSaveAnnouncement?.id]);
+
+  if (dashboard === undefined || supplementStack === undefined || rememberedEntries === undefined) {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
+        <ThemedText size="xl" style={styles.title}>
+          Log
+        </ThemedText>
+        {reviewedSaveAnnouncement ? (
+          <View
+            style={[
+              styles.reviewedSaveToast,
+              {
+                backgroundColor: hexToRgba(theme.accent1, 0.14),
+                borderColor: hexToRgba(theme.accent1, 0.24),
+              },
+            ]}
+          >
+            <ThemedText size="sm" style={{ color: theme.accent1 }}>
+              {reviewedSaveAnnouncement.message}
+            </ThemedText>
+          </View>
+        ) : null}
         <ActivityIndicator color={theme.accent1} size="small" />
         <ThemedText variant="secondary" style={styles.loadingLabel}>
           Loading your log...
@@ -76,22 +129,6 @@ export default function LogScreen() {
     );
   }
 
-  const rememberedShortcuts = shortcuts.map((shortcut) => ({
-    calories: shortcut.calories,
-    carbs: shortcut.carbs,
-    category: shortcut.category,
-    defaultAmountOz: shortcut.defaultAmountOz,
-    fat: shortcut.fat,
-    id: shortcut._id,
-    label: shortcut.label,
-    lastUsedAt: shortcut.lastUsedAt,
-    logMode: shortcut.logMode,
-    mealType: shortcut.mealType,
-    micronutrients: shortcut.nutritionProfile,
-    pinned: shortcut.pinned,
-    protein: shortcut.protein,
-  }));
-
   return (
     <>
       <ScrollView
@@ -103,6 +140,22 @@ export default function LogScreen() {
         <ThemedText size="xl" style={styles.title}>
           Log
         </ThemedText>
+
+        {reviewedSaveAnnouncement ? (
+          <View
+            style={[
+              styles.reviewedSaveToast,
+              {
+                backgroundColor: hexToRgba(theme.accent1, 0.14),
+                borderColor: hexToRgba(theme.accent1, 0.24),
+              },
+            ]}
+          >
+            <ThemedText size="sm" style={{ color: theme.accent1 }}>
+              {reviewedSaveAnnouncement.message}
+            </ThemedText>
+          </View>
+        ) : null}
 
         <View style={styles.section}>
           <ScanEntryActions
@@ -150,14 +203,41 @@ export default function LogScreen() {
         </View>
 
         <View style={styles.section}>
-          <RememberedHydrationShortcutsCard
-            onCreateShortcut={async (input) => {
-              await createShortcut(input);
+          <MySupplementsCard
+            asNeeded={supplementStack?.asNeeded ?? []}
+            daily={supplementStack?.daily ?? []}
+            onLogAsNeeded={async (userSupplementId) => {
+              await logSupplementToday({ userSupplementId: userSupplementId as never });
             }}
-            onLogShortcut={async (shortcutId) => {
-              await logShortcut({ shortcutId });
+            onManage={() => router.push("/supplements")}
+            onToggleDaily={async (userSupplementId, nextTaken) => {
+              if (nextTaken) {
+                await logSupplementToday({ userSupplementId: userSupplementId as never });
+                return;
+              }
+
+              await unlogSupplementToday({ userSupplementId: userSupplementId as never });
             }}
-            shortcuts={rememberedShortcuts}
+            onUndoAsNeeded={async (userSupplementId) => {
+              await unlogSupplementToday({ userSupplementId: userSupplementId as never });
+            }}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <RememberedEntriesCard
+            favoriteHasMore={rememberedEntries.favoritesHasMore}
+            favorites={rememberedEntries.favorites}
+            onReplay={async (rememberedEntryId) => {
+              await logRememberedEntry({ rememberedEntryId: rememberedEntryId as never });
+            }}
+            onShowMoreFavorites={() => setFavoriteLimit(20)}
+            onShowMoreRecent={() => setRecentLimit(20)}
+            onToggleFavorite={async (rememberedEntryId) => {
+              await toggleFavorite({ rememberedEntryId: rememberedEntryId as never });
+            }}
+            recent={rememberedEntries.recent}
+            recentHasMore={rememberedEntries.recentHasMore}
           />
         </View>
       </ScrollView>
@@ -279,6 +359,14 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     marginBottom: 8,
+  },
+  reviewedSaveToast: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    borderWidth: 1,
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   title: {
     marginBottom: 20,

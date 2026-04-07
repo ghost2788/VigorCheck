@@ -1,0 +1,24 @@
+
+> vigorcheck@1.0.0 web
+> expo start --web --port 8088
+
+env: load .env.local
+env: export BETTER_AUTH_SECRET CONVEX_DEPLOYMENT EXPO_PUBLIC_CONVEX_SITE_URL EXPO_PUBLIC_CONVEX_URL EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET OPENAI_API_KEY REVENUECAT_WEBHOOK_AUTH_TOKEN
+Starting project at C:\caltracker
+Starting Metro Bundler
+
+Waiting on http://localhost:8088
+Logs for your project will appear below.
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 53.8% (22/30)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 53.8% (154/335)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 53.8% (413/642)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 63.1% (691/885)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 72.4% (1015/1193)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 79.8% (1304/1460)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 88.9% (1466/1581)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 88.9% (1528/1683)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.0% (1653/1733)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.6% (1838/1867)
+Web Bundled 34873ms node_modules\expo-router\entry.js (1881 modules)
+ LOG  [web] Logs will appear in the browser console
+^C

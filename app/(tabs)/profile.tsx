@@ -62,10 +62,114 @@ function formatReminderWindow(wakeTime: string, sleepTime: string): string {
   return `Window: ${wake} \u2013 ${sleep}`;
 }
 
+function formatUsageBucketRemaining(label: string, remaining: number) {
+  if (label === "Today") {
+    return `${remaining} left today`;
+  }
+
+  if (label === "Trial total") {
+    return `${remaining} left in trial`;
+  }
+
+  return `${remaining} left this month`;
+}
+
+function formatDiagnosticsCurrency(usdMicros: number) {
+  const dollars = usdMicros / 1_000_000;
+
+  if (dollars > 0 && dollars < 0.01) {
+    return "<$0.01";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+    style: "currency",
+  }).format(dollars);
+}
+
+function formatDiagnosticsRequestCount(count: number) {
+  return `${count} ${count === 1 ? "request" : "requests"}`;
+}
+
+function formatDiagnosticsCallKindLabel(
+  callKind: "photo_scan" | "supplement_scan" | "text_entry" | "drink_estimate"
+) {
+  if (callKind === "photo_scan") {
+    return "Photo scans";
+  }
+
+  if (callKind === "supplement_scan") {
+    return "Supplement scans";
+  }
+
+  if (callKind === "text_entry") {
+    return "Text entries";
+  }
+
+  return "Drink estimates";
+}
+
+function formatDiagnosticsEventTitle(
+  callKind: "photo_scan" | "supplement_scan" | "text_entry" | "drink_estimate"
+) {
+  if (callKind === "photo_scan") {
+    return "Photo scan";
+  }
+
+  if (callKind === "supplement_scan") {
+    return "Supplement scan";
+  }
+
+  if (callKind === "text_entry") {
+    return "Text entry";
+  }
+
+  return "Drink estimate";
+}
+
+function formatDiagnosticsStatusLabel({
+  resultStatus,
+  usageState,
+}: {
+  resultStatus: "completed" | "blocked_quota" | "provider_error" | "postprocess_error";
+  usageState: "present" | "missing" | "not_applicable";
+}) {
+  const statusLabel =
+    resultStatus === "completed"
+      ? "Completed"
+      : resultStatus === "blocked_quota"
+        ? "Blocked"
+        : resultStatus === "provider_error"
+          ? "Provider error"
+          : "Postprocess error";
+
+  if (usageState === "missing") {
+    return `${statusLabel} \u2022 usage missing`;
+  }
+
+  return statusLabel;
+}
+
+function formatDiagnosticsTokenLabel(totalTokens: number | null) {
+  if (totalTokens === null) {
+    return "No token data";
+  }
+
+  return `${totalTokens.toLocaleString("en-US")} tokens`;
+}
+
 export default function ProfileScreen() {
-  const { theme } = useTheme();
+  const { setThemePreference, theme, themePreference } = useTheme();
   const router = useRouter();
+  const showInternalTestingTools = isInternalTestingToolsEnabled();
   const currentUser = useQuery(api.users.current);
+  const aiUsage = useQuery(api.aiUsage.currentStatus);
+  const aiDiagnostics = useQuery(
+    api.aiObservability.currentUserDiagnostics,
+    showInternalTestingTools ? {} : "skip"
+  );
   const forceTrialExpired = useMutation(api.testing.forceTrialExpired);
   const { data: session } = authClient.useSession();
   const {
@@ -79,7 +183,6 @@ export default function ProfileScreen() {
     supportMessage,
   } = useSubscription();
   const [accountActionError, setAccountActionError] = React.useState<string | null>(null);
-  const showInternalTestingTools = isInternalTestingToolsEnabled();
 
   if (currentUser === undefined) {
     return (
@@ -129,13 +232,19 @@ export default function ProfileScreen() {
     }
   }
 
+  function buildAppearanceOptionStyle(selected: boolean) {
+    return {
+      backgroundColor: selected ? `${theme.accent1}16` : theme.surfaceSoft,
+      borderColor: selected ? `${theme.accent1}55` : theme.cardBorder,
+    };
+  }
+
   return (
     <ScrollView
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       style={[styles.container, { backgroundColor: theme.background }]}
     >
-      {/* ── Header ── */}
       <View style={styles.header}>
         <ThemedText size="xl">Profile</ThemedText>
         <ThemedText style={styles.headerBody} variant="secondary">
@@ -143,7 +252,6 @@ export default function ProfileScreen() {
         </ThemedText>
       </View>
 
-      {/* ── Subscription Hero ── */}
       <Card style={styles.heroCard}>
         <View style={styles.heroTopRow}>
           <View style={styles.heroCopy}>
@@ -163,7 +271,10 @@ export default function ProfileScreen() {
               },
             ]}
           >
-            <ThemedText size="sm" variant={subscriptionStatus === "expired" ? "accent3" : "accent1"}>
+            <ThemedText
+              size="sm"
+              variant={subscriptionStatus === "expired" ? "accent3" : "accent1"}
+            >
               {heroCopy.badge}
             </ThemedText>
           </View>
@@ -213,28 +324,36 @@ export default function ProfileScreen() {
         </Pressable>
       </Card>
 
-      {/* ── Account ── */}
-      <Card style={styles.accountCard}>
-        <View style={styles.accountCopy}>
-          <ThemedText size="sm">{accountName}</ThemedText>
-          <ThemedText size="sm" variant="secondary">{accountEmail}</ThemedText>
-        </View>
-        <Pressable
-          hitSlop={8}
-          onPress={() =>
-            void runAccountAction(async () => {
-              await authClient.signOut();
-              router.replace("/(auth)/welcome");
-            })
-          }
-        >
-          <ThemedText size="sm" variant="tertiary">
-            Sign out
+      <Card style={styles.appearanceCard}>
+        <View style={styles.appearanceCopy}>
+          <ThemedText size="lg">Appearance</ThemedText>
+          <ThemedText size="sm" variant="secondary">
+            Applies to this device
           </ThemedText>
-        </Pressable>
+        </View>
+
+        <View style={styles.appearanceOptionsRow}>
+          {(["dark", "light"] as const).map((option) => {
+            const selected = themePreference === option;
+
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                key={option}
+                onPress={() => setThemePreference(option)}
+                style={[styles.appearanceOption, buildAppearanceOptionStyle(selected)]}
+                testID={`appearance-option-${option}`}
+              >
+                <ThemedText size="sm" variant={selected ? "accent1" : "secondary"}>
+                  {option === "dark" ? "Dark" : "Light"}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </View>
       </Card>
 
-      {/* ── Your Plan ── */}
       <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
         Your plan
       </ThemedText>
@@ -253,7 +372,6 @@ export default function ProfileScreen() {
         title="Body & Preferences"
       />
 
-      {/* ── Reminders ── */}
       <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
         Reminders
       </ThemedText>
@@ -267,7 +385,122 @@ export default function ProfileScreen() {
         )}
       />
 
-      {/* ── Internal Testing ── */}
+      {aiUsage ? (
+        <Card
+          style={[
+            styles.usageCard,
+            aiUsage.photo.isWarning || aiUsage.text.isWarning
+              ? {
+                  backgroundColor: `${theme.accent3}10`,
+                  borderColor: `${theme.accent3}26`,
+                  shadowColor: theme.shadow,
+                }
+              : null,
+          ]}
+        >
+          <View style={styles.usageHeader}>
+            <View style={styles.usageHeaderCopy}>
+              <ThemedText size="lg">AI usage</ThemedText>
+              <ThemedText size="sm" variant="secondary">
+                Free trial totals and monthly fair-use limits update when AI starts.
+              </ThemedText>
+            </View>
+            {aiUsage.photo.isWarning || aiUsage.text.isWarning ? (
+              <View
+                style={[
+                  styles.usageBadge,
+                  {
+                    backgroundColor: `${theme.accent3}16`,
+                    borderColor: `${theme.accent3}2c`,
+                  },
+                ]}
+              >
+                <ThemedText size="sm" variant="accent3">
+                  Approaching limit
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
+
+          <View style={styles.usageRow}>
+            <View style={styles.usageRowCopy}>
+              <ThemedText size="sm">Photo scans</ThemedText>
+              <ThemedText
+                size="sm"
+                style={styles.usagePrimaryLine}
+                variant={aiUsage.photo.isWarning ? "accent3" : "accent1"}
+              >
+                {formatUsageBucketRemaining(
+                  aiUsage.photo.primaryBucketLabel,
+                  aiUsage.photo.primaryBucketLabel === aiUsage.photo.daily.label
+                    ? aiUsage.photo.daily.remaining
+                    : aiUsage.photo.period.remaining
+                )}
+              </ThemedText>
+              {aiUsage.photo.primaryBucketLabel !== aiUsage.photo.period.label ? (
+                <ThemedText size="sm" variant="secondary">
+                  {formatUsageBucketRemaining(
+                    aiUsage.photo.period.label,
+                    aiUsage.photo.period.remaining
+                  )}
+                </ThemedText>
+              ) : null}
+              {aiUsage.photo.primaryBucketLabel !== aiUsage.photo.daily.label ? (
+                <ThemedText size="sm" variant="secondary">
+                  {formatUsageBucketRemaining(
+                    aiUsage.photo.daily.label,
+                    aiUsage.photo.daily.remaining
+                  )}
+                </ThemedText>
+              ) : null}
+            </View>
+          </View>
+
+          <View style={[styles.usageDivider, { backgroundColor: theme.cardBorder }]} />
+
+          <View style={styles.usageRow}>
+            <View style={styles.usageRowCopy}>
+              <ThemedText size="sm">AI text entries</ThemedText>
+              <ThemedText
+                size="sm"
+                style={styles.usagePrimaryLine}
+                variant={aiUsage.text.isWarning ? "accent3" : "accent1"}
+              >
+                {formatUsageBucketRemaining(
+                  aiUsage.text.period.label,
+                  aiUsage.text.period.remaining
+                )}
+              </ThemedText>
+              <ThemedText size="sm" variant="secondary">
+                {aiUsage.text.period.resetLabel}
+              </ThemedText>
+            </View>
+          </View>
+        </Card>
+      ) : null}
+
+      <Card style={styles.accountCard}>
+        <View style={styles.accountCopy}>
+          <ThemedText size="sm">{accountName}</ThemedText>
+          <ThemedText size="sm" variant="secondary">
+            {accountEmail}
+          </ThemedText>
+        </View>
+        <Pressable
+          hitSlop={8}
+          onPress={() =>
+            void runAccountAction(async () => {
+              await authClient.signOut();
+              router.replace("/(auth)/welcome");
+            })
+          }
+        >
+          <ThemedText size="sm" variant="tertiary">
+            Sign out
+          </ThemedText>
+        </Pressable>
+      </Card>
+
       {showInternalTestingTools ? (
         <View style={[styles.testingSection, { borderTopColor: theme.cardBorder }]}>
           <View style={[styles.testingCard, { borderColor: theme.cardBorder }]}>
@@ -290,6 +523,90 @@ export default function ProfileScreen() {
               </ThemedText>
             </Pressable>
           </View>
+
+          <View style={[styles.testingCard, { borderColor: theme.cardBorder }]}>
+            <ThemedText size="xs" variant="tertiary">
+              AI diagnostics
+            </ThemedText>
+            <ThemedText style={styles.testingBody} variant="tertiary">
+              Last 30 days from rollups, plus the latest 5 raw events.
+            </ThemedText>
+            {aiDiagnostics ? (
+              <View style={styles.diagnosticsBlock}>
+                <View style={styles.diagnosticsTotalsRow}>
+                  <ThemedText size="sm">
+                    {formatDiagnosticsRequestCount(aiDiagnostics.totals.requestCount)}
+                  </ThemedText>
+                  <ThemedText size="sm" variant="secondary">
+                    {`${formatDiagnosticsCurrency(aiDiagnostics.totals.estimatedCostUsdMicros)} estimated cost`}
+                  </ThemedText>
+                </View>
+                <ThemedText size="sm" variant="secondary">
+                  {`${aiDiagnostics.totals.blockedCount} blocked • ${aiDiagnostics.totals.postprocessErrorCount} postprocess issues • ${aiDiagnostics.totals.usageMissingCount} usage missing`}
+                </ThemedText>
+
+                <View style={[styles.testingDivider, { backgroundColor: theme.cardBorder }]} />
+
+                {aiDiagnostics.breakdown.map((row) => (
+                  <View key={row.callKind} style={styles.diagnosticsRow}>
+                    <View style={styles.diagnosticsRowCopy}>
+                      <ThemedText size="sm">{formatDiagnosticsCallKindLabel(row.callKind)}</ThemedText>
+                      <ThemedText size="sm" variant="secondary">
+                        {formatDiagnosticsRequestCount(row.requestCount)}
+                      </ThemedText>
+                    </View>
+                    <ThemedText size="sm" variant="tertiary">
+                      {formatDiagnosticsCurrency(row.estimatedCostUsdMicros)}
+                    </ThemedText>
+                  </View>
+                ))}
+
+                <View style={[styles.testingDivider, { backgroundColor: theme.cardBorder }]} />
+
+                <View style={styles.diagnosticsRecentHeader}>
+                  <ThemedText size="sm">Recent requests</ThemedText>
+                  <ThemedText size="sm" variant="secondary">
+                    Latest 5
+                  </ThemedText>
+                </View>
+
+                {aiDiagnostics.recentEvents.length ? (
+                  aiDiagnostics.recentEvents.map((event, index) => (
+                    <View
+                      key={`${event.callKind}-${event.completedAt}-${index}`}
+                      style={styles.diagnosticsRow}
+                    >
+                      <View style={styles.diagnosticsRowCopy}>
+                        <ThemedText size="sm">{formatDiagnosticsEventTitle(event.callKind)}</ThemedText>
+                        <ThemedText size="sm" variant="secondary">
+                          {`${event.model} • ${formatDiagnosticsStatusLabel({
+                            resultStatus: event.resultStatus,
+                            usageState: event.usageState,
+                          })}`}
+                        </ThemedText>
+                        <ThemedText size="sm" variant="secondary">
+                          {formatDiagnosticsTokenLabel(event.totalTokens)}
+                        </ThemedText>
+                      </View>
+                      <ThemedText size="sm" variant="tertiary">
+                        {event.estimatedCostUsdMicros === null
+                          ? "No cost"
+                          : formatDiagnosticsCurrency(event.estimatedCostUsdMicros)}
+                      </ThemedText>
+                    </View>
+                  ))
+                ) : (
+                  <ThemedText size="sm" variant="secondary">
+                    No AI requests yet.
+                  </ThemedText>
+                )}
+              </View>
+            ) : (
+              <ThemedText size="sm" variant="secondary">
+                Loading diagnostics...
+              </ThemedText>
+            )}
+          </View>
         </View>
       ) : null}
     </ScrollView>
@@ -306,6 +623,24 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  appearanceCard: {
+    gap: 14,
+  },
+  appearanceCopy: {
+    gap: 4,
+  },
+  appearanceOption: {
+    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  appearanceOptionsRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
   centered: {
     alignItems: "center",
     flex: 1,
@@ -320,6 +655,28 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
     paddingHorizontal: 20,
     paddingTop: 28,
+  },
+  diagnosticsBlock: {
+    gap: 10,
+  },
+  diagnosticsRecentHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  diagnosticsRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+  },
+  diagnosticsRowCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  diagnosticsTotalsRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   emptyBody: {
     lineHeight: 22,
@@ -371,6 +728,38 @@ const styles = StyleSheet.create({
   restoreText: {
     letterSpacing: 0.4,
   },
+  usageBadge: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  usageCard: {
+    gap: 14,
+  },
+  usageDivider: {
+    height: 1,
+    width: "100%",
+  },
+  usageHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+  },
+  usageHeaderCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  usagePrimaryLine: {
+    marginTop: 2,
+  },
+  usageRow: {
+    gap: 6,
+  },
+  usageRowCopy: {
+    gap: 2,
+  },
   sectionLabel: {
     marginTop: 8,
     paddingLeft: 4,
@@ -393,8 +782,13 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 14,
   },
+  testingDivider: {
+    height: 1,
+    width: "100%",
+  },
   testingSection: {
     borderTopWidth: 1,
+    gap: 12,
     marginTop: 24,
     paddingTop: 20,
   },

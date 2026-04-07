@@ -1,5 +1,17 @@
 // @ts-nocheck
 
+jest.mock("react-native/src/private/animated/NativeAnimatedHelper");
+
+jest.mock("react-native-worklets", () => require("react-native-worklets/lib/module/mock"));
+
+jest.mock("react-native-reanimated", () => {
+  const Reanimated = require("react-native-reanimated/mock");
+
+  Reanimated.default.call = () => {};
+
+  return Reanimated;
+});
+
 jest.mock(
   "@react-native-async-storage/async-storage",
   () => require("@react-native-async-storage/async-storage/jest/async-storage-mock")
@@ -98,8 +110,21 @@ jest.mock("react-native-svg", () => {
     ClipPath: MockSvg,
     Defs: MockSvg,
     G: MockSvg,
+    LinearGradient: MockSvg,
     Line: MockSvg,
     Path: MockSvg,
+    RadialGradient: MockSvg,
     Rect: MockSvg,
+    Stop: MockSvg,
+  };
+});
+
+jest.mock("@expo/vector-icons/Ionicons", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+
+  return {
+    __esModule: true,
+    default: ({ name, ...props }) => React.createElement(Text, props, name),
   };
 });

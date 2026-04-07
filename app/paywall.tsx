@@ -3,13 +3,13 @@ import { Redirect, useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button } from "../components/Button";
+import { Card } from "../components/Card";
+import { ThemedText } from "../components/ThemedText";
+import { WelcomeHudHero } from "../components/auth/WelcomeHudHero";
 import { api } from "../convex/_generated/api";
 import { authClient } from "../lib/auth/authClient";
 import { useSubscription } from "../lib/billing/SubscriptionProvider";
-import { Button } from "../components/Button";
-import { Card } from "../components/Card";
-import { WelcomeHudHero } from "../components/auth/WelcomeHudHero";
-import { ThemedText } from "../components/ThemedText";
 import { useTheme } from "../lib/theme/ThemeProvider";
 
 export default function PaywallScreen() {
@@ -46,7 +46,8 @@ export default function PaywallScreen() {
     return <Redirect href="/(tabs)" />;
   }
 
-  const monthlyPackage = offerings?.current?.monthly ?? offerings?.current?.availablePackages[0] ?? null;
+  const monthlyPackage =
+    offerings?.current?.monthly ?? offerings?.current?.availablePackages[0] ?? null;
 
   async function runAction(action: () => Promise<void>) {
     setError(null);
@@ -80,7 +81,8 @@ export default function PaywallScreen() {
             Keep your full VigorCheck plan running
           </ThemedText>
           <ThemedText variant="secondary" style={styles.body}>
-            Continue with AI meal scans, full nutrient insight, and the daily progress systems you set up during onboarding.
+            Continue with AI meal scans, full nutrient insight, and the daily progress systems
+            you set up during onboarding. AI features include fair-use limits.
           </ThemedText>
         </View>
 
@@ -97,7 +99,8 @@ export default function PaywallScreen() {
             </ThemedText>
           </View>
           <ThemedText variant="secondary" style={styles.offerBody}>
-            Your 7-day free trial starts when onboarding is saved. After that, this monthly plan keeps the full app unlocked.
+            Your 7-day free trial starts when onboarding is saved. After that, the monthly plan
+            keeps AI features and progress tools available with monthly fair-use limits.
           </ThemedText>
           {supportMessage ? (
             <ThemedText size="sm" style={{ color: theme.accent3 }}>
@@ -109,10 +112,12 @@ export default function PaywallScreen() {
         <Card style={styles.bulletsCard}>
           <ThemedText size="sm">What stays unlocked</ThemedText>
           <View style={styles.bulletList}>
-            <ThemedText variant="secondary">• AI photo meal scanning</ThemedText>
-            <ThemedText variant="secondary">• Full vitamin and mineral coverage</ThemedText>
-            <ThemedText variant="secondary">• Daily progress, trends, and history</ThemedText>
-            <ThemedText variant="secondary">• Plan updates tied to your targets</ThemedText>
+            <ThemedText variant="secondary">
+              - AI meal scans and text entries with fair-use limits
+            </ThemedText>
+            <ThemedText variant="secondary">- Full vitamin and mineral coverage</ThemedText>
+            <ThemedText variant="secondary">- Daily progress, trends, and history</ThemedText>
+            <ThemedText variant="secondary">- Plan updates tied to your targets</ThemedText>
           </View>
         </Card>
       </ScrollView>
@@ -220,6 +225,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
+    lineHeight: 36,
     maxWidth: 320,
   },
 });

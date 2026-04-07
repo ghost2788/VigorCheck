@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#10 — Timeline Entry: Edit vs Delete Button Weight</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --textMuted: rgba(255,255,255,0.16);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --accent1: #5ebaa9;
+    --accent2: #c4a46c;
+    --destructiveBorder: rgba(184,106,98,0.24);
+    --destructiveSurface: rgba(184,106,98,0.08);
+    --destructiveText: #B86A62;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    min-height: 100vh;
+    padding: 50px 20px 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    color: var(--textSecondary);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .version-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+  .context-note {
+    font-size: 11px;
+    color: var(--textTertiary);
+    margin-bottom: 14px;
+    line-height: 16px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--cardBorder);
+    margin: 28px 0;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .badge {
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--cardBorder);
+    background: var(--surfaceSoft);
+    color: var(--accent2);
+  }
+  .timestamp { font-size: 14px; color: var(--textSecondary); }
+  .entry-title { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+  .macros { color: var(--textMuted); }
+
+  /* ─── BEFORE: both are equal-weight pills ─── */
+  .actions-before {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 78px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .btn-pill.edit {
+    background: var(--surfaceSoft);
+    border-color: var(--cardBorder);
+    color: var(--text);
+  }
+  .btn-pill.delete {
+    background: var(--destructiveSurface);
+    border-color: var(--destructiveBorder);
+    color: var(--destructiveText);
+  }
+
+  /* ─── AFTER: Edit is text link, Delete stays pill ─── */
+  .actions-after {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .btn-text-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent1);
+    cursor: pointer;
+    padding: 6px 0;
+  }
+
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --textMuted: rgba(42,37,32,0.22);
+    --card: rgba(255,255,255,0.8);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --accent1: #3a9e8a;
+    --accent2: #b8965a;
+    --destructiveBorder: rgba(168,91,82,0.24);
+    --destructiveSurface: rgba(168,91,82,0.08);
+    --destructiveText: #A85B52;
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? '&#9684; Dark' : '&#9684; Light'">&#9684; Light</button>
+
+<!-- ═══════════ BEFORE ═══════════ -->
+<div class="version-label">Before — both are equal-weight pills</div>
+<div class="context-note">Edit (primary action) and Delete (destructive) look equally important</div>
+
+<div class="card">
+  <div class="header">
+    <span class="badge">Photo Scan</span>
+    <span class="timestamp">8:15 AM</span>
+  </div>
+  <div class="entry-title">Greek yogurt bowl</div>
+  <div class="meta-row">
+    <span>420 cal</span>
+    <span class="macros">32p / 48c / 12f</span>
+  </div>
+  <div class="actions-before">
+    <button class="btn-pill edit">Edit</button>
+    <button class="btn-pill delete">Delete</button>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════ AFTER ═══════════ -->
+<div class="version-label">After — Edit is text link, Delete stays pill</div>
+<div class="context-note">Edit is the common action (lightweight), Delete is rare (stays visually guarded)</div>
+
+<div class="card">
+  <div class="header">
+    <span class="badge">Photo Scan</span>
+    <span class="timestamp">8:15 AM</span>
+  </div>
+  <div class="entry-title">Greek yogurt bowl</div>
+  <div class="meta-row">
+    <span>420 cal</span>
+    <span class="macros">32p / 48c / 12f</span>
+  </div>
+  <div class="actions-after">
+    <span class="btn-text-link">Edit</span>
+    <button class="btn-pill delete">Delete</button>
+  </div>
+</div>
+
+</body>
+</html>

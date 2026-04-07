@@ -1,26 +1,32 @@
 import React from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { api } from "../../convex/_generated/api";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { ConcentricProgressRings } from "../../components/ConcentricProgressRings";
+import { HistoryTimelineEntryCard } from "../../components/HistoryTimelineEntryCard";
 import { NutrientProgressRows } from "../../components/NutrientProgressRows";
 import { ThemedText } from "../../components/ThemedText";
 import { useSubscription } from "../../lib/billing/SubscriptionProvider";
-import { TodayMealsCard } from "../../components/TodayMealsCard";
 import { WellnessAccordionList } from "../../components/WellnessAccordionList";
 import { WellnessLegend } from "../../components/WellnessLegend";
 import {
   getAtAGlanceMessage,
   getDisplayedRingProgress,
+  getNutritionCoverageDetailCopy,
   getNutritionCoverageDescriptor,
   getTargetRelativeBarPercent,
 } from "../../lib/domain/homeInsight";
 import { buildExpandedNutrientProgressRows } from "../../lib/domain/nutrientProgress";
 import { useOnboardingFlow } from "../../lib/onboarding/OnboardingFlowProvider";
 import { useTheme } from "../../lib/theme/ThemeProvider";
+import {
+  getHomeCaloriesShellWarningAccent,
+  resolveHomeAccordionWarmShellState,
+  resolveHomeCaloriesShellState,
+} from "../../lib/ui/homeAccordionShellPresentation";
 
 function formatCompactNumber(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
@@ -82,14 +88,58 @@ function InlinePercentRow({
   );
 }
 
+function renderContributorMeta({
+  accentColor,
+  contributor,
+  leadingLabel,
+  percentLabel,
+}: {
+  accentColor: string;
+  contributor: {
+    kind: "meal" | "supplement";
+    servingLabel?: string;
+  };
+  leadingLabel: string;
+  percentLabel: string;
+}) {
+  if (contributor.kind === "supplement") {
+    return (
+      <View style={styles.contributorMetaStack}>
+        <ThemedText size="xs" variant="tertiary">
+          {contributor.servingLabel}
+        </ThemedText>
+        <InlinePercentRow
+          accentColor={accentColor}
+          leadingLabel={leadingLabel}
+          percentLabel={percentLabel}
+          size="xs"
+          variant="tertiary"
+        />
+      </View>
+    );
+  }
+
+  return (
+    <InlinePercentRow
+      accentColor={accentColor}
+      leadingLabel={leadingLabel}
+      percentLabel={percentLabel}
+      size="xs"
+      variant="tertiary"
+    />
+  );
+}
+
 export default function HomeScreen() {
-  const { theme } = useTheme();
+  const { mode, theme } = useTheme();
   const router = useRouter();
   const dashboard = useQuery(api.dashboard.today);
   const logHydration = useMutation(api.hydration.logQuickAdd);
+  const deleteMeal = useMutation(api.meals.deleteMeal);
   const { accessState } = useSubscription();
   const { consumePostOnboardingHomeCTA, showPostOnboardingHomeCTA } = useOnboardingFlow();
   const [showCompletionCard, setShowCompletionCard] = React.useState(false);
+  const [expandedEntryId, setExpandedEntryId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!showPostOnboardingHomeCTA) {
@@ -99,6 +149,16 @@ export default function HomeScreen() {
     setShowCompletionCard(true);
     consumePostOnboardingHomeCTA();
   }, [consumePostOnboardingHomeCTA, showPostOnboardingHomeCTA]);
+
+  React.useEffect(() => {
+    if (!dashboard || expandedEntryId === null) {
+      return;
+    }
+
+    if (!dashboard.entryTimeline.some((entry) => entry.id === expandedEntryId)) {
+      setExpandedEntryId(null);
+    }
+  }, [dashboard, expandedEntryId]);
 
   if (dashboard === undefined) {
     return (
@@ -130,6 +190,60 @@ export default function HomeScreen() {
   const homeNutritionRows = buildExpandedNutrientProgressRows({
     detailGroups: dashboard.cards.nutrition.detailGroups,
   });
+  const showViewDayLink =
+    dashboard.entryTimeline.length > 0 || dashboard.cards.hydration.entries.length > 0;
+  const caloriesProgressRatio =
+    dashboard.cards.calories.target > 0
+      ? dashboard.cards.calories.consumed / dashboard.cards.calories.target
+      : 0;
+  const caloriesShellState = resolveHomeCaloriesShellState(caloriesProgressRatio);
+  const proteinShellState = resolveHomeAccordionWarmShellState(
+    dashboard.cards.protein.target > 0
+      ? dashboard.cards.protein.consumed / dashboard.cards.protein.target
+      : 0
+  );
+  const hydrationShellState = resolveHomeAccordionWarmShellState(
+    dashboard.cards.hydration.targetCups > 0
+      ? dashboard.cards.hydration.consumedCups / dashboard.cards.hydration.targetCups
+      : 0
+  );
+  const nutritionShellState = resolveHomeAccordionWarmShellState(
+    dashboard.cards.nutrition.coverageRatio
+  );
+  const caloriesWarningAccent = getHomeCaloriesShellWarningAccent(mode);
+  const caloriesPercentLabel = `${dashboard.cards.calories.rawProgressPercent}%`;
+  const proteinPercentLabel = `${dashboard.cards.protein.rawProgressPercent}%`;
+  const hydrationPercentLabel = `${dashboard.cards.hydration.rawProgressPercent}%`;
+  const nutritionPercentLabel = `${dashboard.cards.nutrition.coveragePercent}%`;
+  const caloriesHeaderPercentLabel =
+    caloriesShellState === "warning" ? (
+      <ThemedText
+        size="sm"
+        style={{ color: caloriesWarningAccent }}
+        testID="home-calories-header-percent"
+      >
+        ({caloriesPercentLabel})
+      </ThemedText>
+    ) : (
+      `(${caloriesPercentLabel})`
+    );
+  const caloriesHeaderBadge =
+    caloriesShellState === "warning" ? (
+      <View
+        style={[
+          styles.homeHeaderBadge,
+          {
+            backgroundColor: hexToRgba(caloriesWarningAccent, 0.12),
+            borderColor: hexToRgba(caloriesWarningAccent, 0.16),
+          },
+        ]}
+        testID="home-calories-header-badge"
+      >
+        <ThemedText size="xs" style={{ color: caloriesWarningAccent }}>
+          Over target
+        </ThemedText>
+      </View>
+    ) : null;
 
   return (
     <ScrollView
@@ -244,22 +358,21 @@ export default function HomeScreen() {
             detail: (
               <View>
                 <ThemedText variant="secondary" style={styles.cardInsight}>
-                  Meals driving the most calorie load today.
+                  Top contributors today.
                 </ThemedText>
-                {dashboard.cards.calories.contributors.map((meal) => (
-                  <View key={meal.id} style={styles.sourceRow}>
+                {dashboard.cards.calories.contributors.map((contributor) => (
+                  <View key={contributor.id} style={styles.sourceRow}>
                     <View style={styles.sourceCopy}>
-                      <ThemedText size="sm">{meal.label}</ThemedText>
-                      <InlinePercentRow
-                        accentColor={theme.metricCalories}
-                        leadingLabel={`${meal.value} kcal`}
-                        percentLabel={`(${formatTargetRelativePercent(
+                      <ThemedText size="sm">{contributor.label}</ThemedText>
+                      {renderContributorMeta({
+                        accentColor: theme.metricCalories,
+                        contributor,
+                        leadingLabel: `${contributor.value} kcal`,
+                        percentLabel: `(${formatTargetRelativePercent(
                           dashboard.cards.calories.target,
-                          meal.value
-                        )})`}
-                        size="xs"
-                        variant="tertiary"
-                      />
+                          contributor.value
+                        )})`,
+                      })}
                     </View>
                     <View
                       style={[
@@ -274,7 +387,7 @@ export default function HomeScreen() {
                             backgroundColor: theme.metricCalories,
                             width: `${getTargetRelativeBarPercent({
                               target: dashboard.cards.calories.target,
-                              value: meal.value,
+                              value: contributor.value,
                             })}%`,
                           },
                         ]}
@@ -284,8 +397,14 @@ export default function HomeScreen() {
                 ))}
               </View>
             ),
-            headerPercentLabel: `(${formatPercent(dashboard.cards.calories.rawProgressPercent)})`,
+            headerBadge: caloriesHeaderBadge,
+            headerPercentLabel: caloriesHeaderPercentLabel,
             key: "calories",
+            shellEffect: {
+              accentColor: theme.metricCalories,
+              state: caloriesShellState,
+              warningColor: caloriesWarningAccent,
+            },
             summary: `${dashboard.cards.calories.consumed} / ${dashboard.cards.calories.target} kcal`,
             title: "Calories",
           },
@@ -294,22 +413,21 @@ export default function HomeScreen() {
             detail: (
               <View>
                 <ThemedText variant="secondary" style={styles.cardInsight}>
-                  Meals doing the most protein work today.
+                  Top contributors today.
                 </ThemedText>
-                {dashboard.cards.protein.contributors.map((meal) => (
-                  <View key={meal.id} style={styles.sourceRow}>
+                {dashboard.cards.protein.contributors.map((contributor) => (
+                  <View key={contributor.id} style={styles.sourceRow}>
                     <View style={styles.sourceCopy}>
-                      <ThemedText size="sm">{meal.label}</ThemedText>
-                      <InlinePercentRow
-                        accentColor={theme.metricProtein}
-                        leadingLabel={`${meal.value}g protein`}
-                        percentLabel={`(${formatTargetRelativePercent(
+                      <ThemedText size="sm">{contributor.label}</ThemedText>
+                      {renderContributorMeta({
+                        accentColor: theme.metricProtein,
+                        contributor,
+                        leadingLabel: `${contributor.value}g protein`,
+                        percentLabel: `(${formatTargetRelativePercent(
                           dashboard.cards.protein.target,
-                          meal.value
-                        )})`}
-                        size="xs"
-                        variant="tertiary"
-                      />
+                          contributor.value
+                        )})`,
+                      })}
                     </View>
                     <View
                       style={[
@@ -324,7 +442,7 @@ export default function HomeScreen() {
                             backgroundColor: theme.metricProtein,
                             width: `${getTargetRelativeBarPercent({
                               target: dashboard.cards.protein.target,
-                              value: meal.value,
+                              value: contributor.value,
                             })}%`,
                           },
                         ]}
@@ -334,8 +452,12 @@ export default function HomeScreen() {
                 ))}
               </View>
             ),
-            headerPercentLabel: `(${formatPercent(dashboard.cards.protein.rawProgressPercent)})`,
+            headerPercentLabel: `(${proteinPercentLabel})`,
             key: "protein",
+            shellEffect: {
+              accentColor: theme.metricProtein,
+              state: proteinShellState,
+            },
             summary: `${dashboard.cards.protein.consumed} / ${dashboard.cards.protein.target} g`,
             title: "Protein",
           },
@@ -396,10 +518,14 @@ export default function HomeScreen() {
               </View>
             ),
             headerActionLabel: "+",
-            headerPercentLabel: `(${formatPercent(dashboard.cards.hydration.rawProgressPercent)})`,
+            headerPercentLabel: `(${hydrationPercentLabel})`,
             key: "hydration",
             onHeaderActionPress: () => {
               void logHydration({ amountOz: 8 });
+            },
+            shellEffect: {
+              accentColor: theme.metricHydration,
+              state: hydrationShellState,
             },
             summary: `${formatCompactNumber(
               dashboard.cards.hydration.consumedCups
@@ -411,13 +537,21 @@ export default function HomeScreen() {
             detail: (
               <View>
                 <ThemedText variant="secondary" style={styles.cardInsight}>
-                  Coverage reflects foods with tracked nutrients across the expanded vitamin, mineral, and nutrient set.
+                  {getNutritionCoverageDetailCopy()}
                 </ThemedText>
-                <NutrientProgressRows accentColor={theme.metricNutrition} rows={homeNutritionRows} />
+                <NutrientProgressRows
+                  accentColor={theme.metricNutrition}
+                  presentationMode="plain"
+                  rows={homeNutritionRows}
+                />
               </View>
             ),
-            headerPercentLabel: `(${formatPercent(dashboard.cards.nutrition.coveragePercent)})`,
+            headerPercentLabel: `(${nutritionPercentLabel})`,
             key: "nutrition",
+            shellEffect: {
+              accentColor: theme.metricNutrition,
+              state: nutritionShellState,
+            },
             summary: getNutritionCoverageDescriptor(dashboard.cards.nutrition.coveragePercent),
             title: "Nutrition",
           },
@@ -425,11 +559,62 @@ export default function HomeScreen() {
       />
 
       <View style={styles.mealsSection}>
-        <TodayMealsCard
-          emptyLabel="No meals logged yet today. Use Log to start your first entry."
-          meals={dashboard.meals}
-          title="Today&apos;s meals"
-        />
+        <View style={styles.mealsHeader}>
+          <ThemedText size="sm">Today&apos;s entries</ThemedText>
+          <View style={styles.mealsHeaderMeta}>
+            <ThemedText size="sm" variant="secondary">
+              {dashboard.entryTimeline.length} entr{dashboard.entryTimeline.length === 1 ? "y" : "ies"}
+            </ThemedText>
+            {showViewDayLink ? (
+              <Pressable onPress={() => router.push(`/history/${dashboard.dateKey}`)}>
+                <ThemedText size="xs" style={{ color: theme.accent1 }}>
+                  View day
+                </ThemedText>
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+
+        {dashboard.entryTimeline.length === 0 ? (
+          <ThemedText style={styles.emptyMealsCopy} variant="secondary">
+            No meals, drinks, or supplements logged yet today. Use Log to start your first entry.
+          </ThemedText>
+        ) : (
+          dashboard.entryTimeline.map((entry) => (
+            <HistoryTimelineEntryCard
+              entry={entry}
+              isExpanded={expandedEntryId === entry.id}
+              key={`${entry.kind}-${entry.id}`}
+              onDelete={
+                entry.kind === "meal"
+                  ? () => {
+                      Alert.alert(
+                        "Delete meal",
+                        "This will remove the saved meal and all of its items.",
+                        [
+                          { style: "cancel", text: "Cancel" },
+                          {
+                            onPress: () => {
+                              void deleteMeal({ mealId: entry.id as never });
+                            },
+                            style: "destructive",
+                            text: "Delete",
+                          },
+                        ]
+                      );
+                    }
+                  : undefined
+              }
+              onEdit={entry.kind === "meal" ? () => {
+                router.push(`/history/meals/${entry.id}`);
+              } : undefined}
+              onToggle={() =>
+                setExpandedEntryId((current) => (current === entry.id ? null : entry.id))
+              }
+              targets={dashboard.targets}
+            />
+          ))
+        )}
       </View>
     </ScrollView>
   );
@@ -451,6 +636,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 26,
   },
+  contributorMetaStack: {
+    gap: 2,
+    marginTop: 4,
+  },
+  emptyMealsCopy: {
+    marginTop: 8,
+  },
   heroCopy: {
     marginBottom: 18,
   },
@@ -461,6 +653,12 @@ const styles = StyleSheet.create({
   heroTitle: {
     lineHeight: 30,
     maxWidth: 280,
+  },
+  homeHeaderBadge: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   inlineMetaRow: {
     alignItems: "center",
@@ -488,6 +686,17 @@ const styles = StyleSheet.create({
   },
   mealsSection: {
     marginTop: 18,
+  },
+  mealsHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  mealsHeaderMeta: {
+    alignItems: "center",
+    columnGap: 12,
+    flexDirection: "row",
   },
   missingBody: {
     marginBottom: 18,

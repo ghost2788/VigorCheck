@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile Account Card — Layout Options</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --textMuted: rgba(255,255,255,0.16);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --surfaceStrong: rgba(255,255,255,0.05);
+    --accent1: #5ebaa9;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 50px 20px 60px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    color: var(--textSecondary);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .version-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--textTertiary);
+    margin-bottom: 6px;
+    padding-left: 2px;
+  }
+  .context-note {
+    font-size: 11px;
+    color: var(--textTertiary);
+    margin-bottom: 14px;
+    line-height: 16px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--cardBorder);
+    margin: 32px 0;
+  }
+
+  /* ─── Shared card ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* ─── Avatar ─── */
+  .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid var(--cardBorder);
+    background: var(--surfaceStrong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--textSecondary);
+    flex-shrink: 0;
+  }
+
+  /* ─── Text ─── */
+  .name { font-size: 12px; font-weight: 500; }
+  .email { font-size: 12px; color: var(--textSecondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ─── Full button (before) ─── */
+  .btn-full {
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    border-radius: 16px;
+    padding: 15px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ─── Text link (after) ─── */
+  .sign-out-link {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--textTertiary);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ═══ BEFORE ═══ */
+  .before-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .before-copy {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* ═══ OPTION A: Two-row ═══ */
+  .a-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .a-copy {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .a-bottom {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* ═══ OPTION B: Avatar row + sign out text link ═══ */
+  .b-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .b-copy {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* Light theme */
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --textMuted: rgba(42,37,32,0.22);
+    --card: rgba(255,255,255,0.8);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --surfaceStrong: rgba(255,255,255,0.88);
+    --accent1: #3a9e8a;
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? '&#9684; Dark' : '&#9684; Light'">&#9684; Light</button>
+
+<!-- ═══════════════════════════════════════════
+     BEFORE — Everything crammed in one row
+     ═══════════════════════════════════════════ -->
+<div class="version-label">Before</div>
+<div class="context-note">Avatar + name/email + full Sign Out button all in one row. Email gets squished and truncated.</div>
+
+<div class="card">
+  <div class="before-row">
+    <div class="avatar">TG</div>
+    <div class="before-copy">
+      <span class="name">Tim Girardet</span>
+      <span class="email">tim.girardet@example.com</span>
+    </div>
+    <button class="btn-full">Sign out</button>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════
+     OPTION A — Two-row: identity on top, sign out below
+     ═══════════════════════════════════════════ -->
+<div class="version-label">Option A — Two-row layout</div>
+<div class="context-note">Avatar + name/email get the full width. Sign out button drops to a second row, right-aligned. Email has room to breathe.</div>
+
+<div class="card">
+  <div class="a-top">
+    <div class="avatar">TG</div>
+    <div class="a-copy">
+      <span class="name">Tim Girardet</span>
+      <span class="email">tim.girardet@example.com</span>
+    </div>
+  </div>
+  <div class="a-bottom">
+    <button class="btn-full">Sign out</button>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════
+     OPTION B — Text link sign out, single row
+     ═══════════════════════════════════════════ -->
+<div class="version-label">Option B — Text link sign out</div>
+<div class="context-note">Replace the full button with a lightweight text link. Stays single row but email gets more space. Sign out is de-emphasized (it's rare).</div>
+
+<div class="card">
+  <div class="b-top">
+    <div class="avatar">TG</div>
+    <div class="b-copy">
+      <span class="name">Tim Girardet</span>
+      <span class="email">tim.girardet@example.com</span>
+    </div>
+    <span class="sign-out-link">Sign out</span>
+  </div>
+</div>
+
+</body>
+</html>

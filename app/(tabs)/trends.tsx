@@ -203,7 +203,11 @@ export default function TrendsScreen() {
           />
         </View>
 
-        <NutrientProgressRows accentColor={theme.metricNutrition} rows={nutritionRows} />
+        <NutrientProgressRows
+          accentColor={theme.metricNutrition}
+          presentationMode="static_reward_only"
+          rows={nutritionRows}
+        />
       </Card>
 
       <Card style={styles.section}>

@@ -12,16 +12,27 @@ import {
 } from "./wellness";
 import {
   buildGroupedNutrientDetails,
+  buildNutrientInsights,
+  DetailedNutrientTargets,
   NutrientDetailGroup,
+  NutrientSourceTag,
   sumDetailedNutrients,
   type DetailedNutrientInput,
 } from "./nutrients";
+import {
+  deriveMealTimelineLabel,
+  MealTimelineEntryMethod,
+} from "./mealTimeline";
+import { buildEntryTimeline, type TimelineEntry } from "./entryTimeline";
+import { MealType } from "./meals";
+import { SupplementLogSnapshot } from "./supplements";
 
 export type DashboardMeal = {
   id: string;
   label: string;
-  mealType: "breakfast" | "lunch" | "dinner" | "snack";
+  mealType: MealType;
   timestamp: number;
+  topNutrientSources: NutrientSourceTag[];
   totals: {
     calories: number;
     carbs: number;
@@ -31,13 +42,23 @@ export type DashboardMeal = {
   itemCount: number;
 };
 
-export type DashboardContributor = {
-  id: string;
-  label: string;
-  mealType: DashboardMeal["mealType"];
-  timestamp: number;
-  value: number;
-};
+export type DashboardContributor =
+  | {
+      id: string;
+      kind: "meal";
+      label: string;
+      mealType: MealType;
+      timestamp: number;
+      value: number;
+    }
+  | {
+      id: string;
+      kind: "supplement";
+      label: string;
+      servingLabel: string;
+      timestamp: number;
+      value: number;
+    };
 
 export type NutritionContributor = DashboardContributor & {
   contributionScore: number;
@@ -59,6 +80,11 @@ export type HydrationEntry = {
 };
 
 export type DashboardPayload = {
+  activityCounts: {
+    hydration: number;
+    meals: number;
+    supplements: number;
+  };
   cards: {
     calories: {
       consumed: number;
@@ -77,9 +103,14 @@ export type DashboardPayload = {
       targetCups: number;
     };
     nutrition: {
+      coverageRatio: number;
       contributors: NutritionContributor[];
       coveragePercent: number;
       detailGroups: NutrientDetailGroup[];
+      insights: {
+        biggestGaps: ReturnType<typeof buildNutrientInsights>["biggestGaps"];
+        topWins: ReturnType<typeof buildNutrientInsights>["topWins"];
+      };
       nutrients: NutritionRow[];
       score: number;
     };
@@ -91,7 +122,7 @@ export type DashboardPayload = {
       target: number;
     };
   };
-  meals: DashboardMeal[];
+  entryTimeline: Array<Exclude<TimelineEntry, { kind: "hydration" }>>;
   totals: {
     calories: number;
     carbs: number;
@@ -112,9 +143,10 @@ export type DashboardPayload = {
 };
 
 type MealInput = {
+  entryMethod: MealTimelineEntryMethod;
   id: string;
   label?: string;
-  mealType: DashboardMeal["mealType"];
+  mealType: MealType;
   nutrients: NutritionAmounts & DetailedNutrientInput;
   timestamp: number;
   totals: {
@@ -136,24 +168,45 @@ type HydrationLogInput = {
   timestamp: number;
 };
 
+type ContributorBase =
+  | {
+      id: string;
+      kind: "meal";
+      label: string;
+      mealType: MealType;
+      nutrients: NutritionAmounts & DetailedNutrientInput;
+      timestamp: number;
+      totals: {
+        calories: number;
+        carbs: number;
+        fat: number;
+        protein: number;
+      };
+    }
+  | {
+      id: string;
+      kind: "supplement";
+      label: string;
+      nutrients: DetailedNutrientInput;
+      servingLabel: string;
+      timestamp: number;
+      totals: {
+        calories: number;
+        carbs: number;
+        fat: number;
+        protein: number;
+      };
+    };
+
 export type DashboardTargets = {
   calories: number;
+  carbs: number;
+  detailedNutrition: DetailedNutrientTargets;
+  fat: number;
   hydration: number;
   nutrition: NutritionTargets;
   protein: number;
 };
-
-function deriveMealLabel(meal: MealInput, items: MealItemInput[]) {
-  if (meal.label?.trim()) {
-    return meal.label.trim();
-  }
-
-  if (items.length === 1) {
-    return items[0].foodName;
-  }
-
-  return `${items.length} items`;
-}
 
 function sortMealsByValue<T extends { timestamp: number; value: number }>(items: T[]) {
   return [...items].sort((left, right) => {
@@ -187,18 +240,37 @@ function buildTopNutrients(meal: NutritionAmounts, targets: NutritionTargets) {
     .map((entry) => entry.key);
 }
 
+function toNutritionAmounts(nutrients: DetailedNutrientInput): NutritionAmounts {
+  return {
+    calcium: nutrients.calcium ?? 0,
+    fiber: nutrients.fiber ?? 0,
+    iron: nutrients.iron ?? 0,
+    potassium: nutrients.potassium ?? 0,
+    vitaminC: nutrients.vitaminC ?? 0,
+    vitaminD: nutrients.vitaminD ?? 0,
+  };
+}
+
 export function buildTodayDashboard({
   hydrationLogs,
   mealItems,
   meals,
+  supplementLogs = [],
   targets,
 }: {
   hydrationLogs: HydrationLogInput[];
   mealItems: MealItemInput[];
   meals: MealInput[];
+  supplementLogs?: SupplementLogSnapshot[];
   targets: DashboardTargets;
 }): DashboardPayload {
   const itemsByMeal = new Map<string, MealItemInput[]>();
+  const macroTargets = {
+    calories: targets.calories,
+    carbs: targets.carbs,
+    fat: targets.fat,
+    protein: targets.protein,
+  };
 
   for (const item of mealItems) {
     const current = itemsByMeal.get(item.mealId) ?? [];
@@ -206,22 +278,18 @@ export function buildTodayDashboard({
     itemsByMeal.set(item.mealId, current);
   }
 
-  const dashboardMeals = [...meals]
-    .sort((left, right) => right.timestamp - left.timestamp)
-    .map((meal) => {
-    const items = itemsByMeal.get(meal.id) ?? [];
-
-    return {
-      id: meal.id,
-      itemCount: items.length,
-      label: deriveMealLabel(meal, items),
-      mealType: meal.mealType,
-      timestamp: meal.timestamp,
-      totals: meal.totals,
-    };
+  const orderedMeals = [...meals].sort((left, right) => right.timestamp - left.timestamp);
+  const entryTimeline = buildEntryTimeline({
+    detailedNutritionTargets: targets.detailedNutrition,
+    hydrationLogs,
+    includeHydration: false,
+    macroTargets,
+    mealItemsByMealId: itemsByMeal,
+    meals: orderedMeals,
+    supplementLogs,
   });
 
-  const totals = dashboardMeals.reduce(
+  const totals = orderedMeals.reduce(
     (accumulator, meal) => ({
       calories: accumulator.calories + meal.totals.calories,
       carbs: accumulator.carbs + meal.totals.carbs,
@@ -230,35 +298,37 @@ export function buildTodayDashboard({
     }),
     { calories: 0, carbs: 0, fat: 0, protein: 0 }
   );
+  const supplementTotals = supplementLogs.reduce(
+    (accumulator, supplement) => ({
+      calories: accumulator.calories + supplement.totals.calories,
+      carbs: accumulator.carbs + supplement.totals.carbs,
+      fat: accumulator.fat + supplement.totals.fat,
+      protein: accumulator.protein + supplement.totals.protein,
+    }),
+    { calories: 0, carbs: 0, fat: 0, protein: 0 }
+  );
+  const aggregateTotals = {
+    calories: totals.calories + supplementTotals.calories,
+    carbs: totals.carbs + supplementTotals.carbs,
+    fat: totals.fat + supplementTotals.fat,
+    protein: totals.protein + supplementTotals.protein,
+  };
   const totalHydrationOz = hydrationLogs.reduce((sum, entry) => sum + entry.amountOz, 0);
   const totalHydrationCups = ouncesToCups(totalHydrationOz);
 
-  const nutrientTotals = meals.reduce<NutritionAmounts>(
-    (accumulator, meal) => ({
-      calcium: accumulator.calcium + meal.nutrients.calcium,
-      fiber: accumulator.fiber + meal.nutrients.fiber,
-      iron: accumulator.iron + meal.nutrients.iron,
-      potassium: accumulator.potassium + meal.nutrients.potassium,
-      vitaminC: accumulator.vitaminC + meal.nutrients.vitaminC,
-      vitaminD: accumulator.vitaminD + meal.nutrients.vitaminD,
-    }),
-    {
-      calcium: 0,
-      fiber: 0,
-      iron: 0,
-      potassium: 0,
-      vitaminC: 0,
-      vitaminD: 0,
-    }
-  );
   const detailedNutrientTotals = sumDetailedNutrients(
-    meals.map((meal) => ({
+    [...meals, ...supplementLogs].map((meal) => ({
       nutrients: meal.nutrients,
     }))
   );
+  const nutrientTotals = toNutritionAmounts(detailedNutrientTotals);
+  const nutrientInsights = buildNutrientInsights({
+    targets: targets.detailedNutrition,
+    totals: detailedNutrientTotals,
+  });
 
-  const caloriesRawProgressPercent = roundPercent(totals.calories, targets.calories);
-  const proteinRawProgressPercent = roundPercent(totals.protein, targets.protein);
+  const caloriesRawProgressPercent = roundPercent(aggregateTotals.calories, targets.calories);
+  const proteinRawProgressPercent = roundPercent(aggregateTotals.protein, targets.protein);
   const hydrationRawProgressPercent = roundPercent(totalHydrationCups, targets.hydration);
   const nutrientRows = getNutritionKeys().map((key) => ({
     consumed: nutrientTotals[key],
@@ -266,12 +336,20 @@ export function buildTodayDashboard({
     percent: roundPercent(nutrientTotals[key], targets.nutrition[key]),
     target: targets.nutrition[key],
   }));
+  const nutritionCoverageRatio =
+    nutrientRows.reduce((total, nutrient) => {
+      if (!nutrient.target) {
+        return total;
+      }
+
+      return total + Math.min(nutrient.consumed / nutrient.target, 1);
+    }, 0) / nutrientRows.length;
   const nutritionScore = Math.round(
     nutrientRows.reduce((total, nutrient) => total + Math.min(nutrient.percent, 100), 0) /
       nutrientRows.length
   );
-  const caloriesScore = scoreCaloriesTargetCloseness(totals.calories, targets.calories);
-  const proteinScore = scoreGoalProgress(totals.protein, targets.protein);
+  const caloriesScore = scoreCaloriesTargetCloseness(aggregateTotals.calories, targets.calories);
+  const proteinScore = scoreGoalProgress(aggregateTotals.protein, targets.protein);
   const hydrationScore = scoreGoalProgress(totalHydrationCups, targets.hydration);
   const rings: DashboardPayload["wellness"]["rings"] = {
     calories: {
@@ -298,34 +376,63 @@ export function buildTodayDashboard({
   const wellnessScore = Math.round(
     (caloriesScore + proteinScore + hydrationScore + nutritionScore) / 4
   );
-  const contributorBase = meals.map((meal) => {
-    const label = deriveMealLabel(meal, itemsByMeal.get(meal.id) ?? []);
+  const contributorBase: ContributorBase[] = [
+    ...orderedMeals.map((meal) => {
+      const label = deriveMealTimelineLabel(meal, itemsByMeal.get(meal.id) ?? []);
 
-    return {
-      id: meal.id,
-      label,
-      mealType: meal.mealType,
-      timestamp: meal.timestamp,
-      totals: meal.totals,
-      nutrients: meal.nutrients,
-    };
-  });
+      return {
+        id: meal.id,
+        kind: "meal" as const,
+        label,
+        nutrients: meal.nutrients,
+        mealType: meal.mealType,
+        timestamp: meal.timestamp,
+        totals: meal.totals,
+      };
+    }),
+    ...supplementLogs.map((supplement) => ({
+      id: supplement.id,
+      kind: "supplement" as const,
+      label: supplement.label,
+      nutrients: supplement.nutrients,
+      servingLabel: supplement.servingLabel,
+      timestamp: supplement.timestamp,
+      totals: supplement.totals,
+    })),
+  ];
 
   return {
+    activityCounts: {
+      hydration: hydrationLogs.length,
+      meals: orderedMeals.length,
+      supplements: supplementLogs.length,
+    },
     cards: {
       calories: {
-        consumed: totals.calories,
+        consumed: aggregateTotals.calories,
         contributors: sortMealsByValue(
-          contributorBase.map((meal) => ({
-            id: meal.id,
-            label: meal.label,
-            mealType: meal.mealType,
-            timestamp: meal.timestamp,
-            value: meal.totals.calories,
-          }))
+          contributorBase.map((entry): DashboardContributor =>
+            entry.kind === "meal"
+              ? {
+                  id: entry.id,
+                  kind: "meal",
+                  label: entry.label,
+                  mealType: entry.mealType,
+                  timestamp: entry.timestamp,
+                  value: entry.totals.calories,
+                }
+              : {
+                  id: entry.id,
+                  kind: "supplement",
+                  label: entry.label,
+                  servingLabel: entry.servingLabel,
+                  timestamp: entry.timestamp,
+                  value: entry.totals.calories,
+                }
+          )
         ),
         rawProgressPercent: caloriesRawProgressPercent,
-        remaining: targets.calories - totals.calories,
+        remaining: targets.calories - aggregateTotals.calories,
         score: caloriesScore,
         target: targets.calories,
       },
@@ -345,46 +452,75 @@ export function buildTodayDashboard({
         targetCups: targets.hydration,
       },
       nutrition: {
+        coverageRatio: nutritionCoverageRatio,
         contributors: sortNutritionContributors(
-          contributorBase.map((meal) => ({
-            contributionScore: rankMealNutritionContribution({
-              meal: meal.nutrients,
+          contributorBase.map((entry): NutritionContributor => {
+            const mealNutrition = toNutritionAmounts(entry.nutrients);
+            const contributionScore = rankMealNutritionContribution({
+              meal: mealNutrition,
               targets: targets.nutrition,
-            }),
-            id: meal.id,
-            label: meal.label,
-            mealType: meal.mealType,
-            timestamp: meal.timestamp,
-            topNutrients: buildTopNutrients(meal.nutrients, targets.nutrition),
-            value: rankMealNutritionContribution({
-              meal: meal.nutrients,
-              targets: targets.nutrition,
-            }),
-          }))
+            });
+            const shared = {
+              contributionScore,
+              id: entry.id,
+              label: entry.label,
+              timestamp: entry.timestamp,
+              topNutrients: buildTopNutrients(mealNutrition, targets.nutrition),
+              value: contributionScore,
+            };
+
+            return entry.kind === "meal"
+              ? {
+                  ...shared,
+                  kind: "meal",
+                  mealType: entry.mealType,
+                }
+              : {
+                  ...shared,
+                  kind: "supplement",
+                  servingLabel: entry.servingLabel,
+                };
+          })
         ),
         coveragePercent: nutritionScore,
-        detailGroups: buildGroupedNutrientDetails(detailedNutrientTotals),
+        detailGroups: buildGroupedNutrientDetails({
+          targets: targets.detailedNutrition,
+          totals: detailedNutrientTotals,
+        }),
+        insights: nutrientInsights,
         nutrients: nutrientRows,
         score: nutritionScore,
       },
       protein: {
-        consumed: totals.protein,
+        consumed: aggregateTotals.protein,
         contributors: sortMealsByValue(
-          contributorBase.map((meal) => ({
-            id: meal.id,
-            label: meal.label,
-            mealType: meal.mealType,
-            timestamp: meal.timestamp,
-            value: meal.totals.protein,
-          }))
+          contributorBase.map((entry): DashboardContributor =>
+            entry.kind === "meal"
+              ? {
+                  id: entry.id,
+                  kind: "meal",
+                  label: entry.label,
+                  mealType: entry.mealType,
+                  timestamp: entry.timestamp,
+                  value: entry.totals.protein,
+                }
+              : {
+                  id: entry.id,
+                  kind: "supplement",
+                  label: entry.label,
+                  servingLabel: entry.servingLabel,
+                  timestamp: entry.timestamp,
+                  value: entry.totals.protein,
+                }
+          )
         ),
         rawProgressPercent: proteinRawProgressPercent,
         score: proteinScore,
         target: targets.protein,
       },
     },
-    meals: dashboardMeals,
-    totals,
+    entryTimeline: entryTimeline as DashboardPayload["entryTimeline"],
+    totals: aggregateTotals,
     wellness: {
       biggestGapKey,
       rings,

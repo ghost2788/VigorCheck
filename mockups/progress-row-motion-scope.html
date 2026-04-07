@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Progress Row Motion Scope</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --background: #1a1814;
+    --background-alt: #15131a;
+    --text: #e8e0d4;
+    --text-secondary: rgba(255,255,255,0.46);
+    --text-tertiary: rgba(255,255,255,0.28);
+    --card: rgba(255,255,255,0.035);
+    --card-border: rgba(255,255,255,0.08);
+    --surface-soft: rgba(255,255,255,0.025);
+    --surface-strong: rgba(255,255,255,0.05);
+    --accent1: #5ebaa9;
+    --accent2: #c4a46c;
+    --accent3: #78a0c8;
+    --metric-calories: #d8c49a;
+    --metric-protein: #5ebaa9;
+    --metric-hydration: #78a0c8;
+    --metric-nutrition: #d39a57;
+    --danger-soft: #b86a62;
+    --danger-strong: #d17a6e;
+    --shadow: rgba(0,0,0,0.34);
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(94,186,169,0.08), transparent 28%),
+      radial-gradient(circle at top right, rgba(196,164,108,0.08), transparent 24%),
+      var(--background);
+    color: var(--text);
+    font-family: "SF Pro Display", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 30px 18px 44px;
+  }
+
+  .shell {
+    margin: 0 auto;
+    max-width: 1240px;
+  }
+
+  .eyebrow,
+  .panel-label,
+  .section-label,
+  .card-label,
+  .status-chip {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: clamp(30px, 5vw, 42px);
+    font-weight: 300;
+    letter-spacing: -1px;
+    line-height: 1.03;
+    margin: 10px 0 12px;
+  }
+
+  .summary {
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 860px;
+  }
+
+  .board {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 390px));
+    justify-content: center;
+  }
+
+  .panel {
+    display: grid;
+    gap: 10px;
+  }
+
+  .panel-copy {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .phone {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--background-alt) 78%, black 4%), var(--background));
+    border: 1px solid var(--card-border);
+    border-radius: 34px;
+    box-shadow: 0 28px 70px var(--shadow);
+    padding: 12px;
+  }
+
+  .screen {
+    background: var(--background);
+    border-radius: 24px;
+    min-height: 820px;
+    overflow: hidden;
+    padding: 20px 18px 24px;
+  }
+
+  .topline {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .hero-title {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    margin-bottom: 18px;
+  }
+
+  .section {
+    margin-top: 18px;
+  }
+
+  .section-label {
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 14px;
+  }
+
+  .accordion + .accordion {
+    margin-top: 12px;
+  }
+
+  .accordion-head {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .accordion-title {
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .accordion-summary {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  .row-stack {
+    display: grid;
+    gap: 11px;
+  }
+
+  .progress-row {
+    display: grid;
+    gap: 6px;
+    position: relative;
+  }
+
+  .row-head {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .row-label {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .row-meta {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+  }
+
+  .percent {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .track {
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .fill {
+    border-radius: 999px;
+    height: 100%;
+    position: relative;
+  }
+
+  .fill::after {
+    content: "";
+    display: none;
+  }
+
+  .reward {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    margin: 0 -10px;
+    overflow: hidden;
+    padding: 8px 10px 9px;
+  }
+
+  .reward .reward-pill {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    padding: 4px 8px 3px;
+  }
+
+  .reward .track {
+    background: color-mix(in srgb, currentColor 14%, transparent);
+  }
+
+  .reward .fill::after {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+    bottom: -1px;
+    content: "";
+    display: block;
+    left: 62%;
+    position: absolute;
+    top: -1px;
+    transform: skewX(-18deg);
+    width: 42px;
+  }
+
+  .reward .track::after {
+    background: rgba(255,255,255,0.84);
+    border-radius: 999px;
+    content: "";
+    height: 8px;
+    position: absolute;
+    right: -1px;
+    top: -1px;
+    width: 8px;
+  }
+
+  .advisory {
+    background: rgba(184,106,98,0.085);
+    border: 1px solid rgba(184,106,98,0.18);
+    border-radius: 14px;
+    margin: 0 -10px;
+    overflow: hidden;
+    padding: 8px 10px 9px 14px;
+  }
+
+  .advisory::before {
+    background: rgba(184,106,98,0.78);
+    border-radius: 999px;
+    bottom: 8px;
+    content: "";
+    left: 0;
+    position: absolute;
+    top: 8px;
+    width: 2px;
+  }
+
+  .advisory::after {
+    background: radial-gradient(circle at center, rgba(209,122,110,0.2), transparent 66%);
+    content: "";
+    inset: -12px;
+    opacity: 0.7;
+    position: absolute;
+  }
+
+  .advisory > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .advisory .status-chip {
+    background: rgba(184,106,98,0.12);
+    border: 1px solid rgba(184,106,98,0.18);
+    border-radius: 999px;
+    color: var(--danger-strong);
+    padding: 4px 8px 3px;
+  }
+
+  .timeline-card {
+    border-radius: 16px;
+    display: flex;
+    flex-direction: row;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+
+  .timeline-accent {
+    width: 4px;
+  }
+
+  .timeline-content {
+    flex: 1;
+    padding: 14px 16px;
+  }
+
+  .timeline-top {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .timeline-title {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .timeline-meta {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .timeline-note {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.45;
+    margin: 10px 0 12px;
+  }
+
+  .plain .track::after {
+    display: none;
+  }
+
+  .plain .fill::after {
+    display: none;
+  }
+
+  .footer-actions {
+    color: var(--text-tertiary);
+    display: flex;
+    font-size: 11px;
+    justify-content: space-between;
+    letter-spacing: 0.6px;
+    margin-top: 12px;
+    text-transform: uppercase;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .legend-chip {
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    padding: 7px 10px;
+  }
+
+  .muted-note {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 1.45;
+    margin-top: 14px;
+  }
+
+  .calories { color: var(--metric-calories); }
+  .protein { color: var(--metric-protein); }
+  .hydration { color: var(--metric-hydration); }
+  .nutrition { color: var(--metric-nutrition); }
+
+  @media (max-width: 860px) {
+    .board { grid-template-columns: minmax(280px, 390px); }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <div class="eyebrow">Scope Refinement Mockup</div>
+      <h1>Motion lives on the summary surfaces, not the meal cards.</h1>
+      <p class="summary">
+        This preview narrows the earlier rollout. The four Home accordions carry the premium finish state,
+        Calories alone gets the advisory rail, meal timeline cards stay plain, and Trends keeps a quieter
+        static finished treatment without moving sheen.
+      </p>
+      <div class="legend">
+        <div class="legend-chip">Home accordions: reward motion</div>
+        <div class="legend-chip">Calories only: advisory rail</div>
+        <div class="legend-chip">Timeline meal cards: plain rows</div>
+        <div class="legend-chip">Trends nutrients: static finish only</div>
+      </div>
+    </header>
+
+    <main class="board">
+      <section class="panel">
+        <div class="panel-label">Home Summary</div>
+        <div class="panel-copy">Only the four main accordion cards get the richer treatment. Calories can warn. Protein, hydration, and nutrition only celebrate completion.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">2026-04-05</div>
+              <div class="status-chip">HST</div>
+            </div>
+            <div class="hero-title">Daily Vigor</div>
+
+            <div class="section">
+              <div class="section-label">Home Accordions</div>
+
+              <div class="card accordion">
+                <div class="accordion-head">
+                  <div class="accordion-title">Calories</div>
+                  <div class="accordion-summary">2,246 / 2,000 kcal</div>
+                </div>
+                <div class="row-stack">
+                  <div class="progress-row advisory">
+                    <div class="row-head">
+                      <div class="row-label">Calories</div>
+                      <div class="row-meta">
+                        <div class="status-chip">Over target</div>
+                        <div class="percent calories">112%</div>
+                      </div>
+                    </div>
+                    <div class="track">
+                      <div class="fill calories" style="background: var(--metric-calories); width: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card accordion">
+                <div class="accordion-head">
+                  <div class="accordion-title">Protein</div>
+                  <div class="accordion-summary">151 / 150 g</div>
+                </div>
+                <div class="row-stack">
+                  <div class="progress-row reward protein">
+                    <div class="row-head">
+                      <div class="row-label">Protein</div>
+                      <div class="row-meta">
+                        <div class="reward-pill">100%</div>
+                      </div>
+                    </div>
+                    <div class="track">
+                      <div class="fill" style="background: var(--metric-protein); width: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card accordion">
+                <div class="accordion-head">
+                  <div class="accordion-title">Hydration</div>
+                  <div class="accordion-summary">11 / 11 cups</div>
+                </div>
+                <div class="row-stack">
+                  <div class="progress-row reward hydration">
+                    <div class="row-head">
+                      <div class="row-label">Hydration</div>
+                      <div class="row-meta">
+                        <div class="reward-pill">100%</div>
+                      </div>
+                    </div>
+                    <div class="track">
+                      <div class="fill" style="background: var(--metric-hydration); width: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card accordion">
+                <div class="accordion-head">
+                  <div class="accordion-title">Nutrition</div>
+                  <div class="accordion-summary">89% coverage</div>
+                </div>
+                <div class="row-stack">
+                  <div class="progress-row reward nutrition">
+                    <div class="row-head">
+                      <div class="row-label">Nutrition</div>
+                      <div class="row-meta">
+                        <div class="reward-pill">100%</div>
+                      </div>
+                    </div>
+                    <div class="track">
+                      <div class="fill" style="background: var(--metric-nutrition); width: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="muted-note">Browser note: this board shows the visual direction. The slow sheen and soft advisory pulse would still only be judged in-app on the phone.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">Home Timeline</div>
+        <div class="panel-copy">Meal timeline cards stay calm. They keep the thin progress rows, but lose the reward pill, sheen, and advisory rail so expanded cards do not feel busy.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="topline">
+              <div class="eyebrow">Today&apos;s Meals</div>
+              <div class="status-chip">3 meals</div>
+            </div>
+            <div class="section">
+              <div class="section-label">Timeline Cards Stay Plain</div>
+
+              <div class="timeline-card card">
+                <div class="timeline-accent" style="background: var(--accent2);"></div>
+                <div class="timeline-content">
+                  <div class="timeline-top">
+                    <div class="timeline-title">Breakfast scan (2 items)</div>
+                    <div class="timeline-meta">320 cal</div>
+                  </div>
+                  <div class="timeline-meta">FoodScan · 9:02 AM · 23p / 34c / 9f</div>
+                  <div class="timeline-note">This meal covered 17% of your daily carbs and 16% of your daily calories.</div>
+                  <div class="row-stack plain">
+                    <div class="progress-row calories">
+                      <div class="row-head">
+                        <div class="row-label">Calories</div>
+                        <div class="percent calories">16%</div>
+                      </div>
+                      <div class="track">
+                        <div class="fill" style="background: var(--metric-calories); width: 16%;"></div>
+                      </div>
+                    </div>
+                    <div class="progress-row protein">
+                      <div class="row-head">
+                        <div class="row-label">Protein</div>
+                        <div class="percent protein">15%</div>
+                      </div>
+                      <div class="track">
+                        <div class="fill" style="background: var(--metric-protein); width: 15%;"></div>
+                      </div>
+                    </div>
+                    <div class="progress-row nutrition">
+                      <div class="row-head">
+                        <div class="row-label">Vitamin D</div>
+                        <div class="percent nutrition">87%</div>
+                      </div>
+                      <div class="track">
+                        <div class="fill" style="background: var(--metric-nutrition); width: 87%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="footer-actions">
+                    <div style="color: var(--accent1);">Edit meal</div>
+                    <div style="color: var(--danger-soft);">Delete</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="timeline-card card">
+                <div class="timeline-accent" style="background: var(--accent1);"></div>
+                <div class="timeline-content">
+                  <div class="timeline-top">
+                    <div class="timeline-title">Lunch</div>
+                    <div class="timeline-meta">620 cal</div>
+                  </div>
+                  <div class="timeline-meta">Text entry · 12:44 PM · 42p / 58c / 18f</div>
+                  <div class="timeline-note">The meal card still feels informative, but no longer competes with the summary surfaces above it.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-label">History + Trends</div>
+        <div class="panel-copy">History uses the same plain timeline treatment as Home. Trends gets finished nutrient rows, but static only, no moving sheen.</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="section">
+              <div class="section-label">History Day Detail</div>
+              <div class="timeline-card card">
+                <div class="timeline-accent" style="background: var(--accent2);"></div>
+                <div class="timeline-content">
+                  <div class="timeline-top">
+                    <div class="timeline-title">Dinner scan</div>
+                    <div class="timeline-meta">540 cal</div>
+                  </div>
+                  <div class="timeline-meta">FoodScan · 7:18 PM · 38p / 41c / 19f</div>
+                  <div class="timeline-note">History meal rows stay visually quiet for scannability across the whole day.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section" style="margin-top: 22px;">
+              <div class="section-label">Trends Nutrition Card</div>
+              <div class="card">
+                <div class="accordion-head">
+                  <div class="accordion-title">Nutrition</div>
+                  <div class="accordion-summary">Static finish only</div>
+                </div>
+                <div class="row-stack">
+                  <div class="progress-row reward nutrition">
+                    <div class="row-head">
+                      <div class="row-label">Vitamin C</div>
+                      <div class="row-meta">
+                        <div class="reward-pill">100%</div>
+                      </div>
+                    </div>
+                    <div class="track">
+                      <div class="fill" style="background: var(--metric-nutrition); width: 100%;"></div>
+                    </div>
+                  </div>
+
+                  <div class="progress-row reward nutrition">
+                    <div class="row-head">
+                      <div class="row-label">Potassium</div>
+                      <div class="row-meta">
+                        <div class="reward-pill">100%</div>
+                      </div>
+                    </div>
+                    <div class="track">
+                      <div class="fill" style="background: var(--metric-nutrition); width: 100%;"></div>
+                    </div>
+                  </div>
+
+                  <div class="progress-row nutrition">
+                    <div class="row-head">
+                      <div class="row-label">Iron</div>
+                      <div class="percent nutrition">74%</div>
+                    </div>
+                    <div class="track">
+                      <div class="fill" style="background: var(--metric-nutrition); width: 74%;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="muted-note">Finished rows still feel elevated here, but the screen does not shimmer. Better for an analytical tab.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

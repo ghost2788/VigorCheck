@@ -7,8 +7,6 @@ let hasWarnedMissingUrl = false;
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
   const convexUrl = getConvexUrl();
-  const { data: session } = authClient.useSession();
-  const sessionKey = session?.session?.id ?? "signed-out";
 
   const client = useMemo(() => {
     if (!convexUrl) {
@@ -16,7 +14,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     }
 
     return new ConvexReactClient(convexUrl);
-  }, [convexUrl, sessionKey]);
+  }, [convexUrl]);
 
   useEffect(() => {
     return () => {
@@ -39,7 +37,6 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     <ConvexBetterAuthProvider
       authClient={authClient}
       client={client}
-      key={sessionKey}
     >
       {children}
     </ConvexBetterAuthProvider>

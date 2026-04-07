@@ -12,11 +12,18 @@ import {
   TextAnalysisInput,
 } from "../domain/analysisQueue";
 
+type ReviewedSaveAnnouncement = {
+  id: string;
+  message: string;
+};
+
 type ScanFlowContextValue = {
   activeReviewJob: AnalysisJob | null;
+  announceReviewedSave: (message: string) => void;
   barcodeFallback: BarcodeLookupFallback | null;
   clearBarcodeFallback: () => void;
   clearActiveReview: () => void;
+  clearReviewedSaveAnnouncement: () => void;
   completeReviewJob: (jobId: string) => void;
   dismissJob: (jobId: string) => void;
   enqueueBarcodeJob: (input: Omit<BarcodeAnalysisInput, "type">) => string;
@@ -25,6 +32,7 @@ type ScanFlowContextValue = {
   getJobsForOrigin: (originCard: AnalysisJobOriginCard) => AnalysisJob[];
   jobs: AnalysisJob[];
   openReviewJob: (jobId: string) => void;
+  reviewedSaveAnnouncement: ReviewedSaveAnnouncement | null;
   retryJob: (jobId: string) => void;
   updateActiveDraft: (updater: (draft: AnalysisDraft) => AnalysisDraft) => void;
 };
@@ -58,10 +66,13 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
   const analyzeText = useAction(api.textAnalysis.analyzeMealDescription);
   const lookupBarcode = useAction(api.barcode.lookupProduct);
   const idRef = useRef(0);
+  const reviewedSaveIdRef = useRef(0);
   const isMountedRef = useRef(true);
   const [jobs, setJobs] = useState<AnalysisJob[]>([]);
   const [activeReviewJobId, setActiveReviewJobId] = useState<string | null>(null);
   const [barcodeFallback, setBarcodeFallback] = useState<BarcodeLookupFallback | null>(null);
+  const [reviewedSaveAnnouncement, setReviewedSaveAnnouncement] =
+    useState<ReviewedSaveAnnouncement | null>(null);
 
   useEffect(() => {
     return () => {
@@ -185,9 +196,17 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ScanFlowContextValue>(
     () => ({
       activeReviewJob: activeReviewJobId ? jobs.find((job) => job.id === activeReviewJobId) ?? null : null,
+      announceReviewedSave: (message) => {
+        reviewedSaveIdRef.current += 1;
+        setReviewedSaveAnnouncement({
+          id: `reviewed-save-${reviewedSaveIdRef.current}`,
+          message,
+        });
+      },
       barcodeFallback,
       clearBarcodeFallback: () => setBarcodeFallback(null),
       clearActiveReview: () => setActiveReviewJobId(null),
+      clearReviewedSaveAnnouncement: () => setReviewedSaveAnnouncement(null),
       completeReviewJob: (jobId) => {
         setJobs((current) => current.filter((job) => job.id !== jobId));
         setActiveReviewJobId((current) => (current === jobId ? null : current));
@@ -254,6 +273,7 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
       getJobsForOrigin: (originCard) => jobs.filter((job) => job.originCard === originCard),
       jobs,
       openReviewJob: (jobId) => setActiveReviewJobId(jobId),
+      reviewedSaveAnnouncement,
       retryJob: (jobId) => {
         setJobs((current) =>
           current.map((job) =>
@@ -281,7 +301,7 @@ export function ScanFlowProvider({ children }: { children: ReactNode }) {
         );
       },
     }),
-    [activeReviewJobId, barcodeFallback, jobs]
+    [activeReviewJobId, barcodeFallback, jobs, reviewedSaveAnnouncement]
   );
 
   return <ScanFlowContext.Provider value={value}>{children}</ScanFlowContext.Provider>;

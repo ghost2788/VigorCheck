@@ -94,7 +94,7 @@ export function HistoryDayCard({ summary, onPress }: HistoryDayCardProps) {
 
           <View style={styles.footer}>
             <ThemedText size="sm" variant="secondary">
-              {summary.mealCount} {summary.mealCount === 1 ? "meal" : "meals"}
+              {summary.footerLabel}
             </ThemedText>
           </View>
         </Card>

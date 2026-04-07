@@ -44,15 +44,20 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const syncCustomerInfo = useMutation(api.subscriptions.syncCustomerInfo);
   const apiKey = getRevenueCatApiKey();
   const isConfigured = Boolean(apiKey) && Platform.OS !== "web";
+  const revenueCatAppUserId = currentUser?.subscription.revenueCatAppUserId ?? null;
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const configuredUserIdRef = useRef<string | null>(null);
   const listenerRef = useRef<((info: CustomerInfo) => void) | null>(null);
+  const currentUserRef = useRef(currentUser);
+  currentUserRef.current = currentUser;
 
   const applyCustomerInfo = useCallback(
-    async (nextCustomerInfo: CustomerInfo, user = currentUser) => {
+    async (nextCustomerInfo: CustomerInfo, userOverride?: typeof currentUser | null) => {
       setCustomerInfo(nextCustomerInfo);
+
+      const user = userOverride ?? currentUserRef.current;
 
       if (!user) {
         return;
@@ -68,7 +73,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         subscriptionProductId: snapshot.activeProductId ?? undefined,
       });
     },
-    [currentUser, syncCustomerInfo]
+    [syncCustomerInfo]
   );
 
   // Stable ref so the configure effect doesn't re-run when currentUser changes
@@ -77,7 +82,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   applyCustomerInfoRef.current = applyCustomerInfo;
 
   const refresh = useCallback(async () => {
-    if (!isConfigured || !currentUser) {
+    if (!isConfigured || !revenueCatAppUserId) {
       return;
     }
 
@@ -94,7 +99,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     } finally {
       setIsLoading(false);
     }
-  }, [applyCustomerInfo, currentUser, isConfigured]);
+  }, [applyCustomerInfo, isConfigured, revenueCatAppUserId]);
 
   useEffect(() => {
     if (!isConfigured) {
@@ -109,8 +114,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       setOfferings(null);
       return;
     }
-
-    const revenueCatAppUserId = currentUser.subscription.revenueCatAppUserId;
 
     let cancelled = false;
 
@@ -156,7 +159,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         }
 
         setOfferings(nextOfferings);
-        await applyCustomerInfoRef.current(nextCustomerInfo, currentUser);
+        await applyCustomerInfoRef.current(nextCustomerInfo);
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -169,7 +172,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     return () => {
       cancelled = true;
     };
-  }, [apiKey, currentUser, isConfigured]);
+  }, [apiKey, isConfigured, revenueCatAppUserId]);
 
   useEffect(() => {
     return () => {

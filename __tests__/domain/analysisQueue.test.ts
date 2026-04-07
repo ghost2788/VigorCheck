@@ -1,28 +1,7 @@
-import { Id } from "../../convex/_generated/dataModel";
 import {
   AnalysisJob,
-  RememberedHydrationShortcut,
   getQueuedJobLabel,
-  sortRememberedShortcuts,
 } from "../../lib/domain/analysisQueue";
-
-function createShortcut(
-  overrides: Partial<Omit<RememberedHydrationShortcut, "id">> & { id: string; label: string }
-): RememberedHydrationShortcut {
-  return {
-    calories: 0,
-    carbs: 0,
-    category: "water",
-    defaultAmountOz: 8,
-    fat: 0,
-    lastUsedAt: 0,
-    logMode: "hydration_only",
-    pinned: false,
-    protein: 0,
-    ...overrides,
-    id: overrides.id as Id<"hydrationShortcuts">,
-  };
-}
 
 function createJob(
   overrides: Partial<AnalysisJob> & Pick<AnalysisJob, "id" | "originCard" | "source" | "status">
@@ -52,21 +31,5 @@ describe("analysis queue helpers", () => {
 
     expect(getQueuedJobLabel(jobs[1], jobs)).toBe("Waiting... (next)");
     expect(getQueuedJobLabel(jobs[2], jobs)).toBe("Waiting... (#3)");
-  });
-
-  it("sorts remembered shortcuts pinned first then by most recent use", () => {
-    const sorted = sortRememberedShortcuts([
-      createShortcut({ id: "recent-water", label: "Water 16 oz", lastUsedAt: 20 }),
-      createShortcut({ id: "older-pinned", label: "Red Bull", lastUsedAt: 10, pinned: true }),
-      createShortcut({ id: "newer-pinned", label: "Protein shake", lastUsedAt: 30, pinned: true }),
-      createShortcut({ id: "older-water", label: "Water 8 oz", lastUsedAt: 5 }),
-    ]);
-
-    expect(sorted.map((shortcut) => String(shortcut.id))).toEqual([
-      "newer-pinned",
-      "older-pinned",
-      "recent-water",
-      "older-water",
-    ]);
   });
 });

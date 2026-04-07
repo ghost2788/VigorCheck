@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Calories Signal Monolith</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --bg: #0f0d0c;
+    --screen: #14110f;
+    --text: #efe5d4;
+    --text-secondary: rgba(239, 229, 212, 0.72);
+    --text-tertiary: rgba(239, 229, 212, 0.42);
+    --gold: #dec27d;
+    --gold-hot: #f3c46a;
+    --gold-shadow: #8d6832;
+    --warning: #e06a5e;
+    --warning-hot: #ff8e82;
+    --border: rgba(255, 245, 230, 0.08);
+    --shadow: rgba(0, 0, 0, 0.44);
+  }
+
+  @keyframes seamDrift {
+    0% {
+      transform: translateX(-118%);
+      opacity: 0;
+    }
+
+    12% {
+      opacity: 0.12;
+    }
+
+    34% {
+      opacity: 0.34;
+    }
+
+    50% {
+      opacity: 0.16;
+    }
+
+    64% {
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateX(132%);
+      opacity: 0;
+    }
+  }
+
+  @keyframes warningBreath {
+    0%,
+    100% {
+      opacity: 0.24;
+      transform: scaleY(0.985);
+    }
+
+    50% {
+      opacity: 0.44;
+      transform: scaleY(1.015);
+    }
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(243, 196, 106, 0.06), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(224, 106, 94, 0.05), transparent 26%),
+      var(--bg);
+    color: var(--text);
+    font-family: "SF Pro Display", "Segoe UI", sans-serif;
+    min-height: 100vh;
+    padding: 28px 18px 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    margin: 0 auto;
+    max-width: 390px;
+  }
+
+  .eyebrow {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: 34px;
+    font-weight: 300;
+    letter-spacing: -1px;
+    line-height: 1.02;
+    margin-bottom: 10px;
+  }
+
+  .intro {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 22px;
+  }
+
+  .phone {
+    background: linear-gradient(180deg, #171411 0%, #0f0d0b 100%);
+    border: 1px solid var(--border);
+    border-radius: 34px;
+    box-shadow: 0 28px 68px var(--shadow);
+    padding: 12px;
+  }
+
+  .screen {
+    background:
+      radial-gradient(circle at top center, rgba(243, 196, 106, 0.04), transparent 24%),
+      linear-gradient(180deg, #14110f 0%, #0f0d0c 100%);
+    border-radius: 24px;
+    min-height: 790px;
+    padding: 20px 18px 24px;
+  }
+
+  .topline {
+    align-items: center;
+    color: var(--text-tertiary);
+    display: flex;
+    font-size: 11px;
+    justify-content: space-between;
+    letter-spacing: 0.8px;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+
+  .hero {
+    margin-bottom: 16px;
+  }
+
+  .hero h2 {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+  }
+
+  .section-label {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    margin: 12px 0 10px 4px;
+    text-transform: uppercase;
+  }
+
+  .state-stack {
+    display: grid;
+    gap: 16px;
+  }
+
+  .state-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+
+  .card {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.003)),
+      linear-gradient(180deg, rgba(255, 245, 230, 0.012), rgba(255, 245, 230, 0.004));
+    border: 1px solid rgba(255, 245, 230, 0.065);
+    border-radius: 22px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.02),
+      inset 0 -28px 42px rgba(0,0,0,0.16),
+      0 20px 46px rgba(0,0,0,0.3);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .card::before {
+    border: 1px solid rgba(255,255,255,0.024);
+    border-radius: 20px;
+    content: "";
+    inset: 1px;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .card.default {
+    background:
+      linear-gradient(180deg, rgba(222, 194, 125, 0.02), rgba(255,255,255,0.004) 36%, rgba(255,255,255,0.002) 100%),
+      linear-gradient(180deg, rgba(255,255,255,0.006), rgba(255,255,255,0.002));
+  }
+
+  .card.near {
+    background:
+      linear-gradient(180deg, rgba(243, 196, 106, 0.05), rgba(255,255,255,0.006) 34%, rgba(255,255,255,0.002) 100%),
+      linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.002));
+    border-color: rgba(243, 196, 106, 0.16);
+  }
+
+  .card.warning {
+    background:
+      linear-gradient(180deg, rgba(224, 106, 94, 0.06), rgba(255,255,255,0.006) 34%, rgba(255,255,255,0.002) 100%),
+      linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.002));
+    border-color: rgba(224, 106, 94, 0.18);
+  }
+
+  .monolith-core {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.02), transparent 18%, transparent 82%, rgba(0,0,0,0.22) 100%),
+      linear-gradient(90deg, rgba(255,255,255,0.012), transparent 14%, transparent 86%, rgba(255,255,255,0.012) 100%);
+    inset: 10px;
+    border-radius: 18px;
+    position: absolute;
+  }
+
+  .cutline {
+    border-radius: 999px;
+    height: 2px;
+    left: 16px;
+    position: absolute;
+    right: 16px;
+    top: 14px;
+  }
+
+  .card.default .cutline {
+    background: linear-gradient(90deg, rgba(222, 194, 125, 0.1), rgba(222, 194, 125, 0.52), rgba(222, 194, 125, 0.1));
+  }
+
+  .card.near .cutline {
+    background: linear-gradient(90deg, rgba(243, 196, 106, 0.12), rgba(243, 196, 106, 0.92), rgba(243, 196, 106, 0.12));
+    box-shadow: 0 0 16px rgba(243, 196, 106, 0.22);
+  }
+
+  .card.warning .cutline {
+    background: linear-gradient(90deg, rgba(224, 106, 94, 0.12), rgba(224, 106, 94, 0.94), rgba(224, 106, 94, 0.12));
+    box-shadow: 0 0 18px rgba(224, 106, 94, 0.24);
+  }
+
+  .signal-seam {
+    border-radius: 999px;
+    bottom: 14px;
+    left: 12px;
+    opacity: 0.5;
+    position: absolute;
+    top: 14px;
+    width: 3px;
+  }
+
+  .card.default .signal-seam {
+    background: linear-gradient(180deg, rgba(222, 194, 125, 0), rgba(222, 194, 125, 0.36), rgba(222, 194, 125, 0));
+  }
+
+  .card.near .signal-seam {
+    background: linear-gradient(180deg, rgba(243, 196, 106, 0), rgba(243, 196, 106, 0.9), rgba(243, 196, 106, 0));
+    box-shadow: 0 0 14px rgba(243, 196, 106, 0.18);
+  }
+
+  .card.warning .signal-seam {
+    background: linear-gradient(180deg, rgba(224, 106, 94, 0), rgba(224, 106, 94, 0.95), rgba(224, 106, 94, 0));
+    box-shadow: 0 0 16px rgba(224, 106, 94, 0.2);
+  }
+
+  .sweep {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.02) 18%, rgba(255,235,196,0.18) 48%, rgba(255,255,255,0.02) 82%, transparent 100%);
+    bottom: 0;
+    display: none;
+    position: absolute;
+    top: 0;
+    width: 34%;
+  }
+
+  .card.near .sweep {
+    animation: seamDrift 5.5s linear infinite;
+    display: block;
+  }
+
+  .warning-field {
+    background:
+      radial-gradient(circle at 18% 50%, rgba(224, 106, 94, 0.16), transparent 30%),
+      linear-gradient(90deg, rgba(224, 106, 94, 0.06), transparent 24%);
+    display: none;
+    inset: -4px;
+    position: absolute;
+  }
+
+  .card.warning .warning-field {
+    animation: warningBreath 2.9s ease-in-out infinite;
+    display: block;
+  }
+
+  .top {
+    padding: 18px 16px 14px 22px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .micro-row {
+    align-items: center;
+    color: var(--text-tertiary);
+    display: flex;
+    font-size: 10px;
+    font-weight: 700;
+    justify-content: space-between;
+    letter-spacing: 1.1px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .title-row,
+  .summary-row {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .title-row {
+    margin-bottom: 6px;
+  }
+
+  .metric {
+    color: var(--gold-hot);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+  }
+
+  .metric.warning {
+    color: var(--warning-hot);
+  }
+
+  .percent {
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .percent.warning {
+    color: var(--warning-hot);
+  }
+
+  .summary-row {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .summary-strong {
+    color: var(--text);
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .pill {
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 6px 10px 5px;
+    text-transform: uppercase;
+  }
+
+  .pill.system {
+    background: rgba(255,255,255,0.038);
+    border: 1px solid rgba(255,255,255,0.055);
+    color: var(--text-tertiary);
+  }
+
+  .pill.warning {
+    background: rgba(224, 106, 94, 0.12);
+    border: 1px solid rgba(255, 142, 130, 0.16);
+    color: var(--warning-hot);
+  }
+
+  .detail {
+    border-top: 1px solid rgba(255, 245, 230, 0.05);
+    padding: 14px 16px 16px 22px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .detail-copy {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+    margin-bottom: 12px;
+  }
+
+  .meal {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+  }
+
+  .meal + .meal {
+    margin-top: 10px;
+  }
+
+  .meal-copy {
+    flex: 1;
+  }
+
+  .meal-name {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .meal-meta {
+    color: var(--text-tertiary);
+    font-size: 11px;
+  }
+
+  .bar {
+    background: rgba(255, 245, 230, 0.05);
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+    width: 82px;
+  }
+
+  .bar-fill {
+    background: linear-gradient(90deg, #ab7a31 0%, #e3be73 100%);
+    border-radius: 999px;
+    height: 100%;
+  }
+
+  .note {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 1.45;
+    margin-top: 18px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">Home Calories Concept</div>
+    <h1>Signal Monolith</h1>
+    <p class="intro">
+      This is the most sculpted and minimal direction so far. The card stays dark and monolithic, and the personality
+      comes from one lit seam, one hard cutline, and a larger status read instead of ambient energy.
+    </p>
+
+    <div class="phone">
+      <div class="screen">
+        <div class="topline">
+          <span>Sat, Apr 5</span>
+          <span>Today</span>
+        </div>
+
+        <div class="hero">
+          <h2>Daily Vigor</h2>
+        </div>
+
+        <div class="section-label">Signal monolith preview</div>
+
+        <div class="state-stack">
+          <div>
+            <div class="state-label">Below 95% · default shell</div>
+            <div class="card default">
+              <div class="monolith-core"></div>
+              <div class="cutline"></div>
+              <div class="signal-seam"></div>
+              <div class="top">
+                <div class="micro-row">
+                  <span>Calorie state</span>
+                  <span>Nominal</span>
+                </div>
+                <div class="title-row">
+                  <div class="metric">Calories</div>
+                  <div class="percent">(84%)</div>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-strong">1,684 of 2,000 kcal</span>
+                  <span>View day</span>
+                </div>
+              </div>
+              <div class="detail">
+                <div class="detail-copy">Meals driving the most calorie load today.</div>
+                <div class="meal">
+                  <div class="meal-copy">
+                    <div class="meal-name">Lunch bowl</div>
+                    <div class="meal-meta">620 kcal · 31%</div>
+                  </div>
+                  <div class="bar"><div class="bar-fill" style="width: 62%"></div></div>
+                </div>
+                <div class="meal">
+                  <div class="meal-copy">
+                    <div class="meal-name">Protein shake</div>
+                    <div class="meal-meta">280 kcal · 14%</div>
+                  </div>
+                  <div class="bar"><div class="bar-fill" style="width: 28%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="state-label">95% to 105% · near target</div>
+            <div class="card near">
+              <div class="monolith-core"></div>
+              <div class="cutline"></div>
+              <div class="signal-seam"></div>
+              <div class="sweep"></div>
+              <div class="top">
+                <div class="micro-row">
+                  <span>Calorie state</span>
+                  <span>Locking</span>
+                </div>
+                <div class="title-row">
+                  <div class="metric">Calories</div>
+                  <div class="percent">(100%)</div>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-strong">1,998 of 2,000 kcal</span>
+                  <span>View day</span>
+                </div>
+                <div class="badge-row">
+                  <div class="pill system">Near target</div>
+                </div>
+              </div>
+              <div class="detail">
+                <div class="detail-copy">Meals driving the most calorie load today.</div>
+                <div class="meal">
+                  <div class="meal-copy">
+                    <div class="meal-name">Salmon rice plate</div>
+                    <div class="meal-meta">720 kcal · 36%</div>
+                  </div>
+                  <div class="bar"><div class="bar-fill" style="width: 72%"></div></div>
+                </div>
+                <div class="meal">
+                  <div class="meal-copy">
+                    <div class="meal-name">Afternoon snack</div>
+                    <div class="meal-meta">310 kcal · 15%</div>
+                  </div>
+                  <div class="bar"><div class="bar-fill" style="width: 31%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="state-label">Above 105% · warning</div>
+            <div class="card warning">
+              <div class="monolith-core"></div>
+              <div class="cutline"></div>
+              <div class="signal-seam"></div>
+              <div class="warning-field"></div>
+              <div class="top">
+                <div class="micro-row">
+                  <span>Calorie state</span>
+                  <span>Advisory</span>
+                </div>
+                <div class="title-row">
+                  <div class="metric warning">Calories</div>
+                  <div class="percent warning">(109%)</div>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-strong">2,181 of 2,000 kcal</span>
+                  <span>View day</span>
+                </div>
+                <div class="badge-row">
+                  <div class="pill warning">Over target</div>
+                </div>
+              </div>
+              <div class="detail">
+                <div class="detail-copy">Meals driving the most calorie load today.</div>
+                <div class="meal">
+                  <div class="meal-copy">
+                    <div class="meal-name">Cheeseburger combo</div>
+                    <div class="meal-meta">980 kcal · 49%</div>
+                  </div>
+                  <div class="bar"><div class="bar-fill" style="width: 78%"></div></div>
+                </div>
+                <div class="meal">
+                  <div class="meal-copy">
+                    <div class="meal-name">Red Bull</div>
+                    <div class="meal-meta">240 kcal · 12%</div>
+                  </div>
+                  <div class="bar"><div class="bar-fill" style="width: 24%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note">
+          This is the most minimal dramatic option: less atmosphere than Heat Chamber, less technical clutter than Instrument Panel, but still much bolder than the original premium-card directions.
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

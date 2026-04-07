@@ -38,6 +38,34 @@ const weeklyResponse = {
   ],
   nutrition: {
     averageCoveragePercent: 62,
+    detailGroups: [
+      {
+        id: "vitamins",
+        nutrients: [
+          { key: "vitaminA", label: "Vitamin A", percent: 74, target: 6300, targetKind: "minimum", unit: "mcg", value: 4662.7 },
+          { key: "vitaminC", label: "Vitamin C", percent: 120, target: 630, targetKind: "minimum", unit: "mg", value: 756 },
+          { key: "vitaminD", label: "Vitamin D", percent: 49, target: 105, targetKind: "minimum", unit: "mcg", value: 51.4 },
+        ],
+        title: "Vitamins",
+      },
+      {
+        id: "minerals",
+        nutrients: [
+          { key: "fiber", label: "Fiber", percent: 55, target: 210, targetKind: "minimum", unit: "g", value: 115.5 },
+          { key: "potassium", label: "Potassium", percent: 61, target: 23800, targetKind: "minimum", unit: "mg", value: 14518 },
+          { key: "magnesium", label: "Magnesium", percent: 68, target: 2940, targetKind: "minimum", unit: "mg", value: 1999.8 },
+          { key: "sodium", label: "Sodium", percent: 146, target: 16100, targetKind: "maximum", unit: "mg", value: 23506 },
+        ],
+        title: "Minerals",
+      },
+      {
+        id: "other_nutrients",
+        nutrients: [
+          { key: "omega3", label: "Omega-3", percent: 78, target: 11.2, targetKind: "minimum", unit: "g", value: 8.7 },
+        ],
+        title: "Other nutrients",
+      },
+    ],
     nutrients: [
       { averagePercent: 55, key: "fiber" },
       { averagePercent: 61, key: "potassium" },
@@ -47,6 +75,7 @@ const weeklyResponse = {
       { averagePercent: 70, key: "vitaminC" },
     ],
     recurringGaps: ["vitaminD", "fiber"],
+    recurringWins: ["omega3", "magnesium"],
   },
   overview: {
     onTrackDays: 4,
@@ -88,5 +117,24 @@ describe("TrendsScreen", () => {
     expect(queryByText("Hydration")).toBeNull();
     expect(queryByText("Protein")).toBeNull();
     expect(queryByText("On track")).toBeNull();
+  });
+
+  it("keeps expanded nutrient rows inside the main nutrition card instead of separate group cards", () => {
+    mockUseQuery.mockReturnValue(weeklyResponse);
+
+    const { getAllByText, getByTestId, getByText, queryByTestId, queryByText } = render(<TrendsScreen />);
+
+    expect(getByText("Average weekly coverage")).toBeTruthy();
+    expect(getByText("Vitamin A")).toBeTruthy();
+    expect(getAllByText("Magnesium").length).toBeGreaterThan(0);
+    expect(getAllByText("Omega-3").length).toBeGreaterThan(0);
+    expect(getByText("115.5 / 210 g")).toBeTruthy();
+    expect(getByText("8.7 / 11.2 g")).toBeTruthy();
+    expect(getByTestId("nutrient-progress-reward-pill-vitaminC")).toBeTruthy();
+    expect(queryByTestId("nutrient-progress-sheen-vitaminC")).toBeNull();
+    expect(queryByTestId("nutrient-progress-reward-pill-sodium")).toBeNull();
+    expect(queryByText("Vitamins")).toBeNull();
+    expect(queryByText("Minerals")).toBeNull();
+    expect(queryByText("Other nutrients")).toBeNull();
   });
 });

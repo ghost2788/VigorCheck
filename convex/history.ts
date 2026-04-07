@@ -9,6 +9,7 @@ import { getNutritionTargets } from "../lib/domain/wellness";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, query } from "./_generated/server";
 import { findCurrentUser } from "./lib/devIdentity";
+import { buildSupplementLogSnapshot } from "./lib/supplements";
 
 const HISTORY_BATCH_SIZE = 60;
 
@@ -17,6 +18,7 @@ function buildTargets(user: Doc<"users">) {
 
   return {
     calories: macroTargets.calories,
+    carbs: macroTargets.carbs,
     detailedNutrition: getDetailedNutrientTargets({
       age: user.age,
       sex: user.sex,
@@ -28,6 +30,7 @@ function buildTargets(user: Doc<"users">) {
       sex: user.sex,
       targetFiber: user.targetFiber,
     }),
+    fat: macroTargets.fat,
     protein: macroTargets.protein,
   };
 }
@@ -102,6 +105,26 @@ async function loadHydrationLogsForWindow(
     .collect();
 }
 
+async function loadSupplementLogsForWindow(
+  ctx: QueryCtx,
+  {
+    end,
+    start,
+    userId,
+  }: {
+    end: number;
+    start: number;
+    userId: Id<"users">;
+  }
+) {
+  return ctx.db
+    .query("supplementLogs")
+    .withIndex("by_user_date", (queryBuilder) =>
+      queryBuilder.eq("userId", userId).gte("timestamp", start).lt("timestamp", end)
+    )
+    .collect();
+}
+
 async function loadMealItemsByMealId(
   ctx: QueryCtx,
   meals: Array<{ _id: Id<"meals"> }>
@@ -122,6 +145,30 @@ async function loadMealItemsByMealId(
   );
 
   return new Map(entries);
+}
+
+async function loadRememberedHydrationLabelsByEntryId(
+  ctx: QueryCtx,
+  hydrationLogs: Array<Doc<"hydrationLogs">>
+) {
+  const rememberedEntryIds = Array.from(
+    new Set(
+      hydrationLogs
+        .map((entry) => entry.rememberedEntryId)
+        .filter((entryId): entryId is Id<"rememberedEntries"> => Boolean(entryId))
+    )
+  );
+
+  const entries = await Promise.all(
+    rememberedEntryIds.map(async (entryId) => [entryId, await ctx.db.get(entryId)] as const)
+  );
+
+  return new Map(
+    entries.map(([entryId, rememberedEntry]) => [
+      entryId,
+      rememberedEntry?.hydrationSnapshot?.label,
+    ])
+  );
 }
 
 async function fetchActivityBatch(
@@ -153,7 +200,17 @@ async function fetchActivityBatch(
     .order("desc")
     .take(HISTORY_BATCH_SIZE);
 
-  return { hydrationLogs, meals };
+  const supplementLogs = await ctx.db
+    .query("supplementLogs")
+    .withIndex("by_user_date", (queryBuilder) =>
+      cutoffTimestamp === null
+        ? queryBuilder.eq("userId", userId)
+        : queryBuilder.eq("userId", userId).lt("timestamp", cutoffTimestamp)
+    )
+    .order("desc")
+    .take(HISTORY_BATCH_SIZE);
+
+  return { hydrationLogs, meals, supplementLogs };
 }
 
 export const listDays = query({
@@ -183,11 +240,13 @@ export const listDays = query({
             timeZone: user.timeZone,
           }).start
         : null;
-      const { hydrationLogs, meals } = await fetchActivityBatch(ctx, {
+      const { hydrationLogs, meals, supplementLogs } = await fetchActivityBatch(ctx, {
         cutoffTimestamp,
         userId: user._id,
       });
-      const merged = [...meals, ...hydrationLogs].sort((left, right) => right.timestamp - left.timestamp);
+      const merged = [...meals, ...hydrationLogs, ...supplementLogs].sort(
+        (left, right) => right.timestamp - left.timestamp
+      );
 
       if (!merged.length) {
         isDone = true;
@@ -208,7 +267,9 @@ export const listDays = query({
 
       const oldestFetchedDateKey = getLocalDateKey(merged[merged.length - 1].timestamp, user.timeZone);
       const hitBatchCap =
-        meals.length === HISTORY_BATCH_SIZE || hydrationLogs.length === HISTORY_BATCH_SIZE;
+        meals.length === HISTORY_BATCH_SIZE ||
+        hydrationLogs.length === HISTORY_BATCH_SIZE ||
+        supplementLogs.length === HISTORY_BATCH_SIZE;
 
       if (pageDateKeys.length >= args.paginationOpts.numItems) {
         isDone = !hitBatchCap;
@@ -229,13 +290,18 @@ export const listDays = query({
           dateKey,
           timeZone: user.timeZone,
         });
-        const [meals, hydrationLogs] = await Promise.all([
+        const [meals, hydrationLogs, supplementLogs] = await Promise.all([
           loadMealsForWindow(ctx, {
             end,
             start,
             userId: user._id,
           }),
           loadHydrationLogsForWindow(ctx, {
+            end,
+            start,
+            userId: user._id,
+          }),
+          loadSupplementLogsForWindow(ctx, {
             end,
             start,
             userId: user._id,
@@ -250,6 +316,7 @@ export const listDays = query({
             timestamp: entry.timestamp,
           })),
           meals: meals.map((meal) => ({
+            entryMethod: meal.entryMethod,
             id: meal._id,
             label: meal.label,
             mealType: meal.mealType,
@@ -262,6 +329,7 @@ export const listDays = query({
               protein: meal.totalProtein,
             },
           })),
+          supplementLogs: supplementLogs.map((log) => buildSupplementLogSnapshot(log)),
           targets,
         });
       })
@@ -290,7 +358,7 @@ export const dayDetail = query({
       dateKey: args.dateKey,
       timeZone: user.timeZone,
     });
-    const [meals, hydrationLogs] = await Promise.all([
+    const [meals, hydrationLogs, supplementLogs] = await Promise.all([
       loadMealsForWindow(ctx, {
         end,
         start,
@@ -301,13 +369,22 @@ export const dayDetail = query({
         start,
         userId: user._id,
       }),
+      loadSupplementLogsForWindow(ctx, {
+        end,
+        start,
+        userId: user._id,
+      }),
     ]);
 
-    if (!meals.length && !hydrationLogs.length) {
+    if (!meals.length && !hydrationLogs.length && !supplementLogs.length) {
       return null;
     }
 
     const mealItemsByMealId = await loadMealItemsByMealId(ctx, meals);
+    const rememberedHydrationLabelsByEntryId = await loadRememberedHydrationLabelsByEntryId(
+      ctx,
+      hydrationLogs
+    );
     const targets = buildTargets(user);
     const summaryDashboard = buildTodayDashboard({
       hydrationLogs: hydrationLogs.map((entry) => ({
@@ -322,6 +399,7 @@ export const dayDetail = query({
         }))
       ),
       meals: meals.map((meal) => ({
+        entryMethod: meal.entryMethod,
         id: meal._id,
         label: meal.label,
         mealType: meal.mealType,
@@ -334,6 +412,7 @@ export const dayDetail = query({
           protein: meal.totalProtein,
         },
       })),
+      supplementLogs: supplementLogs.map((log) => buildSupplementLogSnapshot(log)),
       targets,
     });
 
@@ -359,9 +438,13 @@ export const dayDetail = query({
         protein: macroTargets.protein,
       },
       timeline: buildHistoryTimeline({
+        macroTargets,
         detailedNutritionTargets: targets.detailedNutrition,
         hydrationLogs: hydrationLogs.map((entry) => ({
           amountOz: entry.amountOz,
+          displayLabel: entry.rememberedEntryId
+            ? rememberedHydrationLabelsByEntryId.get(entry.rememberedEntryId)
+            : undefined,
           id: entry._id,
           shortcutLabel: entry.shortcutLabel,
           timestamp: entry.timestamp,
@@ -388,6 +471,7 @@ export const dayDetail = query({
             protein: meal.totalProtein,
           },
         })),
+        supplementLogs: supplementLogs.map((log) => buildSupplementLogSnapshot(log)),
       }),
     };
   },

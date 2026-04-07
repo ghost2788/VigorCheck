@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Meal Phase 2 Variants</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="preview-shell" data-theme="dark">
+    <section class="intro">
+      <p class="eyebrow">Review meal polish, phase 2</p>
+      <h1>Three ways to move meal type into the card instead of the separate top strip.</h1>
+      <p class="summary">
+        All three options keep the history-aligned shell, the tighter nutrition stack, and the no-duplicate-title rule.
+        The only variable here is how meal type lives near prep method and the other review-only controls.
+      </p>
+
+      <div class="toolbar">
+        <div class="chip-group">
+          <span class="control-label">Theme</span>
+          <div class="chip-set">
+            <button class="chip is-active" data-theme-target="dark" type="button">Dark</button>
+            <button class="chip" data-theme-target="light" type="button">Light</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="audit-panel">
+        <article class="audit-card">
+          <p class="audit-title">What changed</p>
+          <ul class="audit-list">
+            <li>The separate meal-type card is gone in every option.</li>
+            <li>Meal type now lives inside the expanded review card, near prep method.</li>
+            <li>The top of the screen gets cleaner and the edit controls read more like one settings zone.</li>
+          </ul>
+        </article>
+
+        <article class="audit-card audit-card-recommendation">
+          <p class="audit-title">What to compare</p>
+          <ul class="audit-list">
+            <li>Does meal type feel like a setting or like a classification badge?</li>
+            <li>Do you want direct pill access, or a cleaner summary row first?</li>
+            <li>Which version keeps the card bottom dense without getting cluttered?</li>
+          </ul>
+        </article>
+      </aside>
+
+      <section class="phone-grid">
+        <article class="phone-frame">
+          <header class="variant-header">
+            <span class="variant-label">Variant 1, stacked settings rows</span>
+            <p class="variant-summary">Meal type gets its own review row right above prep method. Cleanest and most literal.</p>
+          </header>
+          <div class="phone">
+            <section class="screen">
+              <header class="screen-header">
+                <div>
+                  <p class="header-kicker">Review</p>
+                  <h2 class="header-title">Review meal</h2>
+                </div>
+                <div class="confidence-chip">High confidence</div>
+              </header>
+
+              <section class="card-stack card-stack-topless">
+                <article class="timeline-card">
+                  <div class="accent-bar accent-bar-barcode"></div>
+                  <div class="timeline-shell">
+                    <div class="timeline-header">
+                      <h3>Red Bull Sugarfree</h3>
+                      <div class="header-right">
+                        <span class="calorie-pill">10 cal</span>
+                        <span class="chevron chevron-open"></span>
+                      </div>
+                    </div>
+                    <div class="timeline-meta">
+                      <span>Barcode</span>
+                      <span class="meta-dot">·</span>
+                      <span>1 serving from label (1 can, 250 ml)</span>
+                      <span class="meta-dot">·</span>
+                      <span>2c</span>
+                    </div>
+
+                    <div class="review-field">
+                      <label class="section-eyebrow" for="rename-field-v1">Rename</label>
+                      <textarea id="rename-field-v1" rows="2">Red Bull Sugarfree</textarea>
+                    </div>
+
+                    <div class="control-row">
+                      <div class="control-copy">
+                        <p class="section-eyebrow">Serving</p>
+                        <p class="control-primary">1 can</p>
+                        <p class="control-secondary">250 ml (8.4 fl oz)</p>
+                      </div>
+                      <div class="stepper">
+                        <button type="button">−</button>
+                        <span>1x</span>
+                        <button type="button">+</button>
+                      </div>
+                    </div>
+
+                    <div class="progress-list">
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Calories</span>
+                          <strong>10 / 2723 kcal (&lt;1%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-calories"><div class="progress-fill progress-fill-tiny"></div></div>
+                      </div>
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Carbs</span>
+                          <strong>2 / 354 g (1%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-carbs"><div class="progress-fill progress-fill-xs"></div></div>
+                      </div>
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Niacin</span>
+                          <strong>16 / 16 mg (100%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-nutrition"><div class="progress-fill progress-fill-full"></div></div>
+                      </div>
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Sodium</span>
+                          <strong>105 / 2300 mg (5%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-nutrition"><div class="progress-fill progress-fill-sm"></div></div>
+                      </div>
+                    </div>
+
+                    <button class="control-row control-row-link" type="button">
+                      <div class="control-copy">
+                        <p class="section-eyebrow">Meal type</p>
+                        <p class="control-primary">Lunch</p>
+                      </div>
+                      <span class="choose-link">Choose</span>
+                    </button>
+
+                    <button class="control-row control-row-link" type="button">
+                      <div class="control-copy">
+                        <p class="section-eyebrow">Prep method</p>
+                        <p class="control-primary">Not set</p>
+                      </div>
+                      <span class="choose-link">Choose</span>
+                    </button>
+
+                    <div class="action-row">
+                      <button class="text-action" type="button">Hide details</button>
+                      <button class="text-action text-action-danger" type="button">Remove</button>
+                    </div>
+                  </div>
+                </article>
+              </section>
+
+              <footer class="footer-bar">
+                <button class="footer-button footer-button-secondary" type="button">Back to Log</button>
+                <button class="footer-button footer-button-primary" type="button">Save meal</button>
+              </footer>
+            </section>
+          </div>
+        </article>
+
+        <article class="phone-frame">
+          <header class="variant-header">
+            <span class="variant-label">Variant 2, direct meal-type pills</span>
+            <p class="variant-summary">Prep stays a row, but meal type becomes the one direct pill tray inside the card.</p>
+          </header>
+          <div class="phone">
+            <section class="screen">
+              <header class="screen-header">
+                <div>
+                  <p class="header-kicker">Review</p>
+                  <h2 class="header-title">Review meal</h2>
+                </div>
+                <div class="confidence-chip">High confidence</div>
+              </header>
+
+              <section class="card-stack card-stack-topless">
+                <article class="timeline-card">
+                  <div class="accent-bar accent-bar-barcode"></div>
+                  <div class="timeline-shell">
+                    <div class="timeline-header">
+                      <h3>Red Bull Sugarfree</h3>
+                      <div class="header-right">
+                        <span class="calorie-pill">10 cal</span>
+                        <span class="chevron chevron-open"></span>
+                      </div>
+                    </div>
+                    <div class="timeline-meta">
+                      <span>Barcode</span>
+                      <span class="meta-dot">·</span>
+                      <span>1 serving from label (1 can, 250 ml)</span>
+                      <span class="meta-dot">·</span>
+                      <span>2c</span>
+                    </div>
+
+                    <div class="review-field">
+                      <label class="section-eyebrow" for="rename-field-v2">Rename</label>
+                      <textarea id="rename-field-v2" rows="2">Red Bull Sugarfree</textarea>
+                    </div>
+
+                    <div class="control-row">
+                      <div class="control-copy">
+                        <p class="section-eyebrow">Serving</p>
+                        <p class="control-primary">1 can</p>
+                        <p class="control-secondary">250 ml (8.4 fl oz)</p>
+                      </div>
+                      <div class="stepper">
+                        <button type="button">−</button>
+                        <span>1x</span>
+                        <button type="button">+</button>
+                      </div>
+                    </div>
+
+                    <div class="progress-list">
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Calories</span>
+                          <strong>10 / 2723 kcal (&lt;1%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-calories"><div class="progress-fill progress-fill-tiny"></div></div>
+                      </div>
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Carbs</span>
+                          <strong>2 / 354 g (1%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-carbs"><div class="progress-fill progress-fill-xs"></div></div>
+                      </div>
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Niacin</span>
+                          <strong>16 / 16 mg (100%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-nutrition"><div class="progress-fill progress-fill-full"></div></div>
+                      </div>
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Sodium</span>
+                          <strong>105 / 2300 mg (5%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-nutrition"><div class="progress-fill progress-fill-sm"></div></div>
+                      </div>
+                    </div>
+
+                    <button class="control-row control-row-link" type="button">
+                      <div class="control-copy">
+                        <p class="section-eyebrow">Prep method</p>
+                        <p class="control-primary">Not set</p>
+                      </div>
+                      <span class="choose-link">Choose</span>
+                    </button>
+
+                    <div class="control-module">
+                      <p class="section-eyebrow">Meal type</p>
+                      <div class="inline-type-row">
+                        <button class="inline-type-pill" type="button">Breakfast</button>
+                        <button class="inline-type-pill is-active" type="button">Lunch</button>
+                        <button class="inline-type-pill" type="button">Dinner</button>
+                        <button class="inline-type-pill" type="button">Snack</button>
+                        <button class="inline-type-pill" type="button">Drink</button>
+                      </div>
+                    </div>
+
+                    <div class="action-row">
+                      <button class="text-action" type="button">Hide details</button>
+                      <button class="text-action text-action-danger" type="button">Remove</button>
+                    </div>
+                  </div>
+                </article>
+              </section>
+
+              <footer class="footer-bar">
+                <button class="footer-button footer-button-secondary" type="button">Back to Log</button>
+                <button class="footer-button footer-button-primary" type="button">Save meal</button>
+              </footer>
+            </section>
+          </div>
+        </article>
+
+        <article class="phone-frame">
+          <header class="variant-header">
+            <span class="variant-label">Variant 2B, prep method pills too</span>
+            <p class="variant-summary">Same direction as variant 2, but prep method also becomes a direct pill tray for faster editing.</p>
+          </header>
+          <div class="phone">
+            <section class="screen">
+              <header class="screen-header">
+                <div>
+                  <p class="header-kicker">Review</p>
+                  <h2 class="header-title">Review meal</h2>
+                </div>
+                <div class="confidence-chip">High confidence</div>
+              </header>
+
+              <section class="card-stack card-stack-topless">
+                <article class="timeline-card">
+                  <div class="accent-bar accent-bar-barcode"></div>
+                  <div class="timeline-shell">
+                    <div class="timeline-header">
+                      <h3>Red Bull Sugarfree</h3>
+                      <div class="header-right">
+                        <span class="calorie-pill">10 cal</span>
+                        <span class="chevron chevron-open"></span>
+                      </div>
+                    </div>
+                    <div class="timeline-meta">
+                      <span>Barcode</span>
+                      <span class="meta-dot">·</span>
+                      <span>1 serving from label (1 can, 250 ml)</span>
+                      <span class="meta-dot">·</span>
+                      <span>2c</span>
+                    </div>
+
+                    <div class="review-field">
+                      <label class="section-eyebrow" for="rename-field-v3">Rename</label>
+                      <textarea id="rename-field-v3" rows="2">Red Bull Sugarfree</textarea>
+                    </div>
+
+                    <div class="control-row">
+                      <div class="control-copy">
+                        <p class="section-eyebrow">Serving</p>
+                        <p class="control-primary">1 can</p>
+                        <p class="control-secondary">250 ml (8.4 fl oz)</p>
+                      </div>
+                      <div class="stepper">
+                        <button type="button">−</button>
+                        <span>1x</span>
+                        <button type="button">+</button>
+                      </div>
+                    </div>
+
+                    <div class="progress-list">
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Calories</span>
+                          <strong>10 / 2723 kcal (&lt;1%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-calories"><div class="progress-fill progress-fill-tiny"></div></div>
+                      </div>
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Carbs</span>
+                          <strong>2 / 354 g (1%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-carbs"><div class="progress-fill progress-fill-xs"></div></div>
+                      </div>
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Niacin</span>
+                          <strong>16 / 16 mg (100%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-nutrition"><div class="progress-fill progress-fill-full"></div></div>
+                      </div>
+                      <div class="progress-row">
+                        <div class="progress-top">
+                          <span>Sodium</span>
+                          <strong>105 / 2300 mg (5%)</strong>
+                        </div>
+                        <div class="progress-track progress-track-nutrition"><div class="progress-fill progress-fill-sm"></div></div>
+                      </div>
+                    </div>
+
+                    <div class="control-module">
+                      <p class="section-eyebrow">Meal type</p>
+                      <div class="inline-type-row">
+                        <button class="inline-type-pill" type="button">Breakfast</button>
+                        <button class="inline-type-pill is-active" type="button">Lunch</button>
+                        <button class="inline-type-pill" type="button">Dinner</button>
+                        <button class="inline-type-pill" type="button">Snack</button>
+                        <button class="inline-type-pill" type="button">Drink</button>
+                      </div>
+                    </div>
+
+                    <div class="control-module">
+                      <p class="section-eyebrow">Prep method</p>
+                      <div class="inline-type-row">
+                        <button class="inline-type-pill" type="button">Grilled</button>
+                        <button class="inline-type-pill" type="button">Baked</button>
+                        <button class="inline-type-pill" type="button">Fried</button>
+                        <button class="inline-type-pill" type="button">Steamed</button>
+                        <button class="inline-type-pill" type="button">Raw</button>
+                        <button class="inline-type-pill is-active" type="button">Mixed</button>
+                      </div>
+                    </div>
+
+                    <div class="action-row">
+                      <button class="text-action" type="button">Hide details</button>
+                      <button class="text-action text-action-danger" type="button">Remove</button>
+                    </div>
+                  </div>
+                </article>
+              </section>
+
+              <footer class="footer-bar">
+                <button class="footer-button footer-button-secondary" type="button">Back to Log</button>
+                <button class="footer-button footer-button-primary" type="button">Save meal</button>
+              </footer>
+            </section>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

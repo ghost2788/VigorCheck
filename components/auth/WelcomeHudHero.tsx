@@ -18,7 +18,7 @@ type WelcomeHudHeroProps = {
 };
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
-const HEART_IMAGE: ImageSourcePropType = require("../../assets/branding/vigorcheck-heart-core.png");
+const HEART_IMAGE: ImageSourcePropType = require("../../assets/branding/vigorcheck-heart-flagship.png");
 
 const HERO_SIZES = {
   compact: {

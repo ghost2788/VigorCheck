@@ -113,4 +113,35 @@ describe("WeeklyTrendChart", () => {
     );
     expect(queryByTestId("weekly-trend-chart-fill-hydration-2")).toBeNull();
   });
+
+  it("keeps 100 percent labels on one line for narrow chart columns", () => {
+    const { getByText } = render(
+      <WeeklyTrendChart
+        activeMetric="hydration"
+        days={[
+          {
+            calories: 1800,
+            caloriesScore: 44,
+            hydrationCups: 8,
+            hydrationScore: 100,
+            isFuture: false,
+            nutritionCoveragePercent: 62,
+            protein: 120,
+            proteinScore: 80,
+            shortLabel: "Fri",
+            wellnessScore: 78,
+          },
+          ...days,
+        ]}
+        onChangeMetric={jest.fn()}
+        targets={{ calories: 2200, hydration: 8, protein: 150 }}
+      />
+    );
+
+    const label = getByText("100%");
+
+    expect(label.props.numberOfLines).toBe(1);
+    expect(label.props.adjustsFontSizeToFit).toBe(true);
+    expect(label.props.minimumFontScale).toBe(0.75);
+  });
 });

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Meal Add Item Variants</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="preview-shell" data-theme="dark">
+    <section class="intro">
+      <p class="eyebrow">Edit meal polish</p>
+      <h1>Two lighter replacements for the current “Missing something?” card.</h1>
+      <p class="summary">
+        These variants now preserve the real edit-meal page structure: `Log time`, `Meal summary`,
+        the expanded meal card, then the add-item replacement above `Delete meal` and `Save changes`.
+      </p>
+
+      <div class="toolbar">
+        <div class="chip-group">
+          <span class="control-label">Theme</span>
+          <div class="chip-set">
+            <button class="chip is-active" data-theme-target="dark" type="button">Dark</button>
+            <button class="chip" data-theme-target="light" type="button">Light</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="audit-panel">
+        <article class="audit-card">
+          <p class="audit-title">Context kept accurate</p>
+          <ul class="audit-list">
+            <li>The top `Log time` card stays.</li>
+            <li>The `Meal summary` card stays.</li>
+            <li>The add-item replacement now sits in the real slot, between the meal card and footer buttons.</li>
+          </ul>
+        </article>
+
+        <article class="audit-card audit-card-recommendation">
+          <p class="audit-title">What to compare</p>
+          <ul class="audit-list">
+            <li>Which version feels lighter without getting visually lost below the meal card?</li>
+            <li>Should add-item read like a continuation of the item list, or like a utility control before save?</li>
+            <li>Which one feels most natural when the add form is closed 90% of the time?</li>
+          </ul>
+        </article>
+      </aside>
+
+      <section class="phone-grid">
+        <article class="phone-frame">
+          <header class="variant-header">
+            <span class="variant-label">Variant A, inline add row</span>
+            <p class="variant-summary">Recommended. The missing-item path becomes a compact continuation of the meal item list.</p>
+          </header>
+          <div class="phone">
+            <section class="screen edit-screen">
+              <header class="screen-header screen-header-simple">
+                <div>
+                  <p class="header-kicker">History</p>
+                  <h2 class="header-title">Edit meal</h2>
+                </div>
+              </header>
+
+              <article class="edit-summary-card">
+                <p class="section-eyebrow">Log time</p>
+                <div class="edit-two-column">
+                  <div class="edit-field">
+                    <p class="field-label">Date</p>
+                    <div class="summary-input">2026-04-04</div>
+                  </div>
+                  <div class="edit-field">
+                    <p class="field-label">Time</p>
+                    <div class="summary-input">4:24 PM</div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="edit-summary-card">
+                <p class="section-eyebrow">Meal summary</p>
+                <div class="summary-input">Lunch scan</div>
+                <div class="inline-type-row edit-type-row">
+                  <button class="inline-type-pill" type="button">Breakfast</button>
+                  <button class="inline-type-pill is-active" type="button">Lunch</button>
+                  <button class="inline-type-pill" type="button">Dinner</button>
+                  <button class="inline-type-pill" type="button">Snack</button>
+                </div>
+                <p class="summary-copy">2 items, 380 calories, 22g protein, 39g carbs, 14g fat.</p>
+              </article>
+
+              <article class="timeline-card">
+                <div class="accent-bar accent-bar-barcode"></div>
+                <div class="timeline-shell">
+                  <div class="timeline-header">
+                    <h3>Red Bull Sugarfree</h3>
+                    <div class="header-right">
+                      <span class="calorie-pill">10 cal</span>
+                      <span class="chevron chevron-open"></span>
+                    </div>
+                  </div>
+                  <div class="timeline-meta">
+                    <span>Barcode</span>
+                    <span class="meta-dot">/</span>
+                    <span>1 serving from label (1 can, 250 ml)</span>
+                    <span class="meta-dot">/</span>
+                    <span>2c</span>
+                  </div>
+
+                  <div class="review-field">
+                    <label class="section-eyebrow" for="edit-rename-a">Rename</label>
+                    <textarea id="edit-rename-a" rows="2">Red Bull Sugarfree</textarea>
+                  </div>
+
+                  <div class="control-row">
+                    <div class="control-copy">
+                      <p class="section-eyebrow">Serving</p>
+                      <p class="control-primary">1 can</p>
+                      <p class="control-secondary">250 ml (8.4 fl oz)</p>
+                    </div>
+                    <div class="stepper">
+                      <button type="button">−</button>
+                      <span>1x</span>
+                      <button type="button">+</button>
+                    </div>
+                  </div>
+
+                  <div class="progress-list">
+                    <div class="progress-row">
+                      <div class="progress-top">
+                        <span>Calories</span>
+                        <strong>10 / 2723 kcal (&lt;1%)</strong>
+                      </div>
+                      <div class="progress-track progress-track-calories"><div class="progress-fill progress-fill-tiny"></div></div>
+                    </div>
+                    <div class="progress-row">
+                      <div class="progress-top">
+                        <span>Carbs</span>
+                        <strong>2 / 354 g (1%)</strong>
+                      </div>
+                      <div class="progress-track progress-track-carbs"><div class="progress-fill progress-fill-xs"></div></div>
+                    </div>
+                    <div class="progress-row">
+                      <div class="progress-top">
+                        <span>Niacin</span>
+                        <strong>16 / 16 mg (100%)</strong>
+                      </div>
+                      <div class="progress-track progress-track-nutrition"><div class="progress-fill progress-fill-full"></div></div>
+                    </div>
+                  </div>
+
+                  <div class="control-module">
+                    <p class="section-eyebrow">Prep method</p>
+                    <div class="inline-type-row">
+                      <button class="inline-type-pill" type="button">Grilled</button>
+                      <button class="inline-type-pill" type="button">Baked</button>
+                      <button class="inline-type-pill" type="button">Fried</button>
+                      <button class="inline-type-pill" type="button">Steamed</button>
+                      <button class="inline-type-pill" type="button">Raw</button>
+                      <button class="inline-type-pill is-active" type="button">Mixed</button>
+                    </div>
+                  </div>
+
+                  <div class="action-row">
+                    <button class="text-action" type="button">Hide details</button>
+                    <button class="text-action text-action-danger" type="button">Remove</button>
+                  </div>
+                </div>
+              </article>
+
+              <button class="add-row-button" type="button">
+                <span class="add-row-plus">+</span>
+                <span class="add-row-copy">
+                  <strong>Add item</strong>
+                  <span>Add a manual item if something is missing from this meal.</span>
+                </span>
+              </button>
+
+              <article class="add-inline-form">
+                <div class="add-inline-form-head">
+                  <p class="section-eyebrow">Manual item</p>
+                  <button class="text-action" type="button">Close</button>
+                </div>
+                <div class="compact-form-grid">
+                  <div class="summary-input">Food name</div>
+                  <div class="compact-form-split">
+                    <div class="summary-input">Calories</div>
+                    <div class="summary-input">Protein</div>
+                  </div>
+                  <div class="compact-form-split">
+                    <div class="summary-input">Carbs</div>
+                    <div class="summary-input">Fat</div>
+                  </div>
+                </div>
+                <button class="footer-button footer-button-primary add-inline-submit" type="button">Add item</button>
+              </article>
+
+              <div class="footer-actions-block">
+                <button class="footer-button footer-button-secondary" type="button">Delete meal</button>
+                <button class="footer-button footer-button-primary" type="button">Save changes</button>
+              </div>
+            </section>
+          </div>
+        </article>
+
+        <article class="phone-frame">
+          <header class="variant-header">
+            <span class="variant-label">Variant B, footer utility shelf</span>
+            <p class="variant-summary">The add path is still lighter, but more explicitly separated from the item list.</p>
+          </header>
+          <div class="phone">
+            <section class="screen edit-screen">
+              <header class="screen-header screen-header-simple">
+                <div>
+                  <p class="header-kicker">History</p>
+                  <h2 class="header-title">Edit meal</h2>
+                </div>
+              </header>
+
+              <article class="edit-summary-card">
+                <p class="section-eyebrow">Log time</p>
+                <div class="edit-two-column">
+                  <div class="edit-field">
+                    <p class="field-label">Date</p>
+                    <div class="summary-input">2026-04-04</div>
+                  </div>
+                  <div class="edit-field">
+                    <p class="field-label">Time</p>
+                    <div class="summary-input">4:24 PM</div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="edit-summary-card">
+                <p class="section-eyebrow">Meal summary</p>
+                <div class="summary-input">Lunch scan</div>
+                <div class="inline-type-row edit-type-row">
+                  <button class="inline-type-pill" type="button">Breakfast</button>
+                  <button class="inline-type-pill is-active" type="button">Lunch</button>
+                  <button class="inline-type-pill" type="button">Dinner</button>
+                  <button class="inline-type-pill" type="button">Snack</button>
+                </div>
+                <p class="summary-copy">2 items, 380 calories, 22g protein, 39g carbs, 14g fat.</p>
+              </article>
+
+              <article class="timeline-card">
+                <div class="accent-bar accent-bar-barcode"></div>
+                <div class="timeline-shell">
+                  <div class="timeline-header">
+                    <h3>Red Bull Sugarfree</h3>
+                    <div class="header-right">
+                      <span class="calorie-pill">10 cal</span>
+                      <span class="chevron chevron-open"></span>
+                    </div>
+                  </div>
+                  <div class="timeline-meta">
+                    <span>Barcode</span>
+                    <span class="meta-dot">/</span>
+                    <span>1 serving from label (1 can, 250 ml)</span>
+                    <span class="meta-dot">/</span>
+                    <span>2c</span>
+                  </div>
+
+                  <div class="review-field">
+                    <label class="section-eyebrow" for="edit-rename-b">Rename</label>
+                    <textarea id="edit-rename-b" rows="2">Red Bull Sugarfree</textarea>
+                  </div>
+
+                  <div class="control-row">
+                    <div class="control-copy">
+                      <p class="section-eyebrow">Serving</p>
+                      <p class="control-primary">1 can</p>
+                      <p class="control-secondary">250 ml (8.4 fl oz)</p>
+                    </div>
+                    <div class="stepper">
+                      <button type="button">−</button>
+                      <span>1x</span>
+                      <button type="button">+</button>
+                    </div>
+                  </div>
+
+                  <div class="progress-list">
+                    <div class="progress-row">
+                      <div class="progress-top">
+                        <span>Calories</span>
+                        <strong>10 / 2723 kcal (&lt;1%)</strong>
+                      </div>
+                      <div class="progress-track progress-track-calories"><div class="progress-fill progress-fill-tiny"></div></div>
+                    </div>
+                    <div class="progress-row">
+                      <div class="progress-top">
+                        <span>Carbs</span>
+                        <strong>2 / 354 g (1%)</strong>
+                      </div>
+                      <div class="progress-track progress-track-carbs"><div class="progress-fill progress-fill-xs"></div></div>
+                    </div>
+                    <div class="progress-row">
+                      <div class="progress-top">
+                        <span>Niacin</span>
+                        <strong>16 / 16 mg (100%)</strong>
+                      </div>
+                      <div class="progress-track progress-track-nutrition"><div class="progress-fill progress-fill-full"></div></div>
+                    </div>
+                  </div>
+
+                  <div class="control-module">
+                    <p class="section-eyebrow">Prep method</p>
+                    <div class="inline-type-row">
+                      <button class="inline-type-pill" type="button">Grilled</button>
+                      <button class="inline-type-pill" type="button">Baked</button>
+                      <button class="inline-type-pill" type="button">Fried</button>
+                      <button class="inline-type-pill" type="button">Steamed</button>
+                      <button class="inline-type-pill" type="button">Raw</button>
+                      <button class="inline-type-pill is-active" type="button">Mixed</button>
+                    </div>
+                  </div>
+
+                  <div class="action-row">
+                    <button class="text-action" type="button">Hide details</button>
+                    <button class="text-action text-action-danger" type="button">Remove</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="utility-shelf">
+                <div class="utility-shelf-top">
+                  <div>
+                    <p class="utility-title">Add item</p>
+                    <p class="utility-copy">Manual item only, for anything the meal is still missing.</p>
+                  </div>
+                  <button class="add-mini-button" type="button">+ Add</button>
+                </div>
+                <div class="compact-form-grid compact-form-grid-tight">
+                  <div class="summary-input">Food name</div>
+                  <div class="compact-form-split">
+                    <div class="summary-input">Calories</div>
+                    <div class="summary-input">Protein</div>
+                  </div>
+                  <div class="compact-form-split">
+                    <div class="summary-input">Carbs</div>
+                    <div class="summary-input">Fat</div>
+                  </div>
+                </div>
+              </article>
+
+              <div class="footer-actions-block">
+                <button class="footer-button footer-button-secondary" type="button">Delete meal</button>
+                <button class="footer-button footer-button-primary" type="button">Save changes</button>
+              </div>
+            </section>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

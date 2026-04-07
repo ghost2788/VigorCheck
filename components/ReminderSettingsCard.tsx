@@ -1,6 +1,6 @@
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import React, { useEffect, useMemo, useState } from "react";
-import { Platform, Pressable, StyleSheet, Switch, View } from "react-native";
+import { Platform, Pressable, StyleProp, StyleSheet, Switch, View, ViewStyle } from "react-native";
 import {
   formatClockTime,
   hasAnyReminderEnabled,
@@ -16,7 +16,9 @@ import { ThemedText } from "./ThemedText";
 
 type ReminderSettingsCardProps = {
   initialSettings: ReminderSettings;
+  onDirtyChange?: (dirty: boolean) => void;
   onSave: (settings: ReminderSettings) => Promise<void> | void;
+  style?: StyleProp<ViewStyle>;
 };
 
 type ReminderToggleKey =
@@ -72,7 +74,12 @@ function formatDisplayTime(timeValue: string) {
   });
 }
 
-export function ReminderSettingsCard({ initialSettings, onSave }: ReminderSettingsCardProps) {
+export function ReminderSettingsCard({
+  initialSettings,
+  onDirtyChange,
+  onSave,
+  style,
+}: ReminderSettingsCardProps) {
   const { theme } = useTheme();
   const [settings, setSettings] = useState(initialSettings);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +89,14 @@ export function ReminderSettingsCard({ initialSettings, onSave }: ReminderSettin
   useEffect(() => {
     setSettings(initialSettings);
   }, [initialSettings]);
+
+  useEffect(() => {
+    if (!onDirtyChange) {
+      return;
+    }
+
+    onDirtyChange(JSON.stringify(settings) !== JSON.stringify(initialSettings));
+  }, [initialSettings, onDirtyChange, settings]);
 
   const pickerValue = useMemo(() => {
     if (!pickerField) {
@@ -161,7 +176,7 @@ export function ReminderSettingsCard({ initialSettings, onSave }: ReminderSettin
   };
 
   return (
-    <Card style={styles.card}>
+    <Card style={[styles.card, style]}>
       <View style={styles.header}>
         <ThemedText size="sm" style={styles.title}>
           Reminder settings

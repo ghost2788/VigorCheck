@@ -5,7 +5,7 @@ import OpenAI from "openai";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
-import { action } from "./_generated/server";
+import { action, ActionCtx } from "./_generated/server";
 import {
   buildNormalizedScanDraftComponents,
   findBestUsdaMatch,
@@ -19,6 +19,10 @@ import {
   UsdaMatchCandidate,
 } from "../lib/domain/scan";
 import { MealType, resolveDraftMealType } from "../lib/domain/meals";
+import {
+  buildAiObservabilityRecordArgs,
+  recordAiRequestSafely,
+} from "./lib/aiObservability";
 import { mealTypeValidator } from "./lib/validators";
 
 const OPENAI_SCAN_MODEL = "gpt-4.1";
@@ -189,9 +193,10 @@ type UsdaSearchCandidate = UsdaMatchCandidate & {
 };
 
 async function buildScanDraft(
-  ctx: any,
+  ctx: ActionCtx,
   args: {
     mealType: MealType;
+    requestStartedAt: number;
     storageId: Id<"_storage">;
   }
 ): Promise<AnalyzePhotoResult> {
@@ -205,84 +210,132 @@ async function buildScanDraft(
     apiKey: process.env.OPENAI_API_KEY,
   });
 
-  const response = await client.responses.create({
-    input: [
-      {
-        content: [
-          {
-            text: scanPrompt,
-            type: "input_text",
-          },
-          {
-            detail: "high",
-            image_url: imageUrl,
-            type: "input_image",
-          },
-        ],
-        role: "user",
-      },
-    ],
-    model: OPENAI_SCAN_MODEL,
-    text: {
-      format: {
-        name: "caltracker_meal_scan",
-        schema: scanResponseSchema,
-        strict: true,
-        type: "json_schema",
-      },
-    },
-  });
+  let response: Awaited<ReturnType<OpenAI["responses"]["create"]>>;
 
-  const outputText = response.output_text?.trim();
-
-  if (!outputText) {
-    throw new Error("OpenAI scan response did not include structured output.");
+  try {
+    response = await client.responses.create({
+      input: [
+        {
+          content: [
+            {
+              text: scanPrompt,
+              type: "input_text",
+            },
+            {
+              detail: "high",
+              image_url: imageUrl,
+              type: "input_image",
+            },
+          ],
+          role: "user",
+        },
+      ],
+      model: OPENAI_SCAN_MODEL,
+      text: {
+        format: {
+          name: "caltracker_meal_scan",
+          schema: scanResponseSchema,
+          strict: true,
+          type: "json_schema",
+        },
+      },
+    });
+  } catch (error) {
+    await recordAiRequestSafely(
+      ctx,
+      buildAiObservabilityRecordArgs({
+        callKind: "photo_scan",
+        completedAt: Date.now(),
+        createdAt: args.requestStartedAt,
+        featureKind: "photo_scan",
+        model: OPENAI_SCAN_MODEL,
+        resultStatus: "provider_error",
+        usageState: "not_applicable",
+      })
+    );
+    throw error;
   }
 
-  const parsed = JSON.parse(outputText) as {
-    items?: ParsedScanItem[];
-    overallConfidence?: unknown;
-  };
+  try {
+    const outputText = response.output_text?.trim();
 
-  const normalizedComponents: ScanDraftItem[] = buildNormalizedScanDraftComponents(
-    (parsed.items ?? []).map((item) => ({
-      ...item,
-      prepMethod: item.prepMethod ?? undefined,
-    }))
-  );
+    if (!outputText) {
+      throw new Error("OpenAI scan response did not include structured output.");
+    }
 
-  if (!normalizedComponents.length) {
-    throw new Error("No usable food items were detected from this meal photo.");
+    const parsed = JSON.parse(outputText) as {
+      items?: ParsedScanItem[];
+      overallConfidence?: unknown;
+    };
+
+    const normalizedComponents: ScanDraftItem[] = buildNormalizedScanDraftComponents(
+      (parsed.items ?? []).map((item) => ({
+        ...item,
+        prepMethod: item.prepMethod ?? undefined,
+      }))
+    );
+
+    if (!normalizedComponents.length) {
+      throw new Error("No usable food items were detected from this meal photo.");
+    }
+
+    const matchedComponents: ScanDraftItem[] = await Promise.all(
+      normalizedComponents.map(async (item) => {
+        const candidates = (await ctx.runQuery(internal.usda.searchByName, {
+          term: item.name,
+        })) as UsdaSearchCandidate[];
+        const match = findBestUsdaMatch(item.name, candidates);
+
+        if (!match) {
+          return item;
+        }
+
+        return promoteDraftItemToUsda(item, match.fdcId, nutritionFromUsdaPer100g(match));
+      })
+    );
+    const groupedItems = groupAssembledFoodDraftItems(matchedComponents);
+    const matchedItems = mergeDuplicateStandaloneDraftItems(groupedItems);
+    const result = {
+      entryMethod: "photo_scan" as const,
+      items: matchedItems,
+      mealType: resolveDraftMealType({
+        itemNames: matchedItems.map((item) => item.name),
+        seedMealType: args.mealType,
+        source: "photo",
+      }),
+      overallConfidence: normalizeScanConfidence(parsed.overallConfidence),
+      photoStorageId: args.storageId,
+    };
+
+    await recordAiRequestSafely(
+      ctx,
+      buildAiObservabilityRecordArgs({
+        callKind: "photo_scan",
+        completedAt: Date.now(),
+        createdAt: args.requestStartedAt,
+        featureKind: "photo_scan",
+        model: OPENAI_SCAN_MODEL,
+        resultStatus: "completed",
+        usage: response.usage,
+      })
+    );
+
+    return result;
+  } catch (error) {
+    await recordAiRequestSafely(
+      ctx,
+      buildAiObservabilityRecordArgs({
+        callKind: "photo_scan",
+        completedAt: Date.now(),
+        createdAt: args.requestStartedAt,
+        featureKind: "photo_scan",
+        model: OPENAI_SCAN_MODEL,
+        resultStatus: "postprocess_error",
+        usage: response.usage,
+      })
+    );
+    throw error;
   }
-
-  const matchedComponents: ScanDraftItem[] = await Promise.all(
-    normalizedComponents.map(async (item) => {
-      const candidates = (await ctx.runQuery(internal.usda.searchByName, {
-        term: item.name,
-      })) as UsdaSearchCandidate[];
-      const match = findBestUsdaMatch(item.name, candidates);
-
-      if (!match) {
-        return item;
-      }
-
-      return promoteDraftItemToUsda(item, match.fdcId, nutritionFromUsdaPer100g(match));
-    })
-  );
-  const groupedItems = groupAssembledFoodDraftItems(matchedComponents);
-  const matchedItems = mergeDuplicateStandaloneDraftItems(groupedItems);
-
-  return {
-    entryMethod: "photo_scan",
-    items: matchedItems,
-    mealType: resolveDraftMealType({
-      itemNames: matchedItems.map((item) => item.name),
-      seedMealType: args.mealType,
-      source: "photo",
-    }),
-    overallConfidence: normalizeScanConfidence(parsed.overallConfidence),
-    photoStorageId: args.storageId,
-  };
 }
 
 export const analyzePhoto = action({
@@ -294,6 +347,28 @@ export const analyzePhoto = action({
   handler: async (ctx, args): Promise<AnalyzePhotoResult> => {
     if (!process.env.OPENAI_API_KEY) {
       throw new Error("OPENAI_API_KEY is not configured in Convex.");
+    }
+
+    const requestStartedAt = Date.now();
+    const precheckResult = await ctx.runQuery(internal.aiUsage.precheck, {
+      featureKind: "photo_scan",
+    });
+
+    if (!precheckResult.allowed) {
+      await recordAiRequestSafely(
+        ctx,
+        buildAiObservabilityRecordArgs({
+          blockedLimitKind: precheckResult.blockingLimitKind,
+          callKind: "photo_scan",
+          completedAt: Date.now(),
+          createdAt: requestStartedAt,
+          featureKind: "photo_scan",
+          model: OPENAI_SCAN_MODEL,
+          resultStatus: "blocked_quota",
+          usageState: "not_applicable",
+        })
+      );
+      throw new Error(precheckResult.message ?? "AI photo scans are unavailable right now.");
     }
 
     let storageId: Id<"_storage">;
@@ -308,8 +383,30 @@ export const analyzePhoto = action({
       throw new Error("The selected photo could not be prepared for Convex storage.");
     }
 
+    const reserveResult = await ctx.runMutation(internal.aiUsage.reserve, {
+      featureKind: "photo_scan",
+    });
+
+    if (!reserveResult.allowed) {
+      await recordAiRequestSafely(
+        ctx,
+        buildAiObservabilityRecordArgs({
+          blockedLimitKind: reserveResult.blockingLimitKind,
+          callKind: "photo_scan",
+          completedAt: Date.now(),
+          createdAt: requestStartedAt,
+          featureKind: "photo_scan",
+          model: OPENAI_SCAN_MODEL,
+          resultStatus: "blocked_quota",
+          usageState: "not_applicable",
+        })
+      );
+      throw new Error(reserveResult.message ?? "AI photo scans are unavailable right now.");
+    }
+
     return buildScanDraft(ctx, {
       mealType: args.mealType,
+      requestStartedAt,
       storageId,
     });
   },

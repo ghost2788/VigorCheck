@@ -18,7 +18,8 @@ import { ManualMealForm } from "../../../components/ManualMealForm";
 import { ScanReviewItemCard } from "../../../components/ScanReviewItemCard";
 import { ThemedText } from "../../../components/ThemedText";
 import { api } from "../../../convex/_generated/api";
-import { MEAL_TYPE_OPTIONS } from "../../../lib/domain/meals";
+import { buildMealNutritionRows } from "../../../lib/domain/mealNutritionRows";
+import { MEAL_TYPE_OPTIONS, MealType } from "../../../lib/domain/meals";
 import { parseTimestampFromLocalDateTime, getLocalDateInputValue, getLocalTimeInputValue } from "../../../lib/domain/dayWindow";
 import {
   createEmptyNutrition,
@@ -75,6 +76,7 @@ function toDraftItems(result: NonNullable<MealEditQueryResult>) {
     name: item.foodName,
     normalizedName: normalizeFoodName(item.foodName),
     nutrition: item.nutrition,
+    portionUnit: item.portionUnit,
     portionLabel: item.portionLabel,
     prepMethod: item.prepMethod ?? undefined,
     barcodeValue: item.barcodeValue ?? undefined,
@@ -89,12 +91,13 @@ export default function MealEditScreen() {
   const params = useLocalSearchParams<{ mealId?: string }>();
   const mealId = typeof params.mealId === "string" ? params.mealId : null;
   const mealData = useQuery(api.meals.getForEdit, mealId ? { mealId: mealId as never } : "skip");
+  const reviewContext = useQuery(api.scanReview.getContext);
   const updateManual = useMutation(api.meals.updateManual);
   const updateAiEntry = useMutation(api.meals.updateAiEntry);
   const deleteMeal = useMutation(api.meals.deleteMeal);
   const [initialized, setInitialized] = useState(false);
   const [mealLabel, setMealLabel] = useState("");
-  const [mealType, setMealType] = useState<"breakfast" | "lunch" | "dinner" | "snack">("breakfast");
+  const [mealType, setMealType] = useState<MealType>("breakfast");
   const [dateValue, setDateValue] = useState("");
   const [timeValue, setTimeValue] = useState("");
   const [draftItems, setDraftItems] = useState<ScanDraftItem[]>([]);
@@ -177,10 +180,11 @@ export default function MealEditScreen() {
         items: draftItems.map((item) => ({
           barcodeValue: item.barcodeValue,
           confidence: item.confidence,
-          estimatedGrams: item.estimatedGrams,
           name: item.name.trim(),
           nutrition: item.nutrition,
+          portionAmount: item.estimatedGrams,
           portionLabel: item.portionLabel,
+          portionUnit: item.portionUnit,
           prepMethod: item.prepMethod || undefined,
           source: item.source,
           usdaFoodId: item.usdaFoodId || undefined,
@@ -329,20 +333,35 @@ export default function MealEditScreen() {
             </ThemedText>
           </Card>
 
-          {draftItems.map((item) => (
-            <ScanReviewItemCard
-              item={item}
-              key={item.id}
-              onChange={(nextItem) =>
-                setDraftItems((current) =>
-                  current.map((entry) => (entry.id === item.id ? nextItem : entry))
-                )
-              }
-              onRemove={() =>
-                setDraftItems((current) => current.filter((entry) => entry.id !== item.id))
-              }
-            />
-          ))}
+          {draftItems.map((item) => {
+            const nutritionRows = buildMealNutritionRows({
+              detailedNutritionTargets: reviewContext?.detailedNutritionTargets,
+              macroTargets: reviewContext?.macroTargets,
+              nutrients: item.nutrition,
+              totals: {
+                calories: item.nutrition.calories,
+                carbs: item.nutrition.carbs,
+                fat: item.nutrition.fat,
+                protein: item.nutrition.protein,
+              },
+            });
+
+            return (
+              <ScanReviewItemCard
+                item={item}
+                key={item.id}
+                nutritionRows={nutritionRows}
+                onChange={(nextItem) =>
+                  setDraftItems((current) =>
+                    current.map((entry) => (entry.id === item.id ? nextItem : entry))
+                  )
+                }
+                onRemove={() =>
+                  setDraftItems((current) => current.filter((entry) => entry.id !== item.id))
+                }
+              />
+            );
+          })}
 
           <Card style={styles.addCard}>
             <View style={styles.addHeader}>
@@ -407,6 +426,7 @@ export default function MealEditScreen() {
               onPress={() => {
                 void saveAiMeal();
               }}
+              testID="meal-edit-save-button"
             />
           </View>
         </>

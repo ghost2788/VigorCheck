@@ -1,6 +1,12 @@
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { MutationCtx, QueryCtx, mutation, query } from "./_generated/server";
+import { resolveHydrationDisplayLabel } from "../lib/domain/rememberedEntries";
+import {
+  createRememberedReplayId,
+  refreshRememberedEntryFromReplaySources,
+  upsertRememberedEntryFromReplaySources,
+} from "./lib/rememberedEntries";
 import { requireCurrentUser } from "./lib/devIdentity";
 
 async function getOwnedHydrationLog(
@@ -23,9 +29,17 @@ export const getForEdit = query({
   },
   handler: async (ctx, args) => {
     const { hydrationLog, user } = await getOwnedHydrationLog(ctx, args.logId);
+    const rememberedEntry = hydrationLog.rememberedEntryId
+      ? await ctx.db.get(hydrationLog.rememberedEntryId)
+      : null;
 
     return {
       amountOz: hydrationLog.amountOz,
+      displayLabel: resolveHydrationDisplayLabel({
+        amountOz: hydrationLog.amountOz,
+        rememberedHydrationLabel: rememberedEntry?.hydrationSnapshot?.label,
+        shortcutLabel: hydrationLog.shortcutLabel,
+      }),
       id: hydrationLog._id,
       shortcutLabel: hydrationLog.shortcutLabel,
       timeZone: user.timeZone,
@@ -41,6 +55,7 @@ export const logQuickAdd = mutation({
   handler: async (ctx, args) => {
     const user = await requireCurrentUser(ctx);
     const amountOz = Math.max(0, Math.round(args.amountOz));
+    const rememberedReplayId = createRememberedReplayId();
 
     if (amountOz <= 0) {
       throw new Error("Hydration amount must be greater than zero.");
@@ -48,8 +63,15 @@ export const logQuickAdd = mutation({
 
     const hydrationLogId = await ctx.db.insert("hydrationLogs", {
       amountOz,
+      rememberedEntryId: undefined,
+      rememberedReplayId,
       timestamp: Date.now(),
       userId: user._id,
+    });
+
+    await upsertRememberedEntryFromReplaySources(ctx, {
+      hydrationLogId,
+      replayId: rememberedReplayId,
     });
 
     return { hydrationLogId };
@@ -73,6 +95,10 @@ export const updateLog = mutation({
     await ctx.db.patch(hydrationLog._id, {
       amountOz,
       timestamp: args.timestamp,
+    });
+
+    await refreshRememberedEntryFromReplaySources(ctx, {
+      hydrationLogId: hydrationLog._id,
     });
 
     return { hydrationLogId: hydrationLog._id };

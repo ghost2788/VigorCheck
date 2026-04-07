@@ -87,6 +87,7 @@ export default function HistoryDayDetailScreen() {
   const router = useRouter();
   const deleteMeal = useMutation(api.meals.deleteMeal);
   const deleteHydrationLog = useMutation(api.hydration.deleteLog);
+  const deleteSupplementLog = useMutation(api.supplements.deleteLog);
   const params = useLocalSearchParams<{ dateKey?: string }>();
   const dateKey = typeof params.dateKey === "string" ? params.dateKey : null;
   const detail = useQuery(api.history.dayDetail, dateKey ? { dateKey } : "skip");
@@ -111,7 +112,7 @@ export default function HistoryDayDetailScreen() {
             Day not found
           </ThemedText>
           <ThemedText variant="secondary" style={styles.emptyBody}>
-            This date does not have any saved meals or hydration entries yet.
+            This date does not have any saved meals, drinks, hydration, or supplement entries yet.
           </ThemedText>
         </Card>
       </View>
@@ -238,7 +239,11 @@ export default function HistoryDayDetailScreen() {
                   <ThemedText variant="secondary" style={styles.cardInsight}>
                     {getNutritionCoverageDetailCopy()}
                   </ThemedText>
-                  <NutrientProgressRows accentColor={theme.metricNutrition} rows={nutrientRows} />
+                  <NutrientProgressRows
+                    accentColor={theme.metricNutrition}
+                    presentationMode="plain"
+                    rows={nutrientRows}
+                  />
                 </View>
               ),
               headerPercentLabel: `(${formatPercent(detail.summary.nutritionCoveragePercent)})`,
@@ -275,6 +280,20 @@ export default function HistoryDayDetailScreen() {
               return;
             }
 
+            if (entry.kind === "supplement") {
+              Alert.alert("Delete supplement log", "This will remove the saved supplement entry.", [
+                { style: "cancel", text: "Cancel" },
+                {
+                  style: "destructive",
+                  text: "Delete",
+                  onPress: () => {
+                    void deleteSupplementLog({ logId: entry.id as never });
+                  },
+                },
+              ]);
+              return;
+            }
+
             Alert.alert("Delete meal", "This will remove the saved meal and all of its items.", [
               { style: "cancel", text: "Cancel" },
               {
@@ -286,14 +305,18 @@ export default function HistoryDayDetailScreen() {
               },
             ]);
           }}
-          onEdit={() => {
-            if (entry.kind === "hydration") {
-              router.push(`/history/hydration/${entry.id}`);
-              return;
-            }
+          onEdit={
+            entry.kind === "supplement"
+              ? undefined
+              : () => {
+                  if (entry.kind === "hydration") {
+                    router.push(`/history/hydration/${entry.id}`);
+                    return;
+                  }
 
-            router.push(`/history/meals/${entry.id}`);
-          }}
+                  router.push(`/history/meals/${entry.id}`);
+                }
+          }
           onToggle={() => setExpandedEntryId((current) => current === entry.id ? null : entry.id)}
           targets={targets}
         />
