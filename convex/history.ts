@@ -310,6 +310,7 @@ export const listDays = query({
 
         return buildHistoryDaySummary({
           dateKey,
+          goalType: user.goalType,
           hydrationLogs: hydrationLogs.map((entry) => ({
             amountOz: entry.amountOz,
             id: entry._id,
@@ -387,6 +388,7 @@ export const dayDetail = query({
     );
     const targets = buildTargets(user);
     const summaryDashboard = buildTodayDashboard({
+      goalType: user.goalType,
       hydrationLogs: hydrationLogs.map((entry) => ({
         amountOz: entry.amountOz,
         id: entry._id,
@@ -422,6 +424,8 @@ export const dayDetail = query({
       dateKey: args.dateKey,
       summary: {
         calories: summaryDashboard.totals.calories,
+        carbs: summaryDashboard.totals.carbs,
+        fat: summaryDashboard.totals.fat,
         hydrationCups: summaryDashboard.cards.hydration.consumedCups,
         insights: summaryDashboard.cards.nutrition.insights,
         mealCount: meals.length,

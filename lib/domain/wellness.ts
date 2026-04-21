@@ -1,4 +1,4 @@
-import type { Sex } from "./targets";
+import type { GoalType, Sex } from "./targets";
 
 export type NutritionKey =
   | "fiber"
@@ -10,7 +10,14 @@ export type NutritionKey =
 
 export type NutritionTargets = Record<NutritionKey, number>;
 export type NutritionAmounts = Record<NutritionKey, number>;
-export type WellnessKey = "calories" | "protein" | "hydration" | "nutrition";
+export type WellnessKey =
+  | "calories"
+  | "protein"
+  | "carbs"
+  | "fat"
+  | "hydration"
+  | "nutrition";
+export type WellnessWeights = Record<WellnessKey, number>;
 
 const NUTRITION_KEYS: NutritionKey[] = [
   "fiber",
@@ -21,8 +28,61 @@ const NUTRITION_KEYS: NutritionKey[] = [
   "vitaminC",
 ];
 
+const WELLNESS_WEIGHT_BY_GOAL: Record<GoalType, WellnessWeights> = {
+  energy_balance: {
+    calories: 0.24,
+    carbs: 0.17,
+    fat: 0.16,
+    hydration: 0.13,
+    nutrition: 0.12,
+    protein: 0.18,
+  },
+  fat_loss: {
+    calories: 0.3,
+    carbs: 0.18,
+    fat: 0.12,
+    hydration: 0.1,
+    nutrition: 0.1,
+    protein: 0.2,
+  },
+  general_health: {
+    calories: 0.18,
+    carbs: 0.14,
+    fat: 0.12,
+    hydration: 0.18,
+    nutrition: 0.22,
+    protein: 0.16,
+  },
+  muscle_gain: {
+    calories: 0.25,
+    carbs: 0.2,
+    fat: 0.12,
+    hydration: 0.1,
+    nutrition: 0.1,
+    protein: 0.23,
+  },
+};
+
 export function getNutritionKeys() {
   return [...NUTRITION_KEYS];
+}
+
+export function getWellnessWeights(goalType: GoalType): WellnessWeights {
+  return { ...WELLNESS_WEIGHT_BY_GOAL[goalType] };
+}
+
+export function scoreWeightedWellness(
+  goalType: GoalType,
+  scores: Record<WellnessKey, number>
+) {
+  const weights = getWellnessWeights(goalType);
+
+  return Math.round(
+    (Object.keys(weights) as WellnessKey[]).reduce(
+      (total, key) => total + scores[key] * weights[key],
+      0
+    )
+  );
 }
 
 export function roundPercent(value: number, target: number) {
@@ -112,4 +172,3 @@ export function getNutritionTargets({
     vitaminD: normalizedAge >= 71 ? 20 : 15,
   };
 }
-

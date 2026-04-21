@@ -16,9 +16,13 @@ const requiredKeys = [
   "accent3",
   "accent3Start",
   "metricCalories",
+  "metricCarbs",
+  "metricFat",
   "metricProtein",
   "metricHydration",
+  "metricHydrationSupport",
   "metricNutrition",
+  "metricNutritionSupport",
   "ringTrack",
   "tabBarBg",
 ] as const;

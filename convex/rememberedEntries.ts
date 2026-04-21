@@ -1,5 +1,9 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import {
+  buildRememberedEntryFavoriteTogglePatch,
+  shouldUsePinnedFavoriteOrdering,
+} from "../lib/domain/rememberedEntries";
 import { findCurrentUser, requireCurrentUser } from "./lib/devIdentity";
 import {
   buildRememberedEntryListItem,
@@ -24,13 +28,21 @@ export const listForCurrentUser = query({
       };
     }
 
-    const favoriteRows = await ctx.db
-      .query("rememberedEntries")
-      .withIndex("by_user_and_favorited_and_last_used_at", (queryBuilder) =>
-        queryBuilder.eq("userId", user._id).eq("favorited", true)
-      )
-      .order("desc")
-      .take(args.favoriteLimit + 1);
+    const favoriteRows = shouldUsePinnedFavoriteOrdering(user.rememberedEntriesMigrationVersion)
+      ? await ctx.db
+          .query("rememberedEntries")
+          .withIndex("by_user_and_favorited_and_favorited_at", (queryBuilder) =>
+            queryBuilder.eq("userId", user._id).eq("favorited", true)
+          )
+          .order("desc")
+          .take(args.favoriteLimit + 1)
+      : await ctx.db
+          .query("rememberedEntries")
+          .withIndex("by_user_and_favorited_and_last_used_at", (queryBuilder) =>
+            queryBuilder.eq("userId", user._id).eq("favorited", true)
+          )
+          .order("desc")
+          .take(args.favoriteLimit + 1);
     const recentRows = await ctx.db
       .query("rememberedEntries")
       .withIndex("by_user_and_favorited_and_last_used_at", (queryBuilder) =>
@@ -60,9 +72,14 @@ export const toggleFavorite = mutation({
       throw new Error("Remembered entry not found.");
     }
 
-    await ctx.db.patch(rememberedEntry._id, {
-      favorited: !rememberedEntry.favorited,
-    });
+    await ctx.db.patch(
+      rememberedEntry._id,
+      buildRememberedEntryFavoriteTogglePatch({
+        currentFavorited: rememberedEntry.favorited,
+        migrationVersion: user.rememberedEntriesMigrationVersion,
+        now: Date.now(),
+      })
+    );
 
     return { favorited: !rememberedEntry.favorited };
   },

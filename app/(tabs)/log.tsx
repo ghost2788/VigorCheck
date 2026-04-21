@@ -26,10 +26,11 @@ function hexToRgba(hex: string, alpha: number) {
 }
 
 export default function LogScreen() {
-  const { theme } = useTheme();
+  const { mode, theme } = useTheme();
   const router = useRouter();
   const isFocused = useIsFocused();
   const scrollViewRef = useRef<ScrollView>(null);
+  const describeMealSectionTopRef = useRef(0);
   const dashboard = useQuery(api.dashboard.today);
   const supplementStack = useQuery(api.supplements.currentStack);
   const [favoriteLimit, setFavoriteLimit] = useState(4);
@@ -62,6 +63,9 @@ export default function LogScreen() {
 
   const scanJobs = getJobsForOrigin("scan");
   const textJobs = getJobsForOrigin("text");
+  const activeScanJobCount = scanJobs.filter(
+    (job) => job.status === "queued" || job.status === "analyzing"
+  ).length;
 
   useEffect(() => {
     if (dashboard) {
@@ -115,7 +119,7 @@ export default function LogScreen() {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
         <Card style={styles.card}>
-          <ThemedText size="sm" style={styles.cardTitle}>
+          <ThemedText size="md" style={styles.cardTitle}>
             Finish setup first
           </ThemedText>
           <ThemedText variant="secondary" style={styles.cardBody}>
@@ -159,6 +163,9 @@ export default function LogScreen() {
 
         <View style={styles.section}>
           <ScanEntryActions
+            activeJobCount={activeScanJobCount}
+            description="Capture the meal fast, then review the estimate before anything is saved."
+            eyebrow="Photo + Barcode"
             error={scanLauncherError}
             isPreparing={isPreparing}
             onBarcodePress={() => router.push("/scan/barcode")}
@@ -179,7 +186,13 @@ export default function LogScreen() {
           </ScanEntryActions>
         </View>
 
-        <View style={styles.section}>
+        <View
+          onLayout={(event) => {
+            describeMealSectionTopRef.current = event.nativeEvent.layout.y;
+          }}
+          style={styles.section}
+          testID="describe-meal-section"
+        >
           <AiTextMealCard
             allJobs={jobs}
             jobs={textJobs}
@@ -228,7 +241,10 @@ export default function LogScreen() {
           <RememberedEntriesCard
             favoriteHasMore={rememberedEntries.favoritesHasMore}
             favorites={rememberedEntries.favorites}
-            onReplay={async (rememberedEntryId) => {
+            onQuickAddFavorite={async (rememberedEntryId) => {
+              await logRememberedEntry({ rememberedEntryId: rememberedEntryId as never });
+            }}
+            onReplayRow={async (rememberedEntryId) => {
               await logRememberedEntry({ rememberedEntryId: rememberedEntryId as never });
             }}
             onShowMoreFavorites={() => setFavoriteLimit(20)}
@@ -248,7 +264,15 @@ export default function LogScreen() {
         transparent
         visible={Boolean(barcodeFallback)}
       >
-        <View style={styles.modalScrim}>
+        <View
+          style={[
+            styles.modalScrim,
+            {
+              backgroundColor: hexToRgba(theme.background, mode === "dark" ? 0.72 : 0.28),
+            },
+          ]}
+          testID="barcode-fallback-scrim"
+        >
           <View
             style={[
               styles.modalSheet,
@@ -288,7 +312,10 @@ export default function LogScreen() {
                 onPress={() => {
                   clearBarcodeFallback();
                   setQuickAddExpansionSignal((current) => current + 1);
-                  scrollViewRef.current?.scrollTo({ animated: true, y: 320 });
+                  scrollViewRef.current?.scrollTo({
+                    animated: true,
+                    y: Math.max(0, describeMealSectionTopRef.current - 24),
+                  });
                 }}
                 variant="secondary"
               />
@@ -347,7 +374,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   modalScrim: {
-    backgroundColor: "rgba(0,0,0,0.54)",
     flex: 1,
     justifyContent: "flex-end",
     padding: 12,

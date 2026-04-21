@@ -51,6 +51,8 @@ describe("HistoryDayDetailScreen", () => {
       dateKey: "2026-03-29",
       summary: {
         calories: 745,
+        carbs: 68,
+        fat: 24,
         hydrationCups: 2,
         mealCount: 1,
         nutritionCoveragePercent: 18,
@@ -117,6 +119,8 @@ describe("HistoryDayDetailScreen", () => {
       dateKey: "2026-03-29",
       summary: {
         calories: 745,
+        carbs: 68,
+        fat: 24,
         hydrationCups: 2,
         mealCount: 1,
         nutritionCoveragePercent: 18,
@@ -134,18 +138,24 @@ describe("HistoryDayDetailScreen", () => {
     const proteinLabelColor = StyleSheet.flatten(
       getByTestId("history-day-detail-protein-label").props.style
     ).color;
-    const hydrationLabelColor = StyleSheet.flatten(
-      getByTestId("history-day-detail-hydration-label").props.style
+    const carbsLabelColor = StyleSheet.flatten(
+      getByTestId("history-day-detail-carbs-label").props.style
     ).color;
-    const nutritionLabelColor = StyleSheet.flatten(
-      getByTestId("history-day-detail-nutrition-label").props.style
+    const fatLabelColor = StyleSheet.flatten(
+      getByTestId("history-day-detail-fat-label").props.style
+    ).color;
+    const hydrationLabelColor = StyleSheet.flatten(
+      getByTestId("history-day-detail-hydration-support-label").props.style
     ).color;
     const scoreColor = StyleSheet.flatten(getByTestId("history-day-detail-score").props.style).color;
 
     expect([colors.dark.metricCalories, colors.light.metricCalories]).toContain(caloriesLabelColor);
     expect([colors.dark.metricProtein, colors.light.metricProtein]).toContain(proteinLabelColor);
-    expect([colors.dark.metricHydration, colors.light.metricHydration]).toContain(hydrationLabelColor);
-    expect([colors.dark.metricNutrition, colors.light.metricNutrition]).toContain(nutritionLabelColor);
+    expect([colors.dark.metricCarbs, colors.light.metricCarbs]).toContain(carbsLabelColor);
+    expect([colors.dark.metricFat, colors.light.metricFat]).toContain(fatLabelColor);
+    expect([colors.dark.metricHydrationSupport, colors.light.metricHydrationSupport]).toContain(
+      hydrationLabelColor
+    );
     expect([colors.dark.accent1, colors.light.accent1]).toContain(scoreColor);
   });
 
@@ -155,6 +165,8 @@ describe("HistoryDayDetailScreen", () => {
       dateKey: "2026-03-29",
       summary: {
         calories: 745,
+        carbs: 68,
+        fat: 24,
         hydrationCups: 2,
         insights: {
           biggestGaps: [],
@@ -260,6 +272,8 @@ describe("HistoryDayDetailScreen", () => {
       dateKey: "2026-03-29",
       summary: {
         calories: 745,
+        carbs: 68,
+        fat: 24,
         hydrationCups: 2,
         insights: {
           biggestGaps: [],

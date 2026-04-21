@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { fireEvent, render, waitFor } from "../../lib/test-utils";
 import { ManualMealForm } from "../../components/ManualMealForm";
 
@@ -88,5 +89,21 @@ describe("ManualMealForm", () => {
     expect(getByDisplayValue("23")).toBeTruthy();
     expect(getByDisplayValue("34")).toBeTruthy();
     expect(getByDisplayValue("9")).toBeTruthy();
+  });
+
+  it("uses the stronger md section title hierarchy", () => {
+    const { getByText } = render(<ManualMealForm onSubmit={() => {}} />);
+
+    expect(StyleSheet.flatten(getByText("Quick add").props.style).fontSize).toBe(15);
+  });
+
+  it("can render as an embedded form without the outer card shell or section title", () => {
+    const { getByTestId, queryByText, queryByTestId } = render(
+      <ManualMealForm onSubmit={() => {}} sectionTitle={null} surface="embedded" />
+    );
+
+    expect(getByTestId("manual-meal-form-embedded")).toBeTruthy();
+    expect(queryByTestId("manual-meal-form-card")).toBeNull();
+    expect(queryByText("Quick add")).toBeNull();
   });
 });

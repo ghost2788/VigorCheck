@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
 import { Animated, Easing, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -111,8 +112,15 @@ export function OnboardingScreen({
         >
           <View style={styles.header}>
             {onBackPress ? (
-              <Pressable accessibilityRole="button" onPress={onBackPress} style={styles.backButton}>
-                <ThemedText variant="secondary" size="sm">
+              <Pressable
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={onBackPress}
+                style={styles.backButton}
+                testID="onboarding-back-button"
+              >
+                <Ionicons color={theme.accent1} name="chevron-back" size={18} />
+                <ThemedText variant="accent1" size="sm">
                   Back
                 </ThemedText>
               </Pressable>
@@ -204,8 +212,12 @@ export function OnboardingScreen({
 
 const styles = StyleSheet.create({
   backButton: {
-    marginBottom: 12,
-    paddingVertical: 4,
+    alignItems: "center",
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    gap: 2,
+    marginBottom: 18,
+    paddingVertical: 6,
   },
   body: {
     marginBottom: 20,

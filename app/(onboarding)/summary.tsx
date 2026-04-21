@@ -1,4 +1,4 @@
-import { useConvexAuth, useMutation } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import React from "react";
 import { useRouter } from "expo-router";
 import { DimensionValue, Pressable, StyleSheet, View } from "react-native";
@@ -137,12 +137,26 @@ export default function SummaryScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { isAuthenticated, isLoading } = useConvexAuth();
+  const currentUser = useQuery(api.users.current, isAuthenticated ? {} : "skip");
   const completeOnboarding = useMutation(api.users.completeOnboarding);
   const { draft, markPostOnboardingHomeCTA, resetDraft } = useOnboardingFlow();
   const [animationProgress, setAnimationProgress] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
   const draftComplete = isOnboardingDraftComplete(draft);
+  const hasFinishedRef = React.useRef(false);
+
+  const finishOnboarding = React.useCallback(() => {
+    if (hasFinishedRef.current) {
+      return;
+    }
+
+    hasFinishedRef.current = true;
+    markPostOnboardingHomeCTA();
+    resetDraft();
+    setSaving(false);
+    router.replace("/(tabs)");
+  }, [markPostOnboardingHomeCTA, resetDraft, router]);
 
   React.useEffect(() => {
     if (!draftComplete) {
@@ -164,6 +178,14 @@ export default function SummaryScreen() {
       clearInterval(intervalId);
     };
   }, [draftComplete]);
+
+  React.useEffect(() => {
+    if (!draftComplete || !saving || !currentUser) {
+      return;
+    }
+
+    finishOnboarding();
+  }, [currentUser, draftComplete, finishOnboarding, saving]);
 
   if (!draftComplete) {
     return null;
@@ -216,6 +238,7 @@ export default function SummaryScreen() {
   const explanation = `Built from your ${getGoalLabel(completedDraft.goalType)} goal, ${getPaceLabel(
     completedDraft.goalPace
   )} pace, and ${completedDraft.activityLevel} activity.`;
+  const isCurrentUserLoading = isAuthenticated && currentUser === undefined;
 
   async function handlePrimaryAction() {
     if (!isAuthenticated) {
@@ -225,6 +248,7 @@ export default function SummaryScreen() {
 
     setSaving(true);
     setError(null);
+    hasFinishedRef.current = false;
 
     try {
       await completeOnboarding({
@@ -239,20 +263,20 @@ export default function SummaryScreen() {
         timeZone: getDeviceTimeZone(),
       });
 
-      markPostOnboardingHomeCTA();
-      resetDraft();
-      router.replace("/(tabs)");
+      finishOnboarding();
     } catch (submitError) {
       console.error(submitError);
       setError("We couldn't save your plan right now. Please try again.");
     } finally {
-      setSaving(false);
+      if (!hasFinishedRef.current) {
+        setSaving(false);
+      }
     }
   }
 
   return (
     <OnboardingScreen
-      actionDisabled={isLoading || saving}
+      actionDisabled={isLoading || isCurrentUserLoading || saving}
       actionLabel={!isAuthenticated ? "Create account to save plan" : saving ? "Saving..." : "Start tracking"}
       actionTestID="summary-primary-cta"
       error={error}

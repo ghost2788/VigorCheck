@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timeline Meal Card Modernization</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --text-secondary: rgba(255,255,255,0.45);
+    --text-tertiary: rgba(255,255,255,0.28);
+    --text-muted: rgba(255,255,255,0.16);
+    --card: rgba(255,255,255,0.035);
+    --card-border: rgba(255,255,255,0.08);
+    --surface-soft: rgba(255,255,255,0.025);
+    --surface-strong: rgba(255,255,255,0.05);
+    --accent-teal: #5ebaa9;
+    --accent-gold: #c4a46c;
+    --metric-calories: #df9a52;
+    --metric-protein: #78a0c8;
+    --destructive: #b86a62;
+  }
+
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --text-secondary: rgba(42,37,32,0.56);
+    --text-tertiary: rgba(42,37,32,0.38);
+    --text-muted: rgba(42,37,32,0.22);
+    --card: rgba(255,255,255,0.82);
+    --card-border: rgba(68,55,37,0.12);
+    --surface-soft: rgba(255,255,255,0.82);
+    --surface-strong: rgba(255,255,255,0.9);
+    --accent-teal: #3a9e8a;
+    --accent-gold: #b8965a;
+    --metric-calories: #ca8340;
+    --metric-protein: #6090c0;
+    --destructive: #a85b52;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    margin: 0 auto;
+    max-width: 390px;
+    min-height: 100vh;
+    padding: 50px 18px 64px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    right: 12px;
+    top: 12px;
+    z-index: 20;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    padding: 6px 12px;
+    text-transform: uppercase;
+  }
+
+  .eyebrow {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    margin-bottom: 6px;
+    padding-left: 2px;
+    text-transform: uppercase;
+  }
+
+  .context {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 18px;
+    margin-bottom: 18px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--card-border);
+    margin: 26px 0;
+  }
+
+  .screen-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .screen-chip {
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    color: var(--text-tertiary);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    padding: 5px 10px;
+    text-transform: uppercase;
+  }
+
+  .section-note {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    line-height: 16px;
+    margin-bottom: 12px;
+  }
+
+  .card {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.01) 100%),
+      var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    display: flex;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .card .accent {
+    flex-shrink: 0;
+    width: 4px;
+  }
+
+  .card-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .collapsed {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 15px 15px;
+  }
+
+  .title-row {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+  }
+
+  .title {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 20px;
+    min-width: 0;
+  }
+
+  .title.current {
+    font-weight: 500;
+  }
+
+  .cal-chip {
+    background: rgba(223,154,82,0.13);
+    border: 1px solid rgba(223,154,82,0.22);
+    border-radius: 999px;
+    color: var(--metric-calories);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+
+  body.light .cal-chip {
+    background: rgba(202,131,64,0.1);
+    border-color: rgba(202,131,64,0.18);
+  }
+
+  .chevron {
+    border-bottom: 2px solid var(--text-tertiary);
+    border-right: 2px solid var(--text-tertiary);
+    flex-shrink: 0;
+    height: 10px;
+    margin-right: 2px;
+    transform: rotate(45deg);
+    width: 10px;
+  }
+
+  .chevron.open {
+    transform: rotate(135deg);
+  }
+
+  .meta-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .meta-pill {
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    color: var(--text-tertiary);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    padding: 5px 8px;
+    text-transform: uppercase;
+  }
+
+  .meta-pill.method {
+    color: var(--accent-gold);
+  }
+
+  .meta-inline {
+    color: var(--text-tertiary);
+    font-size: 11px;
+  }
+
+  .meta-inline.macros {
+    color: var(--text-secondary);
+  }
+
+  .expanded {
+    border-top: 1px solid var(--card-border);
+    padding: 14px 15px 15px;
+  }
+
+  .insight-label {
+    color: var(--text-tertiary);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.9px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .insight-copy {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 18px;
+    margin-bottom: 12px;
+  }
+
+  .macro-panel {
+    background: var(--surface-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 11px 11px 10px;
+  }
+
+  .metric-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 11px;
+  }
+
+  .metric-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .metric-top {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .metric-label {
+    color: var(--text-tertiary);
+    font-size: 11px;
+  }
+
+  .metric-value {
+    color: var(--text-secondary);
+    font-size: 11px;
+  }
+
+  .bar {
+    background: rgba(255,255,255,0.07);
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    border-radius: 999px;
+    height: 100%;
+  }
+
+  .footer {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--card-border);
+  }
+
+  .footer-link {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .footer-link.edit {
+    color: var(--accent-teal);
+  }
+
+  .footer-link.delete {
+    color: var(--destructive);
+  }
+
+  .current-meta {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .current-meta .dot {
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? '◐ Dark' : '◐ Light'">◐ Light</button>
+
+<div class="eyebrow">Compact meal card review</div>
+<div class="context">Goal: make the shared meal card feel more modern in both Home and day-detail without changing its data model or breaking the shared component seam.</div>
+
+<div class="screen-chip-row">
+  <div class="screen-chip">Home timeline</div>
+  <div class="screen-chip">Day detail timeline</div>
+  <div class="screen-chip">Same shared component</div>
+</div>
+
+<div class="eyebrow">Current read</div>
+<div class="section-note">Good structure, but the compact state feels flat. The calorie number floats without anchor, the meta line reads like plain text, and the expanded body lacks an intentional inner surface.</div>
+
+<div class="card">
+  <div class="accent" style="background: var(--accent-gold);"></div>
+  <div class="card-wrap">
+    <div class="collapsed">
+      <div class="title-row">
+        <div class="title current">Greek yogurt bowl</div>
+        <div style="color: var(--text); font-size: 12px; font-weight: 600;">420 cal</div>
+        <div class="chevron"></div>
+      </div>
+      <div class="current-meta">
+        <div style="font-size: 11px; color: var(--text-tertiary);">Photo Scan</div>
+        <div class="dot">·</div>
+        <div style="font-size: 11px; color: var(--text-tertiary);">8:15 AM</div>
+        <div class="dot">·</div>
+        <div style="font-size: 11px; color: var(--text-secondary);">32p / 48c / 12f</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="eyebrow">Recommended direction</div>
+<div class="section-note">Keep the left accent bar and overall compact shape. Upgrade the hierarchy with a calorie chip, tiny method pill, cleaner time/macro formatting, and an inset macro chamber in the expanded state.</div>
+
+<div class="card">
+  <div class="accent" style="background: var(--accent-gold);"></div>
+  <div class="card-wrap">
+    <div class="collapsed">
+      <div class="title-row">
+        <div class="title">Greek yogurt bowl</div>
+        <div class="cal-chip">420 cal</div>
+        <div class="chevron"></div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-pill method">Photo Scan</div>
+        <div class="meta-inline">8:15 AM</div>
+        <div class="meta-inline">·</div>
+        <div class="meta-inline macros">32p / 48c / 12f</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="accent" style="background: var(--accent-teal);"></div>
+  <div class="card-wrap">
+    <div class="collapsed">
+      <div class="title-row">
+        <div class="title">Chicken salad wrap</div>
+        <div class="cal-chip">580 cal</div>
+        <div class="chevron open"></div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-pill" style="color: var(--accent-teal);">AI Text</div>
+        <div class="meta-inline">12:30 PM</div>
+        <div class="meta-inline">·</div>
+        <div class="meta-inline macros">38p / 52c / 18f</div>
+      </div>
+    </div>
+    <div class="expanded">
+      <div class="insight-label">Meal impact</div>
+      <div class="insight-copy">This meal covered <span style="color: var(--metric-calories);">29%</span> of daily calories and <span style="color: var(--metric-protein);">31%</span> of protein.</div>
+
+      <div class="macro-panel">
+        <div class="metric-row">
+          <div class="metric-top">
+            <div class="metric-label">Calories</div>
+            <div class="metric-value">580 / 2,000 kcal</div>
+          </div>
+          <div class="bar">
+            <div class="bar-fill" style="background: var(--metric-calories); width: 29%;"></div>
+          </div>
+        </div>
+
+        <div class="metric-row">
+          <div class="metric-top">
+            <div class="metric-label">Protein</div>
+            <div class="metric-value">38 / 122 g</div>
+          </div>
+          <div class="bar">
+            <div class="bar-fill" style="background: var(--metric-protein); width: 31%;"></div>
+          </div>
+        </div>
+
+        <div class="metric-row">
+          <div class="metric-top">
+            <div class="metric-label">Carbs</div>
+            <div class="metric-value">52 / 320 g</div>
+          </div>
+          <div class="bar">
+            <div class="bar-fill" style="background: var(--accent-teal); width: 16%;"></div>
+          </div>
+        </div>
+
+        <div class="metric-row">
+          <div class="metric-top">
+            <div class="metric-label">Fat</div>
+            <div class="metric-value">18 / 92 g</div>
+          </div>
+          <div class="bar">
+            <div class="bar-fill" style="background: var(--accent-gold); width: 20%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-link edit">Edit meal</div>
+        <div class="footer-link delete">Delete</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="eyebrow" style="margin-top: 20px;">Why this works</div>
+<div class="context" style="margin-bottom: 0;">
+  The compact state becomes easier to scan because the calorie value gets its own anchor and the meta line is split into stronger semantic pieces.
+  The expanded state feels designed instead of utilitarian because the macro rows live inside a dedicated inner surface, while still reusing the same accent and action patterns the app already uses.
+</div>
+
+<script>
+  document.querySelector(".theme-toggle").addEventListener("click", function () {
+    this.textContent = document.body.classList.contains("light") ? "◐ Dark" : "◐ Light";
+  });
+</script>
+</body>
+</html>

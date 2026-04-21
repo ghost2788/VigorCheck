@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { fireEvent, render } from "../../lib/test-utils";
 import { Button } from "../../components/Button";
 
@@ -15,5 +16,11 @@ describe("Button", () => {
     fireEvent.press(getByText("Tap me"));
 
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it("centers wrapped label text", () => {
+    const { getByText } = render(<Button label="Create custom supplement" onPress={() => {}} />);
+
+    expect(StyleSheet.flatten(getByText("Create custom supplement").props.style).textAlign).toBe("center");
   });
 });

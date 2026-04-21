@@ -1,5 +1,6 @@
 import React from "react";
-import { render } from "../../lib/test-utils";
+import { fireEvent, render, within } from "../../lib/test-utils";
+import { StyleSheet, View } from "react-native";
 import HydrationEditScreen from "../../app/history/hydration/[logId]";
 
 const mockBack = jest.fn();
@@ -49,5 +50,33 @@ describe("HydrationEditScreen", () => {
     const { getByText } = render(<HydrationEditScreen />);
 
     expect(getByText("Cold brew entry, measured in ounces.")).toBeTruthy();
+  });
+
+  it("uses the detail-style header and stronger section heading hierarchy", () => {
+    mockUseQuery.mockReturnValue({
+      amountOz: 12,
+      displayLabel: "Cold brew",
+      id: "hydration-1",
+      shortcutLabel: undefined,
+      timeZone: "Pacific/Honolulu",
+      timestamp: new Date("2026-04-06T19:15:00.000Z").getTime(),
+    });
+
+    const { UNSAFE_getAllByType, getByTestId, getByText } = render(<HydrationEditScreen />);
+    const backButton = getByTestId("hydration-edit-back-button");
+    const headerRow = UNSAFE_getAllByType(View).find((node) => {
+      const style = StyleSheet.flatten(node.props.style);
+      return style?.justifyContent === "space-between" && style?.marginBottom === 18;
+    });
+
+    expect(getByText("Hydration log")).toBeTruthy();
+    expect(getByText("Edit hydration")).toBeTruthy();
+    expect(within(backButton).getByText("chevron-back")).toBeTruthy();
+    expect(StyleSheet.flatten(headerRow?.props.style).alignItems).toBe("center");
+    expect(StyleSheet.flatten(getByTestId("hydration-edit-amount-title").props.style).fontSize).toBe(15);
+
+    fireEvent.press(backButton);
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
   });
 });

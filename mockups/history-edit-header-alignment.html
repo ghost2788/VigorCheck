@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>History Edit Header Alignment</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --accent1: #5ebaa9;
+    --accent3: #78a0c8;
+    --shadow: rgba(0,0,0,0.42);
+    --guide: rgba(94,186,169,0.3);
+    --guideFill: rgba(94,186,169,0.12);
+  }
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --card: rgba(255,255,255,0.84);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --accent1: #3a9e8a;
+    --accent3: #6090c0;
+    --shadow: rgba(91,71,44,0.14);
+    --guide: rgba(58,158,138,0.32);
+    --guideFill: rgba(58,158,138,0.1);
+  }
+  body {
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent 18%), var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 56px 20px 42px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    color: var(--textSecondary);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .eyebrow {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    margin-bottom: 10px;
+  }
+  .lead,
+  .note {
+    color: var(--textSecondary);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  .lead { margin-bottom: 22px; }
+  .compare {
+    display: grid;
+    gap: 16px;
+  }
+  .panel {
+    border-radius: 28px;
+    border: 1px solid var(--cardBorder);
+    overflow: hidden;
+    box-shadow: 0 18px 40px var(--shadow);
+    background: var(--bg);
+  }
+  .panel-label {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--cardBorder);
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .panel-label strong {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .panel-label span {
+    font-size: 11px;
+    color: var(--textSecondary);
+  }
+  .screen {
+    position: relative;
+    min-height: 272px;
+    padding: 22px 18px 20px;
+  }
+  .screen.current .header-row {
+    align-items: flex-start;
+  }
+  .screen.proposed .header-row {
+    align-items: center;
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .title-block {
+    flex: 1;
+  }
+  .section-tag {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .title {
+    font-size: 28px;
+    line-height: 32px;
+    letter-spacing: -0.9px;
+    font-weight: 300;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--accent1);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 0;
+    white-space: nowrap;
+  }
+  .back svg {
+    flex: none;
+  }
+  .guide {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    height: 1px;
+    border-top: 1px dashed var(--guide);
+    pointer-events: none;
+  }
+  .screen.current .guide {
+    top: 59px;
+  }
+  .screen.proposed .guide {
+    top: 74px;
+  }
+  .guide-pill {
+    position: absolute;
+    right: 18px;
+    top: -11px;
+    background: var(--guideFill);
+    color: var(--accent1);
+    border: 1px solid var(--guide);
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    border-radius: 22px;
+    padding: 16px;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .field-label {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .input {
+    min-height: 52px;
+    border-radius: 16px;
+    border: 1px solid var(--cardBorder);
+    background: var(--surfaceSoft);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .summary {
+    border-radius: 20px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    padding: 14px 16px;
+    margin-top: 18px;
+  }
+  .summary strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? 'Dark' : 'Light';">Light</button>
+<div class="eyebrow">Header Alignment Check</div>
+<h1>Edit screens should sit on the same vertical rhythm as Day Details</h1>
+<p class="lead">The button style is already matched. The remaining mismatch is the row alignment. The current edit headers top-align the back control to the eyebrow stack, which makes it read a little too high.</p>
+
+<div class="compare">
+  <section class="panel">
+    <div class="panel-label">
+      <strong>Current edit header</strong>
+      <span>button rides high against the eyebrow</span>
+    </div>
+    <div class="screen current">
+      <div class="guide"><div class="guide-pill">Current eye line</div></div>
+      <div class="header-row">
+        <div class="title-block">
+          <div class="section-tag">Meal log</div>
+          <div class="title">Edit meal</div>
+        </div>
+        <div class="back">
+          <svg aria-hidden="true" height="18" viewBox="0 0 18 18" width="18">
+            <path d="M11.5 4.5 7 9l4.5 4.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+          </svg>
+          Back
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Meal summary</div>
+        <div class="field-label">Name</div>
+        <div class="input">Turkey sandwich</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-label">
+      <strong>Proposed match to Day Details</strong>
+      <span>button centers against the title block</span>
+    </div>
+    <div class="screen proposed">
+      <div class="guide"><div class="guide-pill">Day Details rhythm</div></div>
+      <div class="header-row">
+        <div class="title-block">
+          <div class="section-tag">Meal log</div>
+          <div class="title">Edit meal</div>
+        </div>
+        <div class="back">
+          <svg aria-hidden="true" height="18" viewBox="0 0 18 18" width="18">
+            <path d="M11.5 4.5 7 9l4.5 4.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+          </svg>
+          Back
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Meal summary</div>
+        <div class="field-label">Name</div>
+        <div class="input">Turkey sandwich</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="summary">
+  <strong>Recommendation</strong>
+  <p class="note">Keep the right-side placement, but change the edit header row from <code>alignItems: "flex-start"</code> to the same centered alignment used by Day Details. That fixes the offset without changing the rest of the scaffold.</p>
+</div>
+</body>
+</html>

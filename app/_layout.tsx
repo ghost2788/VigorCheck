@@ -11,6 +11,7 @@ import { ThemedText } from "../components/ThemedText";
 import { ConvexClientProvider } from "../lib/ConvexClientProvider";
 import { getAuthBaseUrl, getConvexUrl, useWarmUpBrowser } from "../lib/auth/authClient";
 import { SubscriptionProvider } from "../lib/billing/SubscriptionProvider";
+import { DevToolsAccessProvider } from "../lib/internalTesting/DevToolsAccessProvider";
 import { OnboardingFlowProvider } from "../lib/onboarding/OnboardingFlowProvider";
 import { ReminderSyncProvider } from "../lib/reminders/ReminderSyncProvider";
 import { AppAccessGate } from "../lib/routing/AppAccessGate";
@@ -88,7 +89,9 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <OnboardingFlowProvider>
-            <AppProviders />
+            <DevToolsAccessProvider>
+              <AppProviders />
+            </DevToolsAccessProvider>
           </OnboardingFlowProvider>
         </ThemeProvider>
       </SafeAreaProvider>

@@ -10,6 +10,7 @@ import {
 import { computeBaseTargets } from "../../lib/domain/targets";
 
 const mockUseMutation = jest.fn();
+const mockUseQuery = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockUseConvexAuth = jest.fn();
@@ -17,6 +18,7 @@ const mockUseConvexAuth = jest.fn();
 jest.mock("convex/react", () => ({
   useConvexAuth: () => mockUseConvexAuth(),
   useMutation: (...args: unknown[]) => mockUseMutation(...args),
+  useQuery: (...args: unknown[]) => mockUseQuery(...args),
 }));
 
 jest.mock("expo-router", () => ({
@@ -53,9 +55,11 @@ describe("SummaryScreen", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     mockUseMutation.mockReset();
+    mockUseQuery.mockReset();
     mockUseConvexAuth.mockReset();
     mockPush.mockReset();
     mockReplace.mockReset();
+    mockUseQuery.mockReturnValue(null);
   });
 
   afterEach(() => {
@@ -175,6 +179,44 @@ describe("SummaryScreen", () => {
         timeZone: expect.any(String),
       });
     });
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith("/(tabs)");
+    });
+  });
+
+  it("finishes onboarding when the user record appears even if the mutation promise stays pending", async () => {
+    const completeOnboarding = jest.fn(() => new Promise(() => {}));
+    mockUseMutation.mockReturnValue(completeOnboarding);
+    mockUseConvexAuth.mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+    });
+
+    let currentUser: { _id: string } | null = null;
+    mockUseQuery.mockImplementation(() => currentUser);
+
+    const view = render(
+      <OnboardingFlowProvider initialDraft={draft}>
+        <SummaryScreen />
+        <FlagAndDraftProbe />
+      </OnboardingFlowProvider>
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(800);
+    });
+
+    fireEvent.press(view.getByText("Start tracking"));
+
+    currentUser = { _id: "user-1" };
+
+    view.rerender(
+      <OnboardingFlowProvider initialDraft={draft}>
+        <SummaryScreen />
+        <FlagAndDraftProbe />
+      </OnboardingFlowProvider>
+    );
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith("/(tabs)");

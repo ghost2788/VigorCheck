@@ -13,6 +13,7 @@ import { ThemedText } from "./ThemedText";
 import {
   ACTIVITY_OPTIONS,
   ActivityLevel,
+  centimetersToInches,
   computeBaseTargets,
   EditableMacroTargets,
   GOAL_OPTIONS,
@@ -43,16 +44,12 @@ type ProfileFormProps = {
   submitLabel: string;
 };
 
-function formatHeightForUnit(heightInches?: number, unitSystem?: PreferredUnitSystem) {
+function formatMetricHeight(heightInches?: number) {
   if (!heightInches) {
     return "";
   }
 
-  if (unitSystem === "metric") {
-    return String(Math.round(inchesToCentimeters(heightInches)));
-  }
-
-  return String(Math.round(heightInches));
+  return String(Math.round(inchesToCentimeters(heightInches)));
 }
 
 function formatWeightForUnit(weightPounds?: number, unitSystem?: PreferredUnitSystem) {
@@ -77,14 +74,84 @@ function parseTargetNumber(value: string) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
-function parseHeightToInches(value: string, unitSystem: PreferredUnitSystem) {
-  const parsed = parsePositiveNumber(value);
+function splitHeightInches(totalInches?: number) {
+  if (!totalInches) {
+    return { feet: "", inches: "" };
+  }
 
-  if (!parsed) {
+  const rounded = Math.round(totalInches);
+
+  return {
+    feet: String(Math.floor(rounded / 12)),
+    inches: String(rounded % 12),
+  };
+}
+
+function parseWholeNumberInRange({
+  max,
+  min,
+  value,
+}: {
+  max?: number;
+  min: number;
+  value: string;
+}) {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed < min) {
     return null;
   }
 
-  return unitSystem === "metric" ? parsed / 2.54 : parsed;
+  if (typeof max === "number" && parsed > max) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function getHeightComparableValue({
+  heightFeet,
+  heightInches,
+  heightMetric,
+  unitSystem,
+}: {
+  heightFeet: string;
+  heightInches: string;
+  heightMetric: string;
+  unitSystem: PreferredUnitSystem;
+}) {
+  return unitSystem === "metric" ? heightMetric : `${heightFeet}:${heightInches}`;
+}
+
+function parseHeightToInches({
+  heightFeet,
+  heightInches,
+  heightMetric,
+  unitSystem,
+}: {
+  heightFeet: string;
+  heightInches: string;
+  heightMetric: string;
+  unitSystem: PreferredUnitSystem;
+}) {
+  if (unitSystem === "metric") {
+    const parsed = parsePositiveNumber(heightMetric);
+
+    if (!parsed) {
+      return null;
+    }
+
+    return centimetersToInches(parsed);
+  }
+
+  const parsedFeet = parseWholeNumberInRange({ min: 1, value: heightFeet });
+  const parsedInches = parseWholeNumberInRange({ max: 11, min: 0, value: heightInches });
+
+  if (parsedFeet === null || parsedInches === null) {
+    return null;
+  }
+
+  return parsedFeet * 12 + parsedInches;
 }
 
 function parseWeightToPounds(value: string, unitSystem: PreferredUnitSystem) {
@@ -200,6 +267,7 @@ export function ProfileForm({
   const initialGoalType = initialValues?.goalType ?? "general_health";
   const initialUnitSystem = initialValues?.preferredUnitSystem ?? "imperial";
   const initialGoalPace = normalizeGoalPace(initialGoalType, initialValues?.goalPace);
+  const initialImperialHeight = splitHeightInches(initialValues?.height);
   const initialComputedTargets =
     initialValues?.age &&
     initialValues?.height &&
@@ -235,9 +303,11 @@ export function ProfileForm({
     initialValues?.activityLevel ?? "moderate"
   );
   const [age, setAge] = useState(initialValues?.age?.toString() ?? "");
-  const [height, setHeight] = useState(
-    formatHeightForUnit(initialValues?.height, initialUnitSystem)
-  );
+  const canonicalHeightInches = useRef<number | null>(initialValues?.height ?? null);
+  const canonicalWeightPounds = useRef<number | null>(initialValues?.weight ?? null);
+  const [heightFeet, setHeightFeet] = useState(initialImperialHeight.feet);
+  const [heightInches, setHeightInches] = useState(initialImperialHeight.inches);
+  const [heightMetric, setHeightMetric] = useState(formatMetricHeight(initialValues?.height));
   const [weight, setWeight] = useState(
     formatWeightForUnit(initialValues?.weight, initialUnitSystem)
   );
@@ -250,7 +320,12 @@ export function ProfileForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const heightInches = parseHeightToInches(height, preferredUnitSystem);
+  const parsedHeightInches = parseHeightToInches({
+    heightFeet,
+    heightInches,
+    heightMetric,
+    unitSystem: preferredUnitSystem,
+  });
   const weightPounds = parseWeightToPounds(weight, preferredUnitSystem);
   const parsedAge = parsePositiveNumber(age);
 
@@ -260,7 +335,12 @@ export function ProfileForm({
       age: initialValues?.age?.toString() ?? "",
       goalPace: initialGoalPace,
       goalType: initialGoalType,
-      height: formatHeightForUnit(initialValues?.height, initialUnitSystem),
+      height: getHeightComparableValue({
+        heightFeet: initialImperialHeight.feet,
+        heightInches: initialImperialHeight.inches,
+        heightMetric: formatMetricHeight(initialValues?.height),
+        unitSystem: initialUnitSystem,
+      }),
       preferredUnitSystem: initialUnitSystem,
       primaryTrackingChallenge: initialValues?.primaryTrackingChallenge ?? "consistency",
       sex: initialValues?.sex ?? "male",
@@ -273,7 +353,7 @@ export function ProfileForm({
   );
 
   const computedTargets = useMemo(() => {
-    if (!parsedAge || !heightInches || !weightPounds) {
+    if (!parsedAge || !parsedHeightInches || !weightPounds) {
       return null;
     }
 
@@ -282,11 +362,11 @@ export function ProfileForm({
       age: parsedAge,
       goalPace: normalizeGoalPace(goalType, goalPace),
       goalType,
-      height: heightInches,
+      height: parsedHeightInches,
       sex,
       weight: weightPounds,
     });
-  }, [activityLevel, age, goalPace, goalType, heightInches, parsedAge, sex, weightPounds]);
+  }, [activityLevel, goalPace, goalType, parsedAge, parsedHeightInches, sex, weightPounds]);
 
   useEffect(() => {
     const normalizedGoalPace = normalizeGoalPace(goalType, goalPace);
@@ -317,7 +397,12 @@ export function ProfileForm({
       age,
       goalPace: normalizeGoalPace(goalType, goalPace),
       goalType,
-      height,
+      height: getHeightComparableValue({
+        heightFeet,
+        heightInches,
+        heightMetric,
+        unitSystem: preferredUnitSystem,
+      }),
       preferredUnitSystem,
       primaryTrackingChallenge,
       sex,
@@ -334,7 +419,9 @@ export function ProfileForm({
     age,
     goalPace,
     goalType,
-    height,
+    heightFeet,
+    heightInches,
+    heightMetric,
     onDirtyChange,
     preferredUnitSystem,
     primaryTrackingChallenge,
@@ -351,15 +438,64 @@ export function ProfileForm({
       return;
     }
 
-    if (heightInches) {
-      setHeight(formatHeightForUnit(heightInches, nextUnit));
+    if (canonicalHeightInches.current) {
+      if (nextUnit === "metric") {
+        setHeightMetric(formatMetricHeight(canonicalHeightInches.current));
+      } else {
+        const split = splitHeightInches(canonicalHeightInches.current);
+        setHeightFeet(split.feet);
+        setHeightInches(split.inches);
+      }
     }
 
-    if (weightPounds) {
-      setWeight(formatWeightForUnit(weightPounds, nextUnit));
+    if (canonicalWeightPounds.current) {
+      setWeight(formatWeightForUnit(canonicalWeightPounds.current, nextUnit));
     }
 
     setPreferredUnitSystem(nextUnit);
+  }
+
+  function handleHeightFeetChange(nextValue: string) {
+    setHeightFeet(nextValue);
+
+    const nextFeet = parseWholeNumberInRange({ min: 1, value: nextValue });
+    const nextInches = parseWholeNumberInRange({ max: 11, min: 0, value: heightInches });
+
+    if (nextFeet !== null && nextInches !== null) {
+      canonicalHeightInches.current = nextFeet * 12 + nextInches;
+    }
+  }
+
+  function handleHeightInchesChange(nextValue: string) {
+    setHeightInches(nextValue);
+
+    const nextFeet = parseWholeNumberInRange({ min: 1, value: heightFeet });
+    const nextInches = parseWholeNumberInRange({ max: 11, min: 0, value: nextValue });
+
+    if (nextFeet !== null && nextInches !== null) {
+      canonicalHeightInches.current = nextFeet * 12 + nextInches;
+    }
+  }
+
+  function handleMetricHeightChange(nextValue: string) {
+    setHeightMetric(nextValue);
+
+    const parsed = parsePositiveNumber(nextValue);
+    if (parsed) {
+      canonicalHeightInches.current = centimetersToInches(parsed);
+    }
+  }
+
+  function handleWeightChange(nextValue: string) {
+    setWeight(nextValue);
+
+    const parsed = parsePositiveNumber(nextValue);
+    if (!parsed) {
+      return;
+    }
+
+    canonicalWeightPounds.current =
+      preferredUnitSystem === "metric" ? kilogramsToPounds(parsed) : parsed;
   }
 
   function updateManualTargets(nextTargets: EditableMacroTargets) {
@@ -378,7 +514,7 @@ export function ProfileForm({
 
     if (
       !parsedAge ||
-      !heightInches ||
+      !parsedHeightInches ||
       !weightPounds ||
       parsedTargetCalories === null ||
       parsedTargetProtein === null ||
@@ -398,7 +534,7 @@ export function ProfileForm({
         age: parsedAge,
         goalPace: normalizeGoalPace(goalType, goalPace),
         goalType,
-        height: Math.round(heightInches),
+        height: Math.round(parsedHeightInches),
         preferredUnitSystem,
         primaryTrackingChallenge,
         sex,
@@ -531,22 +667,55 @@ export function ProfileForm({
         <View style={styles.row}>
           <Field keyboardType="numeric" label="Age" onChangeText={setAge} testID="ageInput" value={age} />
         </View>
-        <View style={styles.row}>
-          <Field
-            keyboardType="numeric"
-            label={preferredUnitSystem === "metric" ? "Height (cm)" : "Height (in)"}
-            onChangeText={setHeight}
-            testID="heightInput"
-            value={height}
-          />
-          <Field
-            keyboardType="numeric"
-            label={preferredUnitSystem === "metric" ? "Weight (kg)" : "Weight (lb)"}
-            onChangeText={setWeight}
-            testID="weightInput"
-            value={weight}
-          />
-        </View>
+        {preferredUnitSystem === "metric" ? (
+          <View style={styles.row}>
+            <Field
+              keyboardType="numeric"
+              label="Height (cm)"
+              onChangeText={handleMetricHeightChange}
+              testID="heightInput"
+              value={heightMetric}
+            />
+            <Field
+              keyboardType="numeric"
+              label="Weight (kg)"
+              onChangeText={handleWeightChange}
+              testID="weightInput"
+              value={weight}
+            />
+          </View>
+        ) : (
+          <>
+            <View style={styles.labeledOptionGroup}>
+              <ThemedText size="xs" variant="tertiary">Height</ThemedText>
+              <View style={styles.row}>
+                <Field
+                  keyboardType="numeric"
+                  label="Feet"
+                  onChangeText={handleHeightFeetChange}
+                  testID="heightFeetInput"
+                  value={heightFeet}
+                />
+                <Field
+                  keyboardType="numeric"
+                  label="Inches"
+                  onChangeText={handleHeightInchesChange}
+                  testID="heightInchesInput"
+                  value={heightInches}
+                />
+              </View>
+            </View>
+            <View style={styles.row}>
+              <Field
+                keyboardType="numeric"
+                label="Weight (lb)"
+                onChangeText={handleWeightChange}
+                testID="weightInput"
+                value={weight}
+              />
+            </View>
+          </>
+        )}
 
         <ThemedText size="md" style={styles.sectionTitle}>
           Activity

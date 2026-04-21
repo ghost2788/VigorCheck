@@ -1,8 +1,13 @@
 import {
+  buildRememberedEntryFavoriteTogglePatch,
   buildRememberedEntryFingerprint,
+  getRememberedEntrySummary,
+  getRememberedMealSummaryTotals,
   getLegacyHydrationShortcutInitialFavoritedState,
+  getRememberedEntryFavoritedAtSeed,
   isSeededHydrationShortcutSignature,
   resolveHydrationDisplayLabel,
+  shouldUsePinnedFavoriteOrdering,
   type RememberedEntrySnapshot,
 } from "../../lib/domain/rememberedEntries";
 
@@ -128,6 +133,69 @@ describe("rememberedEntries domain helpers", () => {
     expect(getLegacyHydrationShortcutInitialFavoritedState()).toBe(false);
   });
 
+  it("uses last used time as the initial pin order seed for legacy favorited rows", () => {
+    expect(
+      getRememberedEntryFavoritedAtSeed({
+        favorited: true,
+        favoritedAt: undefined,
+        lastUsedAt: 456,
+      })
+    ).toBe(456);
+  });
+
+  it("keeps an existing pin order timestamp when one already exists", () => {
+    expect(
+      getRememberedEntryFavoritedAtSeed({
+        favorited: true,
+        favoritedAt: 789,
+        lastUsedAt: 456,
+      })
+    ).toBe(789);
+  });
+
+  it("does not seed a pin timestamp for non-favorited rows", () => {
+    expect(
+      getRememberedEntryFavoritedAtSeed({
+        favorited: false,
+        favoritedAt: undefined,
+        lastUsedAt: 456,
+      })
+    ).toBeUndefined();
+  });
+
+  it("dual-writes lastUsedAt while pinned ordering migration is not yet live", () => {
+    expect(
+      buildRememberedEntryFavoriteTogglePatch({
+        currentFavorited: false,
+        migrationVersion: 1,
+        now: 123,
+      })
+    ).toEqual({
+      favorited: true,
+      favoritedAt: 123,
+      lastUsedAt: 123,
+    });
+  });
+
+  it("writes only the pin timestamp after pinned favorite ordering is live", () => {
+    expect(
+      buildRememberedEntryFavoriteTogglePatch({
+        currentFavorited: false,
+        migrationVersion: 2,
+        now: 123,
+      })
+    ).toEqual({
+      favorited: true,
+      favoritedAt: 123,
+    });
+  });
+
+  it("turns pinned ordering on once migration version 2 is reached", () => {
+    expect(shouldUsePinnedFavoriteOrdering(undefined)).toBe(false);
+    expect(shouldUsePinnedFavoriteOrdering(1)).toBe(false);
+    expect(shouldUsePinnedFavoriteOrdering(2)).toBe(true);
+  });
+
   it("prefers an existing remembered hydration label when shortcutLabel is absent", () => {
     expect(
       resolveHydrationDisplayLabel({
@@ -146,5 +214,80 @@ describe("rememberedEntries domain helpers", () => {
         shortcutLabel: undefined,
       })
     ).toBe("Water 16 oz");
+  });
+
+  it("formats meal summaries with meal type, calories, and protein", () => {
+    expect(
+      getRememberedEntrySummary({
+        mealType: "breakfast",
+        replayKind: "meal_only",
+        totalCalories: 420,
+        totalProtein: 18,
+      })
+    ).toBe("Breakfast • 420 cal • 18g protein");
+  });
+
+  it("formats meal and hydration summaries as meal-focused nutrition summaries", () => {
+    expect(
+      getRememberedEntrySummary({
+        beverageKind: "water",
+        mealType: "lunch",
+        replayKind: "meal_and_hydration",
+        totalCalories: 610,
+        totalProtein: 37,
+      })
+    ).toBe("Lunch • 610 cal • 37g protein");
+  });
+
+  it("formats water-only hydration summaries without repeating ounces", () => {
+    expect(
+      getRememberedEntrySummary({
+        beverageKind: "water",
+        replayKind: "hydration_only",
+      })
+    ).toBe("Hydration");
+  });
+
+  it("formats non-water hydration summaries as drink", () => {
+    expect(
+      getRememberedEntrySummary({
+        beverageKind: "drink",
+        replayKind: "hydration_only",
+      })
+    ).toBe("Drink");
+  });
+
+  it("rounds meal summary metrics to whole numbers", () => {
+    expect(
+      getRememberedEntrySummary({
+        mealType: "snack",
+        replayKind: "meal_only",
+        totalCalories: 220.4,
+        totalProtein: 30.2,
+      })
+    ).toBe("Snack • 220 cal • 30g protein");
+  });
+
+  it("aggregates calories and protein totals from remembered meal snapshots", () => {
+    expect(
+      getRememberedMealSummaryTotals({
+        items: [
+          createStructuredMealSnapshot().meal.items[0],
+          {
+            ...createStructuredMealSnapshot().meal.items[0],
+            foodName: "Greek yogurt",
+            nutrition: {
+              ...createStructuredMealSnapshot().meal.items[0].nutrition,
+              calories: 123.6,
+              protein: 14.4,
+            },
+          },
+        ],
+        mealType: "lunch",
+      })
+    ).toEqual({
+      totalCalories: 543.6,
+      totalProtein: 42.4,
+    });
   });
 });

@@ -1,5 +1,6 @@
 import React from "react";
 import { render, RenderOptions } from "@testing-library/react-native";
+import { DevToolsAccessProvider } from "./internalTesting/DevToolsAccessProvider";
 import { ThemePreference, ThemeProvider } from "./theme/ThemeProvider";
 
 type CustomRenderOptions = RenderOptions & {
@@ -20,7 +21,7 @@ const customRender = (
       <ThemeProvider
         initialThemePreference={hydrateTheme ? undefined : initialThemePreference}
       >
-        {children}
+        <DevToolsAccessProvider>{children}</DevToolsAccessProvider>
       </ThemeProvider>
     );
   }

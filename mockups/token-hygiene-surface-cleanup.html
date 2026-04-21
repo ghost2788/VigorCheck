@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>Token Hygiene Surface Cleanup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --surfaceStrong: rgba(255,255,255,0.05);
+    --accent1: #5ebaa9;
+    --metricNutrition: #d38a3a;
+    --metricProtein: #5ebaa9;
+    --shadow: rgba(0,0,0,0.42);
+    --scrim: rgba(26,24,20,0.72);
+  }
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --card: rgba(255,255,255,0.8);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --surfaceStrong: rgba(255,255,255,0.88);
+    --accent1: #3a9e8a;
+    --metricNutrition: #bb7427;
+    --metricProtein: #3a9e8a;
+    --shadow: rgba(91,71,44,0.12);
+    --scrim: rgba(42,37,32,0.28);
+  }
+  body {
+    background:
+      radial-gradient(circle at top, rgba(196,164,108,0.1), transparent 28%),
+      linear-gradient(180deg, rgba(255,255,255,0.015), transparent 18%),
+      var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 56px 20px 42px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    color: var(--textSecondary);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .eyebrow {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    margin-bottom: 10px;
+  }
+  .lead {
+    color: var(--textSecondary);
+    font-size: 13px;
+    line-height: 20px;
+    margin-bottom: 24px;
+  }
+  .stack {
+    display: grid;
+    gap: 18px;
+  }
+  .panel {
+    border-radius: 28px;
+    border: 1px solid var(--cardBorder);
+    overflow: hidden;
+    box-shadow: 0 18px 40px var(--shadow);
+    background: var(--bg);
+  }
+  .panel-label {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--cardBorder);
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .panel-label strong {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .panel-label span {
+    font-size: 11px;
+    color: var(--textSecondary);
+  }
+  .screen {
+    padding: 20px 18px 22px;
+  }
+  .compare {
+    display: grid;
+    gap: 14px;
+  }
+  .compare-label {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .card {
+    border-radius: 20px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    padding: 16px;
+  }
+  .meals-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .meals-header .eyebrow-sm {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .title-sm {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .meal-row {
+    padding: 10px 0;
+  }
+  .meal-row.before {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  body.light .meal-row.before {
+    border-bottom-color: rgba(255,255,255,0.08);
+  }
+  .meal-row.after {
+    border-bottom: 1px solid var(--cardBorder);
+  }
+  .meal-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .meal-copy {
+    flex: 1;
+    min-width: 0;
+  }
+  .meal-copy strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chip {
+    border-radius: 999px;
+    border: 1px solid rgba(211,138,58,0.2);
+    background: rgba(211,138,58,0.1);
+    color: var(--metricNutrition);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 8px;
+  }
+  body.light .chip {
+    border-color: rgba(187,116,39,0.2);
+    background: rgba(187,116,39,0.1);
+  }
+  .time {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .calorie-pill {
+    min-height: 36px;
+    border-radius: 999px;
+    border: 1px solid rgba(211,138,58,0.14);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .calorie-pill.before {
+    background: rgba(255,255,255,0.04);
+  }
+  body.light .calorie-pill.before {
+    background: rgba(255,255,255,0.04);
+  }
+  .calorie-pill.after {
+    background: var(--surfaceSoft);
+    border-color: rgba(211,138,58,0.18);
+  }
+  body.light .calorie-pill.after {
+    border-color: rgba(187,116,39,0.18);
+  }
+  .bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--textSecondary);
+    font-size: 12px;
+  }
+  .bottom-row span:last-child {
+    color: var(--textTertiary);
+  }
+  .scrim-demo {
+    position: relative;
+    min-height: 280px;
+    border-radius: 24px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 24% 18%, rgba(255,255,255,0.16), transparent 26%),
+      linear-gradient(180deg, rgba(255,255,255,0.03), transparent 36%),
+      linear-gradient(135deg, #2f2b26, #1d1a17 44%, #231f1a);
+    border: 1px solid var(--cardBorder);
+  }
+  body.light .scrim-demo {
+    background:
+      radial-gradient(circle at 24% 18%, rgba(255,255,255,0.34), transparent 26%),
+      linear-gradient(180deg, rgba(255,255,255,0.18), transparent 36%),
+      linear-gradient(135deg, #dbd5cb, #f0ece6 44%, #ddd6cd);
+  }
+  .scrim {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+  }
+  .scrim.before {
+    background: rgba(0,0,0,0.54);
+  }
+  .scrim.after {
+    background: var(--scrim);
+  }
+  .sheet {
+    width: 100%;
+    border-radius: 24px;
+    border: 1px solid var(--cardBorder);
+    background: var(--bg);
+    padding: 18px;
+  }
+  .sheet-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .sheet-copy {
+    color: var(--textSecondary);
+    font-size: 13px;
+    line-height: 20px;
+    margin-bottom: 12px;
+  }
+  .code-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    border-radius: 999px;
+    border: 1px solid var(--cardBorder);
+    background: var(--surfaceSoft);
+    padding: 0 12px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .button-stack {
+    display: grid;
+    gap: 10px;
+  }
+  .button {
+    min-height: 50px;
+    border-radius: 16px;
+    border: 1px solid var(--cardBorder);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .button.primary {
+    background: rgba(94,186,169,0.16);
+    border-color: rgba(94,186,169,0.24);
+    color: var(--accent1);
+  }
+  body.light .button.primary {
+    background: rgba(58,158,138,0.12);
+    border-color: rgba(58,158,138,0.2);
+  }
+  .button.secondary {
+    background: var(--surfaceSoft);
+    color: var(--textSecondary);
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" type="button" onclick="document.body.classList.toggle('light')">Toggle theme</button>
+
+<div class="eyebrow">Token Hygiene</div>
+<h1>Older surface leaks</h1>
+<p class="lead">Proposed narrow cleanup: remove the last hard-coded white-alpha surfaces from the Home meals card, and replace the raw black Log modal scrim with a veil derived from the active background.</p>
+
+<div class="stack">
+  <section class="panel">
+    <div class="panel-label">
+      <strong>Today meals card</strong>
+      <span>pill + divider to tokens</span>
+    </div>
+    <div class="screen">
+      <div class="compare">
+        <div>
+          <div class="compare-label">Before</div>
+          <div class="card">
+            <div class="meals-header">
+              <div>
+                <div class="eyebrow-sm">Today</div>
+                <div class="title-sm">Meals</div>
+              </div>
+              <div class="title-sm" style="color: var(--textSecondary);">2 meals</div>
+            </div>
+            <div class="meal-row before">
+              <div class="meal-top">
+                <div class="meal-copy">
+                  <strong>Chicken bowl</strong>
+                  <div class="meta">
+                    <div class="chip">Lunch</div>
+                    <div class="time">1:12 PM</div>
+                  </div>
+                </div>
+                <div class="calorie-pill before">620 cal</div>
+              </div>
+              <div class="bottom-row">
+                <span>42p / 58c / 18f</span>
+                <span>3 items</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="compare-label">After</div>
+          <div class="card">
+            <div class="meals-header">
+              <div>
+                <div class="eyebrow-sm">Today</div>
+                <div class="title-sm">Meals</div>
+              </div>
+              <div class="title-sm" style="color: var(--textSecondary);">2 meals</div>
+            </div>
+            <div class="meal-row after">
+              <div class="meal-top">
+                <div class="meal-copy">
+                  <strong>Chicken bowl</strong>
+                  <div class="meta">
+                    <div class="chip">Lunch</div>
+                    <div class="time">1:12 PM</div>
+                  </div>
+                </div>
+                <div class="calorie-pill after">620 cal</div>
+              </div>
+              <div class="bottom-row">
+                <span>42p / 58c / 18f</span>
+                <span>3 items</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-label">
+      <strong>Log barcode fallback</strong>
+      <span>scrim from background token</span>
+    </div>
+    <div class="screen">
+      <div class="compare">
+        <div>
+          <div class="compare-label">Before</div>
+          <div class="scrim-demo">
+            <div class="scrim before">
+              <div class="sheet">
+                <div class="sheet-title">Barcode not matched</div>
+                <div class="sheet-copy">This barcode could not be matched to a complete product right now.</div>
+                <div class="code-pill">123456789012</div>
+                <div class="button-stack">
+                  <div class="button primary">Scan again</div>
+                  <div class="button secondary">Open quick add</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="compare-label">After</div>
+          <div class="scrim-demo">
+            <div class="scrim after">
+              <div class="sheet">
+                <div class="sheet-title">Barcode not matched</div>
+                <div class="sheet-copy">This barcode could not be matched to a complete product right now.</div>
+                <div class="code-pill">123456789012</div>
+                <div class="button-stack">
+                  <div class="button primary">Scan again</div>
+                  <div class="button secondary">Open quick add</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

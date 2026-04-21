@@ -25,6 +25,7 @@ function SupplementSection({
   items,
   onPrimaryAction,
   onSecondaryAction,
+  primaryAccessibilityLabel,
   primaryLabel,
   secondaryLabel,
   title,
@@ -33,6 +34,7 @@ function SupplementSection({
   items: MySupplementCardItem[];
   onPrimaryAction: (id: string) => void;
   onSecondaryAction?: (id: string) => void;
+  primaryAccessibilityLabel: (item: MySupplementCardItem) => string;
   primaryLabel: (item: MySupplementCardItem) => string;
   secondaryLabel?: (item: MySupplementCardItem) => string | null;
   title: string;
@@ -41,7 +43,7 @@ function SupplementSection({
 
   return (
     <View style={styles.section}>
-      <ThemedText size="sm" style={styles.sectionTitle}>
+      <ThemedText size="xs" style={styles.sectionTitle} variant="tertiary">
         {title}
       </ThemedText>
 
@@ -63,49 +65,61 @@ function SupplementSection({
             ]}
           >
             <View style={styles.rowCopy}>
-              <ThemedText numberOfLines={1} size="sm">
+              <ThemedText numberOfLines={2} size="sm" style={styles.rowTitle}>
                 {item.label}
               </ThemedText>
-              <ThemedText numberOfLines={1} size="sm" variant="secondary">
-                {item.servingLabel}
-              </ThemedText>
-            </View>
-
-            <View style={styles.rowActions}>
-              {secondaryLabel && onSecondaryAction && secondaryLabel(item) ? (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => onSecondaryAction(item.id)}
-                  style={[
-                    styles.actionButton,
-                    styles.actionGap,
-                    {
-                      backgroundColor: theme.card,
-                      borderColor: theme.cardBorder,
-                    },
-                  ]}
-                >
-                  <ThemedText size="sm" variant="secondary">
-                    {secondaryLabel(item)}
-                  </ThemedText>
-                </Pressable>
-              ) : null}
-
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => onPrimaryAction(item.id)}
-                style={[
-                  styles.actionButton,
-                  {
-                    backgroundColor: theme.card,
-                    borderColor: theme.cardBorder,
-                  },
-                ]}
-              >
-                <ThemedText size="sm" style={{ color: theme.accent1 }}>
-                  {primaryLabel(item)}
+              <View style={styles.rowMetaLine}>
+                <ThemedText numberOfLines={1} size="sm" style={styles.rowServing} variant="secondary">
+                  {item.servingLabel}
                 </ThemedText>
-              </Pressable>
+
+                <View style={styles.rowActions}>
+                  {secondaryLabel && onSecondaryAction && secondaryLabel(item) ? (
+                    <Pressable
+                      accessibilityLabel={`Undo as needed supplement ${item.label}`}
+                      accessibilityRole="button"
+                      onPress={() => onSecondaryAction(item.id)}
+                      style={[
+                        styles.actionButton,
+                        styles.actionGap,
+                        {
+                          backgroundColor: theme.card,
+                          borderColor: theme.cardBorder,
+                        },
+                      ]}
+                    >
+                      <ThemedText size="sm" variant="secondary">
+                        {secondaryLabel(item)}
+                      </ThemedText>
+                    </Pressable>
+                  ) : null}
+
+                  <Pressable
+                    accessibilityLabel={primaryAccessibilityLabel(item)}
+                    accessibilityRole="button"
+                    onPress={() => onPrimaryAction(item.id)}
+                    style={[
+                      styles.actionButton,
+                      item.isLoggedToday
+                        ? {
+                            backgroundColor: theme.surfaceSoft,
+                            borderColor: theme.accent1,
+                          }
+                        : {
+                            backgroundColor: theme.card,
+                            borderColor: theme.cardBorder,
+                          },
+                    ]}
+                  >
+                    <ThemedText
+                      size="sm"
+                      style={{ color: item.isLoggedToday ? theme.accent1 : theme.accent1 }}
+                    >
+                      {primaryLabel(item)}
+                    </ThemedText>
+                  </Pressable>
+                </View>
+              </View>
             </View>
           </View>
         ))
@@ -125,12 +139,17 @@ export function MySupplementsCard({
   return (
     <Card>
       <View style={styles.header}>
-        <ThemedText size="sm" style={styles.title}>
-          My Supplements
-        </ThemedText>
+        <View style={styles.headerCopy}>
+          <ThemedText size="xs" style={styles.eyebrow} variant="accent2">
+            Daily + As Needed
+          </ThemedText>
+          <ThemedText size="md" style={styles.title}>
+            My Supplements
+          </ThemedText>
+        </View>
         <Pressable accessibilityRole="button" onPress={onManage}>
           <ThemedText size="sm" variant="accent1">
-            Manage supplements
+            Manage
           </ThemedText>
         </Pressable>
       </View>
@@ -147,6 +166,7 @@ export function MySupplementsCard({
 
           onToggleDaily(id, !item.isLoggedToday);
         }}
+        primaryAccessibilityLabel={(item) => `Toggle daily supplement ${item.label}`}
         primaryLabel={(item) => (item.isLoggedToday ? "Taken" : "Log")}
         title="Daily stack"
       />
@@ -156,6 +176,7 @@ export function MySupplementsCard({
         items={asNeeded}
         onPrimaryAction={(id) => onLogAsNeeded(id)}
         onSecondaryAction={(id) => onUndoAsNeeded(id)}
+        primaryAccessibilityLabel={(item) => `Log as needed supplement ${item.label}`}
         primaryLabel={(item) => (item.isLoggedToday ? "Taken" : "Log")}
         secondaryLabel={(item) => (item.isLoggedToday ? "Undo" : null)}
         title="As needed"
@@ -177,28 +198,50 @@ const styles = StyleSheet.create({
   actionGap: {
     marginRight: 8,
   },
+  eyebrow: {
+    letterSpacing: 1.1,
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
   header: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  headerCopy: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 12,
+  },
   row: {
-    alignItems: "center",
     borderRadius: 16,
     borderWidth: 1,
-    flexDirection: "row",
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
   rowActions: {
     flexDirection: "row",
+    flexShrink: 0,
+    marginLeft: 12,
   },
   rowCopy: {
     flex: 1,
     minWidth: 0,
-    paddingRight: 12,
+  },
+  rowMetaLine: {
+    alignItems: "center",
+    flexDirection: "row",
+    minWidth: 0,
   },
   rowGap: {
+    marginBottom: 10,
+  },
+  rowServing: {
+    flex: 1,
+    minWidth: 0,
+  },
+  rowTitle: {
+    lineHeight: 20,
     marginBottom: 10,
   },
   section: {
@@ -206,6 +249,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: 12,
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
   },
   title: {
     marginBottom: 0,

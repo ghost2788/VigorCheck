@@ -4,6 +4,7 @@ import {
   formatHistoryDateLabel,
   getMealEntryMethodLabel,
 } from "../../lib/domain/history";
+import { buildTodayDashboard } from "../../lib/domain/dashboard";
 import { getDetailedNutrientTargets } from "../../lib/domain/nutrients";
 
 describe("history domain helpers", () => {
@@ -77,7 +78,9 @@ describe("history domain helpers", () => {
     expect(summary).toEqual(
       expect.objectContaining({
         calories: 745,
+        carbs: 68,
         dateKey: "2026-03-29",
+        fat: 24,
         hydrationCups: 1,
         mealCount: 1,
         nutritionCoveragePercent: expect.any(Number),
@@ -370,6 +373,76 @@ describe("history domain helpers", () => {
         supplementCount: 1,
       })
     );
+  });
+
+  it("passes goal context through the history summary wrapper", () => {
+    const hydrationLogs = [
+      {
+        amountOz: 8,
+        id: "water-1",
+        timestamp: Date.parse("2026-03-29T18:30:00.000Z"),
+      },
+    ];
+    const meals = [
+      {
+        entryMethod: "search" as const,
+        id: "meal-1",
+        label: "Chicken bowl",
+        mealType: "lunch" as const,
+        nutrients: {
+          calcium: 80,
+          fiber: 8,
+          iron: 3,
+          potassium: 620,
+          vitaminC: 20,
+          vitaminD: 2,
+        },
+        timestamp: Date.parse("2026-03-29T20:00:00.000Z"),
+        totals: {
+          calories: 745,
+          carbs: 68,
+          fat: 24,
+          protein: 43,
+        },
+      },
+    ];
+    const targets = {
+      calories: 3030,
+      carbs: 320,
+      hydration: 11,
+      nutrition: {
+        calcium: 1000,
+        fiber: 30,
+        iron: 8,
+        potassium: 3400,
+        vitaminC: 90,
+        vitaminD: 15,
+      },
+      detailedNutrition: getDetailedNutrientTargets({
+        age: 34,
+        sex: "male",
+        targetFiber: 30,
+      }),
+      fat: 92,
+      protein: 122,
+    };
+
+    const dashboard = buildTodayDashboard({
+      goalType: "fat_loss",
+      hydrationLogs,
+      mealItems: [],
+      meals,
+      targets,
+    });
+    const summary = buildHistoryDaySummary({
+      dateKey: "2026-03-29",
+      goalType: "fat_loss",
+      hydrationLogs,
+      meals,
+      targets,
+    });
+
+    expect(summary.wellnessScore).toBe(dashboard.wellness.score);
   });
 
   it("renders supplement entries in the unified history timeline", () => {

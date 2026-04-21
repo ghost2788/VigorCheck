@@ -26,12 +26,11 @@
       },
       "package": "com.vigorcheck.app",
       "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ],
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
+      "permissions": [
+        "android.permission.CAMERA"
       ]
     },
     "web": {
@@ -44,7 +43,16 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow VigorCheck to scan packaged-food barcodes."
+          "cameraPermission": "Allow VigorCheck to scan barcodes and capture meal and supplement photos.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow VigorCheck to scan barcodes and capture meal and supplement photos.",
+          "microphonePermission": false
         }
       ],
       "expo-secure-store",

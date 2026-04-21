@@ -52,6 +52,31 @@ export function getDaysRemaining(endsAt: number | null, now = Date.now()) {
   return Math.ceil((endsAt - now) / (24 * 60 * 60 * 1000));
 }
 
+export function resolveStoredSubscriptionStatus({
+  now = Date.now(),
+  snapshot,
+}: {
+  now?: number;
+  snapshot: StoredSubscriptionSnapshot;
+}): SubscriptionStatus {
+  const trialEndsAt = snapshot.trialEndsAt ?? (snapshot.trialStartDate ? getTrialEndsAt(snapshot.trialStartDate) : null);
+  const subscriptionExpiresAt = snapshot.subscriptionExpiresAt ?? null;
+
+  if (subscriptionExpiresAt === null) {
+    if (snapshot.status === "active") {
+      return "active";
+    }
+  } else if (subscriptionExpiresAt > now) {
+    return "active";
+  }
+
+  if (trialEndsAt !== null && trialEndsAt > now) {
+    return "trial";
+  }
+
+  return "expired";
+}
+
 export function normalizeSubscriptionSnapshot(
   snapshot: StoredSubscriptionSnapshot,
   now = Date.now()
@@ -59,16 +84,12 @@ export function normalizeSubscriptionSnapshot(
   const trialStartDate = snapshot.trialStartDate ?? null;
   const trialEndsAt = snapshot.trialEndsAt ?? (trialStartDate ? getTrialEndsAt(trialStartDate) : null);
   const subscriptionExpiresAt = snapshot.subscriptionExpiresAt ?? null;
-  const hasActiveSubscription =
-    snapshot.status === "active" &&
-    (subscriptionExpiresAt === null || subscriptionExpiresAt > now);
-  const hasActiveTrial =
-    !hasActiveSubscription && snapshot.status === "trial" && trialEndsAt !== null && trialEndsAt > now;
-  const status: SubscriptionStatus = hasActiveSubscription
-    ? "active"
-    : hasActiveTrial
-      ? "trial"
-      : "expired";
+  const status = resolveStoredSubscriptionStatus({
+    now,
+    snapshot,
+  });
+  const hasActiveSubscription = status === "active";
+  const hasActiveTrial = status === "trial";
 
   return {
     hasActiveSubscription,

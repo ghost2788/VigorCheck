@@ -62,7 +62,7 @@ function NutrientHighlightCard({
 export default function TrendsScreen() {
   const { mode, theme } = useTheme();
   const [weekOffset, setWeekOffset] = useState(0);
-  const [activeMetric, setActiveMetric] = useState<TrendChartMetric>("wellness");
+  const [activeMetric, setActiveMetric] = useState<TrendChartMetric>("calories");
   const data = useQuery(api.trends.weekly, { weekOffset });
   const weeklyWellnessColor = useMemo(
     () =>
@@ -179,7 +179,7 @@ export default function TrendsScreen() {
             </ThemedText>
             <ThemedText size="sm">Average weekly coverage</ThemedText>
           </View>
-          <ThemedText size="lg" style={{ color: theme.metricNutrition }}>
+          <ThemedText size="lg" style={{ color: theme.metricNutritionSupport }}>
             {formatPercent(data.nutrition.averageCoveragePercent)}
           </ThemedText>
         </View>
@@ -190,13 +190,13 @@ export default function TrendsScreen() {
 
         <View style={styles.highlightGrid}>
           <NutrientHighlightCard
-            accentColor={theme.metricNutrition}
+            accentColor={theme.metricNutritionSupport}
             emptyLabel="No recurring gaps yet."
             items={data.nutrition.recurringGaps ?? []}
             title="Recurring gaps"
           />
           <NutrientHighlightCard
-            accentColor={theme.metricNutrition}
+            accentColor={theme.metricNutritionSupport}
             emptyLabel="No standout wins yet."
             items={data.nutrition.recurringWins ?? []}
             title="Strong coverage"
@@ -204,7 +204,7 @@ export default function TrendsScreen() {
         </View>
 
         <NutrientProgressRows
-          accentColor={theme.metricNutrition}
+          accentColor={theme.metricNutritionSupport}
           presentationMode="static_reward_only"
           rows={nutritionRows}
         />

@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -226,17 +227,28 @@ export default function MealEditScreen() {
       showsVerticalScrollIndicator={false}
       style={{ backgroundColor: theme.background, flex: 1 }}
     >
-      <ThemedText
-        onPress={() => router.back()}
-        size="sm"
-        variant="secondary"
-        style={styles.backLink}
-      >
-        Back
-      </ThemedText>
-      <ThemedText size="xl" style={styles.title}>
-        Edit meal
-      </ThemedText>
+      <View style={styles.headerRow}>
+        <View style={styles.titleBlock}>
+          <ThemedText size="xs" style={styles.eyebrow} variant="tertiary">
+            Meal log
+          </ThemedText>
+          <ThemedText size="xl" style={styles.title}>
+            Edit meal
+          </ThemedText>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={() => router.back()}
+          style={styles.backButton}
+          testID="meal-edit-back-button"
+        >
+          <Ionicons color={theme.accent1} name="chevron-back" size={18} />
+          <ThemedText size="sm" variant="accent1">
+            Back
+          </ThemedText>
+        </Pressable>
+      </View>
 
       <DateTimeFieldsCard
         dateValue={dateValue}
@@ -291,6 +303,7 @@ export default function MealEditScreen() {
               }
             }}
             resetOnSubmit={false}
+            sectionTitle="Meal summary"
             submitLabel={isSaving ? "Saving..." : "Save changes"}
           />
           <View style={styles.footerActions}>
@@ -300,7 +313,7 @@ export default function MealEditScreen() {
       ) : (
         <>
           <Card style={styles.summaryCard}>
-            <ThemedText size="sm" style={styles.sectionTitle}>
+            <ThemedText size="md" style={styles.sectionTitle}>
               Meal summary
             </ThemedText>
             <TextInput
@@ -443,8 +456,11 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 16,
   },
-  backLink: {
-    marginBottom: 10,
+  backButton: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 2,
+    paddingVertical: 6,
   },
   centered: {
     alignItems: "center",
@@ -460,11 +476,22 @@ const styles = StyleSheet.create({
   emptyCard: {
     width: "100%",
   },
+  eyebrow: {
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    textTransform: "uppercase",
+  },
   error: {
     marginBottom: 16,
   },
   footerActions: {
     gap: 10,
+  },
+  headerRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 18,
   },
   labelInput: {
     borderRadius: 16,
@@ -486,7 +513,11 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   title: {
-    marginBottom: 18,
+    marginBottom: 0,
+  },
+  titleBlock: {
+    flex: 1,
+    marginRight: 12,
   },
   typePill: {
     borderRadius: 999,

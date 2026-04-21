@@ -118,7 +118,23 @@ function GoalPaceOptionCard({
               />
             </View>
 
-            <View style={styles.cardCopy}>
+            <View style={styles.cardCopy} testID={`goal-pace-card-copy-${option.value}`}>
+              {option.value === "moderate" ? (
+                <View
+                  style={[
+                    styles.recommendedChip,
+                    {
+                      backgroundColor: active ? theme.accent1 : theme.card,
+                      borderColor: active ? theme.accent1 : theme.cardBorder,
+                    },
+                  ]}
+                  testID="goal-pace-recommended-chip-moderate"
+                >
+                  <ThemedText size="xs" variant={active ? "primary" : "accent2"}>
+                    Recommended
+                  </ThemedText>
+                </View>
+              ) : null}
               <ThemedText size="lg" style={styles.anchorLabel}>
                 {option.label}
               </ThemedText>
@@ -133,22 +149,6 @@ function GoalPaceOptionCard({
               )}
             </View>
           </View>
-
-          {option.value === "moderate" ? (
-            <View
-              style={[
-                styles.recommendedChip,
-                {
-                  backgroundColor: active ? theme.accent1 : theme.card,
-                  borderColor: active ? theme.accent1 : theme.cardBorder,
-                },
-              ]}
-            >
-              <ThemedText size="xs" variant={active ? "primary" : "accent2"}>
-                Recommended
-              </ThemedText>
-            </View>
-          ) : null}
         </View>
 
         <View
@@ -184,7 +184,11 @@ const styles = StyleSheet.create({
   },
   cardCopy: {
     flex: 1,
+    flexDirection: "column",
     gap: 4,
+  },
+  cardHeader: {
+    width: "100%",
   },
   cardFooter: {
     borderRadius: 999,
@@ -192,15 +196,8 @@ const styles = StyleSheet.create({
     marginTop: "auto",
     width: "100%",
   },
-  cardHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-  },
   headerLeading: {
     alignItems: "center",
-    flex: 1,
     flexDirection: "row",
     gap: 14,
   },
@@ -213,8 +210,10 @@ const styles = StyleSheet.create({
     width: 52,
   },
   recommendedChip: {
+    alignSelf: "flex-start",
     borderRadius: 999,
     borderWidth: 1,
+    marginBottom: 2,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },

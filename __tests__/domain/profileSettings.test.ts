@@ -52,7 +52,7 @@ describe("buildReminderSummaryItems", () => {
 });
 
 describe("buildGoalsAndTargetsSummary", () => {
-  it("returns Carbs and Fat as separate items", () => {
+  it("returns Pace alongside separate Carbs and Fat items for paced goals", () => {
     const items = buildGoalsAndTargetsSummary({
       activityLevel: "moderate",
       age: 32,
@@ -68,12 +68,39 @@ describe("buildGoalsAndTargetsSummary", () => {
     });
 
     const labels = items.map((item) => item.label);
+    expect(labels).toContain("Pace");
     expect(labels).toContain("Carbs");
     expect(labels).toContain("Fat");
     expect(labels).not.toContain("Carbs / Fat");
 
+    expect(items.find((i) => i.label === "Pace")?.value).toBe("Moderate");
     expect(items.find((i) => i.label === "Carbs")?.value).toBe("200 g");
     expect(items.find((i) => i.label === "Fat")?.value).toBe("67 g");
+  });
+
+  it("omits Pace for goals that do not use it", () => {
+    const items = buildGoalsAndTargetsSummary({
+      activityLevel: "moderate",
+      age: 32,
+      goalPace: undefined,
+      goalType: "general_health",
+      height: 70,
+      preferredUnitSystem: "imperial",
+      primaryTrackingChallenge: "consistency",
+      sex: "male",
+      targets: { calories: 2200, protein: 150, carbs: 240, fat: 73 },
+      timeZone: "America/New_York",
+      weight: 185,
+    });
+
+    expect(items.map((item) => item.label)).toEqual([
+      "Goal",
+      "Calories",
+      "Protein",
+      "Carbs",
+      "Fat",
+    ]);
+    expect(items.find((item) => item.value === "Not used")).toBeUndefined();
   });
 });
 

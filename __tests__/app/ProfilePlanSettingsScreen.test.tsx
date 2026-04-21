@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { Alert } from "react-native";
 import { fireEvent, render, waitFor } from "../../lib/test-utils";
 import ProfilePlanSettingsScreen from "../../app/profile/plan-settings";
@@ -72,11 +73,13 @@ describe("ProfilePlanSettingsScreen", () => {
     const updatePlanSettings = jest.fn().mockResolvedValue(undefined);
     mockUseMutation.mockReturnValue(updatePlanSettings);
 
-    const { getByText } = render(<ProfilePlanSettingsScreen />);
+    const { getByTestId, getByText } = render(<ProfilePlanSettingsScreen />);
 
     fireEvent.press(getByText("Muscle Gain"));
     fireEvent.press(getByText("Aggressive"));
     fireEvent.press(getByText("Motivation"));
+    fireEvent.changeText(getByTestId("heightFeetInput"), "6");
+    fireEvent.changeText(getByTestId("heightInchesInput"), "2");
     fireEvent.press(getByText("Save changes"));
 
     await waitFor(() => {
@@ -84,6 +87,7 @@ describe("ProfilePlanSettingsScreen", () => {
         expect.objectContaining({
           goalPace: "aggressive",
           goalType: "muscle_gain",
+          height: 74,
           primaryTrackingChallenge: "motivation",
         })
       );
@@ -107,5 +111,14 @@ describe("ProfilePlanSettingsScreen", () => {
     });
 
     expect(Alert.alert).toHaveBeenCalled();
+  });
+
+  it("uses the stronger md title for the no-profile fallback card", () => {
+    mockUseMutation.mockReturnValue(jest.fn().mockResolvedValue(undefined));
+    mockUseQuery.mockReturnValue(null);
+
+    const { getByText } = render(<ProfilePlanSettingsScreen />);
+
+    expect(StyleSheet.flatten(getByText("No profile yet").props.style).fontSize).toBe(15);
   });
 });

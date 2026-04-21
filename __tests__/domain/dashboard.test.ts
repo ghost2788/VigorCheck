@@ -104,11 +104,19 @@ describe("buildTodayDashboard", () => {
     });
 
     expect(dashboard.wellness).toEqual({
-      biggestGapKey: "hydration",
+      biggestGapKey: "carbs",
       rings: {
         calories: {
           rawProgressPercent: 90,
           score: 100,
+        },
+        carbs: {
+          rawProgressPercent: 62,
+          score: 30,
+        },
+        fat: {
+          rawProgressPercent: 74,
+          score: 61,
         },
         hydration: {
           rawProgressPercent: 50,
@@ -123,7 +131,7 @@ describe("buildTodayDashboard", () => {
           score: 80,
         },
       },
-      score: 70,
+      score: 66,
     });
 
     expect(dashboard.cards.calories).toEqual(
@@ -140,6 +148,22 @@ describe("buildTodayDashboard", () => {
         rawProgressPercent: 80,
         score: 80,
         target: 100,
+      })
+    );
+    expect(dashboard.cards.carbs).toEqual(
+      expect.objectContaining({
+        consumed: 136,
+        rawProgressPercent: 62,
+        score: 30,
+        target: 220,
+      })
+    );
+    expect(dashboard.cards.fat).toEqual(
+      expect.objectContaining({
+        consumed: 52,
+        rawProgressPercent: 74,
+        score: 61,
+        target: 70,
       })
     );
     expect(dashboard.cards.hydration).toEqual(
@@ -184,6 +208,14 @@ describe("buildTodayDashboard", () => {
     expect(dashboard.cards.protein.contributors.map((meal) => meal.label)).toEqual([
       "Chicken bowl",
       "Breakfast Plate",
+    ]);
+    expect(dashboard.cards.carbs.contributors.map((meal) => meal.label)).toEqual([
+      "Breakfast Plate",
+      "Chicken bowl",
+    ]);
+    expect(dashboard.cards.fat.contributors.map((meal) => meal.label)).toEqual([
+      "Breakfast Plate",
+      "Chicken bowl",
     ]);
     expect(dashboard.cards.nutrition.contributors.map((meal) => meal.label)).toEqual([
       "Breakfast Plate",
@@ -406,5 +438,121 @@ describe("buildTodayDashboard", () => {
         kind: "meal",
       })
     );
+  });
+
+  it("weights the composite wellness score by goal type while leaving ring scores and biggest gap unchanged", () => {
+    const detailedNutrition = getDetailedNutrientTargets({
+      age: 34,
+      sex: "male",
+      targetFiber: 20,
+    });
+    const baseArgs = {
+      hydrationLogs: [
+        {
+          amountOz: 8,
+          id: "water-1",
+          timestamp: Date.parse("2026-03-29T17:15:00.000Z"),
+        },
+        {
+          amountOz: 8,
+          id: "water-2",
+          timestamp: Date.parse("2026-03-29T20:45:00.000Z"),
+        },
+      ],
+      mealItems: [
+        {
+          foodName: "Eggs and toast",
+          mealId: "meal-1",
+        },
+        {
+          foodName: "Chicken bowl",
+          mealId: "meal-2",
+        },
+      ],
+      meals: [
+        {
+          entryMethod: "search" as const,
+          id: "meal-1",
+          label: "Breakfast Plate",
+          mealType: "breakfast" as const,
+          nutrients: {
+            calcium: 40,
+            choline: 140,
+            copper: 0.1,
+            fiber: 6,
+            iron: 3,
+            manganese: 0.4,
+            omega3: 0.1,
+            potassium: 300,
+            selenium: 18,
+            vitaminC: 10,
+            vitaminD: 4,
+          },
+          timestamp: Date.parse("2026-03-29T16:30:00.000Z"),
+          totals: {
+            calories: 1000,
+            carbs: 70,
+            fat: 30,
+            protein: 30,
+          },
+        },
+        {
+          entryMethod: "barcode" as const,
+          id: "meal-2",
+          mealType: "lunch" as const,
+          nutrients: {
+            calcium: 10,
+            choline: 60,
+            copper: 0.4,
+            fiber: 4,
+            iron: 2,
+            manganese: 1.4,
+            omega3: 0.3,
+            potassium: 200,
+            selenium: 45,
+            vitaminC: 40,
+            vitaminD: 1,
+          },
+          timestamp: Date.parse("2026-03-29T21:10:00.000Z"),
+          totals: {
+            calories: 800,
+            carbs: 66,
+            fat: 22,
+            protein: 50,
+          },
+        },
+      ],
+      targets: {
+        calories: 2000,
+        carbs: 220,
+        detailedNutrition,
+        fat: 70,
+        hydration: 4,
+        nutrition: {
+          calcium: 100,
+          fiber: 20,
+          iron: 10,
+          potassium: 1000,
+          vitaminC: 100,
+          vitaminD: 10,
+        },
+        protein: 100,
+      },
+    };
+
+    const generalHealth = buildTodayDashboard({
+      ...baseArgs,
+      goalType: "general_health",
+    });
+    const fatLoss = buildTodayDashboard({
+      ...baseArgs,
+      goalType: "fat_loss",
+    });
+
+    expect(generalHealth.wellness.rings).toEqual(fatLoss.wellness.rings);
+    expect(generalHealth.wellness.biggestGapKey).toBe("carbs");
+    expect(fatLoss.wellness.biggestGapKey).toBe("carbs");
+    expect(generalHealth.wellness.score).toBe(62);
+    expect(fatLoss.wellness.score).toBe(69);
   });
 });

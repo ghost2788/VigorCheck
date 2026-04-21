@@ -23,7 +23,7 @@ export function DateTimeFieldsCard({
 
   return (
     <Card style={styles.card}>
-      <ThemedText size="sm" style={styles.title}>
+      <ThemedText size="md" style={styles.title} testID="date-time-fields-card-title">
         {title}
       </ThemedText>
       <View style={styles.row}>

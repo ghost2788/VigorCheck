@@ -184,6 +184,8 @@ export default defineSchema({
     ),
     revenueCatAppUserId: v.optional(v.string()),
     lastBillingSyncAt: v.optional(v.number()),
+    internalToolsUnlockTokenHash: v.optional(v.string()),
+    internalToolsUnlockExpiresAt: v.optional(v.number()),
     notifyHydration: v.boolean(),
     notifyMealLogging: v.boolean(),
     notifyGoalCompletion: v.boolean(),
@@ -311,6 +313,7 @@ export default defineSchema({
   rememberedEntries: defineTable({
     displayLabel: v.string(),
     favorited: v.boolean(),
+    favoritedAt: v.optional(v.number()),
     fingerprint: v.string(),
     hydrationSnapshot: v.optional(v.object(rememberedHydrationSnapshotFields)),
     lastUsedAt: v.number(),
@@ -323,6 +326,7 @@ export default defineSchema({
     userId: v.id("users"),
   })
     .index("by_user_and_fingerprint", ["userId", "fingerprint"])
+    .index("by_user_and_favorited_and_favorited_at", ["userId", "favorited", "favoritedAt"])
     .index("by_user_and_favorited_and_last_used_at", ["userId", "favorited", "lastUsedAt"]),
 
   dailySummaries: defineTable({

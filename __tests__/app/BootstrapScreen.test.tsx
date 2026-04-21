@@ -116,6 +116,28 @@ describe("BootstrapScreen", () => {
     });
   });
 
+  it("waits for the authenticated user query before routing an existing account into onboarding", async () => {
+    mockUseConvexAuth.mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+    });
+
+    let currentUser: { _id: string } | undefined = undefined;
+    mockUseQuery.mockImplementation(() => currentUser);
+
+    const view = render(<BootstrapScreen />);
+
+    expect(view.getByText("Loading your plan...")).toBeTruthy();
+
+    currentUser = { _id: "user-1" };
+
+    view.rerender(<BootstrapScreen />);
+
+    await waitFor(() => {
+      expect(view.getByText("redirect:/(tabs)")).toBeTruthy();
+    });
+  });
+
   it("routes signed-in users with a profile to tabs", () => {
     mockUseConvexAuth.mockReturnValue({
       isAuthenticated: true,

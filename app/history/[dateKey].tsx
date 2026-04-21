@@ -189,23 +189,44 @@ export default function HistoryDayDetailScreen() {
           <View style={styles.summaryMetric}>
             <ThemedText
               size="xs"
-              style={{ color: theme.metricHydration }}
-              testID="history-day-detail-hydration-label"
+              style={{ color: theme.metricCarbs }}
+              testID="history-day-detail-carbs-label"
+            >
+              Carbs
+            </ThemedText>
+            <ThemedText size="sm">{detail.summary.carbs}g</ThemedText>
+          </View>
+          <View style={styles.summaryMetric}>
+            <ThemedText
+              size="xs"
+              style={{ color: theme.metricFat }}
+              testID="history-day-detail-fat-label"
+            >
+              Fat
+            </ThemedText>
+            <ThemedText size="sm">{detail.summary.fat}g</ThemedText>
+          </View>
+        </View>
+      </Card>
+
+      <Card style={styles.supportCard}>
+        <ThemedText size="xs" style={styles.cardEyebrow} variant="tertiary">
+          Support metric
+        </ThemedText>
+        <View style={styles.supportMetricRow}>
+          <View style={styles.summaryMetric}>
+            <ThemedText
+              size="xs"
+              style={{ color: theme.metricHydrationSupport }}
+              testID="history-day-detail-hydration-support-label"
             >
               Hydration
             </ThemedText>
             <ThemedText size="sm">{detail.summary.hydrationCups.toFixed(1)} cups</ThemedText>
           </View>
-          <View style={styles.summaryMetric}>
-            <ThemedText
-              size="xs"
-              style={{ color: theme.metricNutrition }}
-              testID="history-day-detail-nutrition-label"
-            >
-              Nutrition
-            </ThemedText>
-            <ThemedText size="sm">{detail.summary.nutritionCoveragePercent}%</ThemedText>
-          </View>
+          <ThemedText size="sm" variant="secondary" style={styles.supportCopy}>
+            Logged alongside your macro score, but tracked as secondary detail.
+          </ThemedText>
         </View>
       </Card>
 
@@ -215,13 +236,13 @@ export default function HistoryDayDetailScreen() {
 
       <View style={styles.insightStack}>
         <NutrientInsightSummaryCard
-          accentColor={theme.metricNutrition}
+          accentColor={theme.metricNutritionSupport}
           emptyLabel="No standout wins on this day."
           items={detail.summary.insights?.topWins ?? []}
           title="Day wins"
         />
         <NutrientInsightSummaryCard
-          accentColor={theme.metricNutrition}
+          accentColor={theme.metricNutritionSupport}
           emptyLabel="No clear gaps on this day."
           items={detail.summary.insights?.biggestGaps ?? []}
           title="Day gaps"
@@ -232,7 +253,7 @@ export default function HistoryDayDetailScreen() {
         <WellnessAccordionList
           items={[
             {
-              accentColor: theme.metricNutrition,
+              accentColor: theme.metricNutritionSupport,
               contentTestID: "history-day-detail-nutrition-content",
               detail: (
                 <View>
@@ -240,7 +261,7 @@ export default function HistoryDayDetailScreen() {
                     {getNutritionCoverageDetailCopy()}
                   </ThemedText>
                   <NutrientProgressRows
-                    accentColor={theme.metricNutrition}
+                    accentColor={theme.metricNutritionSupport}
                     presentationMode="plain"
                     rows={nutrientRows}
                   />
@@ -399,6 +420,9 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   summaryCard: {
+    marginBottom: 12,
+  },
+  supportCard: {
     marginBottom: 18,
   },
   summaryGrid: {
@@ -417,6 +441,15 @@ const styles = StyleSheet.create({
   },
   summaryScore: {
     marginRight: 6,
+  },
+  supportCopy: {
+    flex: 1,
+    lineHeight: 20,
+    marginLeft: 12,
+  },
+  supportMetricRow: {
+    alignItems: "center",
+    flexDirection: "row",
   },
   title: {
     flex: 1,

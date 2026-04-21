@@ -2,6 +2,7 @@ import {
   getDaysRemaining,
   getTrialEndsAt,
   normalizeSubscriptionSnapshot,
+  resolveStoredSubscriptionStatus,
   resolveSubscriptionAccess,
   TRIAL_DURATION_MS,
 } from "../../lib/domain/subscription";
@@ -59,6 +60,33 @@ describe("subscription domain helpers", () => {
     expect(access.accessSource).toBe("server_subscription");
     expect(access.hasAccess).toBe(true);
     expect(access.daysRemaining).toBe(3);
+  });
+
+  it("keeps a canceled-but-still-paid subscription active until its future expiry", () => {
+    const subscriptionExpiresAt = now + 5 * 60 * 1000;
+
+    expect(
+      resolveStoredSubscriptionStatus({
+        now,
+        snapshot: {
+          status: "expired",
+          subscriptionExpiresAt,
+        },
+      })
+    ).toBe("active");
+
+    const access = resolveSubscriptionAccess({
+      hasActiveLocalEntitlement: false,
+      now,
+      subscription: {
+        status: "expired",
+        subscriptionExpiresAt,
+      },
+    });
+
+    expect(access.status).toBe("active");
+    expect(access.accessSource).toBe("server_subscription");
+    expect(access.hasAccess).toBe(true);
   });
 
   it("lets a fresh local RevenueCat entitlement bypass stale expired server state", () => {

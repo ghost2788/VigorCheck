@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Log Screen Card Polish</title>
+    <style>
+      :root {
+        --bg: #1a1814;
+        --bg-top: #201c17;
+        --card: rgba(255, 255, 255, 0.035);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --surface-soft: rgba(255, 255, 255, 0.025);
+        --surface-strong: rgba(255, 255, 255, 0.05);
+        --text: #e8e0d4;
+        --text-secondary: rgba(255, 255, 255, 0.45);
+        --text-tertiary: rgba(255, 255, 255, 0.28);
+        --text-muted: rgba(255, 255, 255, 0.16);
+        --accent-teal: #5ebaa9;
+        --accent-teal-soft: rgba(94, 186, 169, 0.16);
+        --accent-gold: #c4a46c;
+        --accent-gold-soft: rgba(196, 164, 108, 0.16);
+        --accent-blue: #78a0c8;
+        --accent-blue-soft: rgba(120, 160, 200, 0.16);
+        --shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 28px 18px 56px;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top, rgba(94, 186, 169, 0.08), transparent 32%),
+          linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 100%);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      .frame {
+        max-width: 390px;
+        margin: 0 auto;
+      }
+
+      .eyebrow {
+        color: var(--text-tertiary);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.4px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .hero {
+        margin-bottom: 18px;
+      }
+
+      .hero h1 {
+        margin: 0 0 10px;
+        font-size: 29px;
+        font-weight: 300;
+        letter-spacing: -0.9px;
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .phone {
+        padding: 0 2px;
+      }
+
+      .screen-title {
+        margin: 0 0 18px;
+        font-size: 28px;
+        font-weight: 300;
+        letter-spacing: -0.8px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 22px;
+        border: 1px solid var(--card-border);
+        background: var(--card);
+        padding: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 1px;
+        opacity: 0.9;
+      }
+
+      .card.scan::before {
+        background: linear-gradient(90deg, rgba(120, 160, 200, 0.58), transparent 70%);
+      }
+
+      .card.text::before {
+        background: linear-gradient(90deg, rgba(94, 186, 169, 0.58), transparent 70%);
+      }
+
+      .card.supplements::before {
+        background: linear-gradient(90deg, rgba(196, 164, 108, 0.58), transparent 70%);
+      }
+
+      .card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .card-title-wrap {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .card-kicker {
+        margin-bottom: 7px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+      }
+
+      .scan .card-kicker {
+        color: var(--accent-blue);
+      }
+
+      .text .card-kicker {
+        color: var(--accent-teal);
+      }
+
+      .supplements .card-kicker {
+        color: var(--accent-gold);
+      }
+
+      .card-title {
+        margin: 0 0 6px;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+      }
+
+      .card-copy {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.48;
+      }
+
+      .manage-link {
+        flex-shrink: 0;
+        color: var(--accent-teal);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        border: 1px solid transparent;
+        padding: 15px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .button.primary {
+        background: var(--accent-teal-soft);
+        border-color: rgba(94, 186, 169, 0.24);
+        color: var(--accent-teal);
+      }
+
+      .button.secondary {
+        background: var(--card);
+        border-color: var(--card-border);
+        color: var(--text);
+      }
+
+      .button.blue {
+        background: var(--accent-blue-soft);
+        border-color: rgba(120, 160, 200, 0.24);
+        color: var(--accent-blue);
+      }
+
+      .primary-cta {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .secondary-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .field {
+        border-radius: 18px;
+        border: 1px solid var(--card-border);
+        background: var(--surface-soft);
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+
+      .field-label {
+        margin: 0 0 8px;
+        color: var(--text-tertiary);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+      }
+
+      .field-text {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.6;
+        min-height: 62px;
+      }
+
+      .hint-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .hint-chip {
+        border-radius: 999px;
+        border: 1px solid var(--card-border);
+        background: rgba(255, 255, 255, 0.015);
+        padding: 8px 10px;
+        color: var(--text-secondary);
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .quick-add {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-radius: 16px;
+        border: 1px solid var(--card-border);
+        background: var(--surface-soft);
+        padding: 14px;
+        margin-top: 12px;
+      }
+
+      .quick-add strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 12px;
+      }
+
+      .quick-add span {
+        color: var(--text-secondary);
+        font-size: 12px;
+      }
+
+      .queue-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        align-self: flex-start;
+        margin-top: 14px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(94, 186, 169, 0.18);
+        background: rgba(94, 186, 169, 0.08);
+        color: var(--accent-teal);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .queue-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--accent-teal);
+        box-shadow: 0 0 12px rgba(94, 186, 169, 0.45);
+      }
+
+      .section-label {
+        margin: 2px 0 10px;
+        color: var(--text-tertiary);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+      }
+
+      .supplement-group + .supplement-group {
+        margin-top: 16px;
+      }
+
+      .supplement-row {
+        border-radius: 18px;
+        border: 1px solid var(--card-border);
+        background: var(--surface-soft);
+        padding: 13px 14px;
+      }
+
+      .supplement-row + .supplement-row {
+        margin-top: 10px;
+      }
+
+      .supplement-title {
+        margin: 0 0 10px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        line-height: 1.4;
+      }
+
+      .supplement-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .supplement-meta {
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .supplement-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .button.taken {
+        background: rgba(94, 186, 169, 0.1);
+        border-color: rgba(94, 186, 169, 0.22);
+        color: var(--accent-teal);
+        min-width: 72px;
+      }
+
+      .button.undo {
+        background: rgba(255, 255, 255, 0.015);
+        border-color: var(--card-border);
+        color: var(--text-secondary);
+        min-width: 64px;
+      }
+
+      .notes {
+        margin-top: 18px;
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .notes strong {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <div class="hero">
+        <div class="eyebrow">Log Screen Mockup</div>
+        <h1>Coordinated card polish</h1>
+        <p>
+          One visual direction for the three utility cards: stronger hierarchy, cleaner action
+          grouping, and a more intentional stack without changing the underlying flows.
+        </p>
+      </div>
+
+      <div class="phone">
+        <div class="screen-title">Log</div>
+
+        <div class="stack">
+          <section class="card scan">
+            <div class="card-head">
+              <div class="card-title-wrap">
+                <div class="card-kicker">Photo + Barcode</div>
+                <h2 class="card-title">Scan a meal</h2>
+                <p class="card-copy">
+                  Capture the meal fast, then review the estimate before anything is saved.
+                </p>
+              </div>
+            </div>
+
+            <div class="button primary blue primary-cta">Use camera</div>
+            <div class="secondary-row">
+              <div class="button secondary">Choose photo</div>
+              <div class="button secondary">Scan barcode</div>
+            </div>
+
+            <div class="queue-pill">
+              <span class="queue-dot"></span>
+              1 Review waiting
+            </div>
+          </section>
+
+          <section class="card text">
+            <div class="card-head">
+              <div class="card-title-wrap">
+                <div class="card-kicker">Text + Exact Macros</div>
+                <h2 class="card-title">Describe a meal</h2>
+                <p class="card-copy">
+                  Type what you ate for an AI estimate, or switch to exact macros when you already
+                  know the numbers.
+                </p>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-label">Meal description</div>
+              <div class="field-text">2 eggs, sourdough toast, half an avocado, black coffee</div>
+            </div>
+
+            <div class="hint-row">
+              <div class="hint-chip">Include portions when you can</div>
+              <div class="hint-chip">Mention sauces or extras</div>
+            </div>
+
+            <div class="button primary primary-cta">Analyze meal</div>
+
+            <div class="quick-add">
+              <div>
+                <strong>Quick add</strong>
+                <span>Use exact calories and macros instead</span>
+              </div>
+              <div class="button secondary">Open</div>
+            </div>
+          </section>
+
+          <section class="card supplements">
+            <div class="card-head">
+              <div class="card-title-wrap">
+                <div class="card-kicker">Daily + As Needed</div>
+                <h2 class="card-title">My Supplements</h2>
+                <p class="card-copy">
+                  Keep routine supplements easy to log, with cleaner row hierarchy and clearer
+                  taken states.
+                </p>
+              </div>
+              <div class="manage-link">Manage</div>
+            </div>
+
+            <div class="supplement-group">
+              <div class="section-label">Daily stack</div>
+
+              <div class="supplement-row">
+                <div class="supplement-title">Vitamin D3 + K2</div>
+                <div class="supplement-bottom">
+                  <div class="supplement-meta">1 softgel • 5000 IU</div>
+                  <div class="supplement-actions">
+                    <div class="button taken">Taken</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="supplement-row">
+                <div class="supplement-title">Magnesium glycinate</div>
+                <div class="supplement-bottom">
+                  <div class="supplement-meta">2 capsules • 240 mg</div>
+                  <div class="supplement-actions">
+                    <div class="button secondary">Log</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="supplement-group">
+              <div class="section-label">As needed</div>
+
+              <div class="supplement-row">
+                <div class="supplement-title">Electrolyte mix</div>
+                <div class="supplement-bottom">
+                  <div class="supplement-meta">1 packet • lemon lime</div>
+                  <div class="supplement-actions">
+                    <div class="button undo">Undo</div>
+                    <div class="button taken">Taken</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="notes">
+        <strong>Direction:</strong> make the top two cards feel more productized, not just functional,
+        and bring the supplements card up to the same hierarchy level as remembered entries.
+      </div>
+    </div>
+  </body>
+</html>

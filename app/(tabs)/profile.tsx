@@ -1,7 +1,14 @@
 import React from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { api } from "../../convex/_generated/api";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
@@ -12,6 +19,12 @@ import { authClient } from "../../lib/auth/authClient";
 import { useSubscription } from "../../lib/billing/SubscriptionProvider";
 import { isInternalTestingToolsEnabled } from "../../lib/config/internalTesting";
 import {
+  DEV_TOOLS_REVEAL_HOLD_DURATION_MS,
+  INTERNAL_TOOLS_RELOCK_MESSAGE,
+  isInternalToolsInvalidPasswordError,
+  isInternalToolsUnlockRequiredError,
+} from "../../lib/domain/internalTesting";
+import {
   buildBodyAndPreferencesSummary,
   buildGoalsAndTargetsSummary,
   buildReminderSummaryItems,
@@ -19,6 +32,7 @@ import {
   toPlanSettings,
 } from "../../lib/domain/profileSettings";
 import { formatClockTime, parseClockTime } from "../../lib/domain/reminders";
+import { useDevToolsAccess } from "../../lib/internalTesting/DevToolsAccessProvider";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 
 function getSubscriptionHeroCopy({
@@ -163,14 +177,31 @@ function formatDiagnosticsTokenLabel(totalTokens: number | null) {
 export default function ProfileScreen() {
   const { setThemePreference, theme, themePreference } = useTheme();
   const router = useRouter();
-  const showInternalTestingTools = isInternalTestingToolsEnabled();
+  const clientInternalTestingEnabled = isInternalTestingToolsEnabled();
+  const {
+    isDevToolsTriggerRevealed,
+    isDevToolsUnlocked,
+    relockDevTools,
+    resetDevToolsAccess,
+    revealDevToolsTrigger,
+    unlockDevTools,
+    unlockToken,
+  } = useDevToolsAccess();
   const currentUser = useQuery(api.users.current);
   const aiUsage = useQuery(api.aiUsage.currentStatus);
-  const aiDiagnostics = useQuery(
-    api.aiObservability.currentUserDiagnostics,
-    showInternalTestingTools ? {} : "skip"
+  const devToolsAvailability = useQuery(
+    api.testing.devToolsAvailability,
+    clientInternalTestingEnabled ? {} : "skip"
   );
+  const canSurfaceDevToolsFlow =
+    clientInternalTestingEnabled && devToolsAvailability?.enabled === true;
+  const aiDiagnosticsResult = useQuery(
+    api.aiObservability.currentUserDiagnostics,
+    canSurfaceDevToolsFlow && unlockToken ? { unlockToken } : "skip"
+  );
+  const unlockInternalTools = useMutation(api.testing.unlockInternalTools);
   const forceTrialExpired = useMutation(api.testing.forceTrialExpired);
+  const restoreTrial = useMutation(api.testing.restoreTrial);
   const { data: session } = authClient.useSession();
   const {
     accessState,
@@ -183,6 +214,35 @@ export default function ProfileScreen() {
     supportMessage,
   } = useSubscription();
   const [accountActionError, setAccountActionError] = React.useState<string | null>(null);
+  const [isUnlockCardVisible, setIsUnlockCardVisible] = React.useState(false);
+  const [isUnlocking, setIsUnlocking] = React.useState(false);
+  const [unlockError, setUnlockError] = React.useState<string | null>(null);
+  const [unlockPassword, setUnlockPassword] = React.useState("");
+  const previousUserIdRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    const nextUserId = currentUser?._id ?? null;
+
+    if (previousUserIdRef.current && nextUserId && previousUserIdRef.current !== nextUserId) {
+      resetDevToolsAccess();
+      setAccountActionError(null);
+      setIsUnlockCardVisible(false);
+      setUnlockError(null);
+      setUnlockPassword("");
+    }
+
+    previousUserIdRef.current = nextUserId;
+  }, [currentUser?._id, resetDevToolsAccess]);
+
+  React.useEffect(() => {
+    if (isDevToolsUnlocked && aiDiagnosticsResult?.status === "locked") {
+      relockDevTools();
+      setAccountActionError(INTERNAL_TOOLS_RELOCK_MESSAGE);
+      setIsUnlockCardVisible(false);
+      setUnlockError(null);
+      setUnlockPassword("");
+    }
+  }, [aiDiagnosticsResult, isDevToolsUnlocked, relockDevTools]);
 
   if (currentUser === undefined) {
     return (
@@ -216,6 +276,11 @@ export default function ProfileScreen() {
   const accountEmail = session?.user?.email ?? "Signed in with Google";
   const planSettings = toPlanSettings(currentUser);
   const subscriptionStatus = accessState?.status ?? "expired";
+  const canRestoreTrial = subscriptionStatus !== "active";
+  const showUnlockedDevTools = canSurfaceDevToolsFlow && isDevToolsUnlocked;
+  const showDevToolsEntryPoint = canSurfaceDevToolsFlow && isDevToolsTriggerRevealed;
+  const aiDiagnostics =
+    aiDiagnosticsResult && aiDiagnosticsResult.status === "ready" ? aiDiagnosticsResult : null;
   const heroCopy = getSubscriptionHeroCopy({
     daysRemaining: accessState?.daysRemaining ?? 0,
     status: subscriptionStatus,
@@ -232,6 +297,24 @@ export default function ProfileScreen() {
     }
   }
 
+  async function runDevToolsAction(action: () => Promise<void>) {
+    setAccountActionError(null);
+
+    try {
+      await action();
+    } catch (error) {
+      console.error(error);
+
+      if (isInternalToolsUnlockRequiredError(error)) {
+        relockDevTools();
+        setAccountActionError(INTERNAL_TOOLS_RELOCK_MESSAGE);
+        return;
+      }
+
+      setAccountActionError("We couldn't complete that account action right now. Please try again.");
+    }
+  }
+
   function buildAppearanceOptionStyle(selected: boolean) {
     return {
       backgroundColor: selected ? `${theme.accent1}16` : theme.surfaceSoft,
@@ -239,389 +322,545 @@ export default function ProfileScreen() {
     };
   }
 
-  return (
-    <ScrollView
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-      style={[styles.container, { backgroundColor: theme.background }]}
-    >
-      <View style={styles.header}>
-        <ThemedText size="xl">Profile</ThemedText>
-        <ThemedText style={styles.headerBody} variant="secondary">
-          Your account, plan, and preferences.
-        </ThemedText>
-      </View>
+  function closeUnlockCard() {
+    setIsUnlockCardVisible(false);
+    setUnlockError(null);
+    setUnlockPassword("");
+  }
 
-      <Card style={styles.heroCard}>
-        <View style={styles.heroTopRow}>
-          <View style={styles.heroCopy}>
-            <ThemedText size="xs" style={styles.eyebrow} variant="tertiary">
-              Subscription
-            </ThemedText>
-            <ThemedText size="lg">{statusLabel ?? "Subscription required"}</ThemedText>
+  async function submitUnlockRequest() {
+    if (!unlockPassword.trim()) {
+      return;
+    }
+
+    setIsUnlocking(true);
+    setUnlockError(null);
+    setAccountActionError(null);
+
+    try {
+      const result = await unlockInternalTools({
+        password: unlockPassword,
+      });
+
+      unlockDevTools(result.unlockToken);
+      setUnlockPassword("");
+      setIsUnlockCardVisible(false);
+    } catch (error) {
+      if (isInternalToolsInvalidPasswordError(error) && error instanceof Error) {
+        setUnlockError(error.message);
+      } else {
+        console.error(error);
+        setUnlockError("Dev tools aren't available for this build right now.");
+      }
+    } finally {
+      setIsUnlocking(false);
+    }
+  }
+
+  return (
+    <>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        style={[styles.container, { backgroundColor: theme.background }]}
+      >
+        <View style={styles.header}>
+          <ThemedText size="xl">Profile</ThemedText>
+          <ThemedText style={styles.headerBody} variant="secondary">
+            Your account, plan, and preferences.
+          </ThemedText>
+        </View>
+
+        <Card style={styles.heroCard}>
+          <View style={styles.heroTopRow}>
+            <View style={styles.heroCopy}>
+              <ThemedText size="xs" style={styles.eyebrow} variant="tertiary">
+                Subscription
+              </ThemedText>
+              <ThemedText size="lg">{statusLabel ?? "Subscription required"}</ThemedText>
+            </View>
+            <View
+              style={[
+                styles.heroBadge,
+                {
+                  backgroundColor:
+                    subscriptionStatus === "expired" ? `${theme.accent3}22` : `${theme.accent1}1f`,
+                  borderColor:
+                    subscriptionStatus === "expired" ? `${theme.accent3}44` : `${theme.accent1}33`,
+                },
+              ]}
+            >
+              <ThemedText
+                size="sm"
+                variant={subscriptionStatus === "expired" ? "accent3" : "accent1"}
+              >
+                {heroCopy.badge}
+              </ThemedText>
+            </View>
           </View>
-          <View
-            style={[
-              styles.heroBadge,
-              {
-                backgroundColor:
-                  subscriptionStatus === "expired" ? `${theme.accent3}22` : `${theme.accent1}1f`,
-                borderColor:
-                  subscriptionStatus === "expired" ? `${theme.accent3}44` : `${theme.accent1}33`,
-              },
-            ]}
+
+          <ThemedText style={styles.heroBody} variant="secondary">
+            {heroCopy.body}
+          </ThemedText>
+
+          {supportMessage ? (
+            <ThemedText size="sm" variant="accent3">
+              {supportMessage}
+            </ThemedText>
+          ) : null}
+
+          {accountActionError ? (
+            <ThemedText size="sm" variant="accent3">
+              {accountActionError}
+            </ThemedText>
+          ) : null}
+
+          <Button
+            disabled={billingBusy || !isConfigured}
+            label={billingBusy ? "Working..." : heroCopy.ctaLabel}
+            onPress={() =>
+              void runAccountAction(
+                subscriptionStatus === "active" ? manageSubscription : purchaseMonthly
+              )
+            }
+          />
+
+          <Pressable
+            disabled={billingBusy || !isConfigured}
+            onPress={() => void runAccountAction(restorePurchases)}
+            style={styles.restoreLink}
           >
             <ThemedText
               size="sm"
-              variant={subscriptionStatus === "expired" ? "accent3" : "accent1"}
+              style={[
+                styles.restoreText,
+                { opacity: billingBusy || !isConfigured ? 0.45 : 1 },
+              ]}
+              variant="tertiary"
             >
-              {heroCopy.badge}
+              Restore purchases
+            </ThemedText>
+          </Pressable>
+        </Card>
+
+        <Card style={styles.appearanceCard}>
+          <View style={styles.appearanceCopy}>
+            <ThemedText size="lg">Appearance</ThemedText>
+            <ThemedText size="sm" variant="secondary">
+              Applies to this device
             </ThemedText>
           </View>
-        </View>
 
-        <ThemedText style={styles.heroBody} variant="secondary">
-          {heroCopy.body}
-        </ThemedText>
+          <View style={styles.appearanceOptionsRow}>
+            {(["dark", "light"] as const).map((option) => {
+              const selected = themePreference === option;
 
-        {supportMessage ? (
-          <ThemedText size="sm" variant="accent3">
-            {supportMessage}
-          </ThemedText>
-        ) : null}
-
-        {accountActionError ? (
-          <ThemedText size="sm" variant="accent3">
-            {accountActionError}
-          </ThemedText>
-        ) : null}
-
-        <Button
-          disabled={billingBusy || !isConfigured}
-          label={billingBusy ? "Working..." : heroCopy.ctaLabel}
-          onPress={() =>
-            void runAccountAction(
-              subscriptionStatus === "active" ? manageSubscription : purchaseMonthly
-            )
-          }
-        />
-
-        <Pressable
-          disabled={billingBusy || !isConfigured}
-          onPress={() => void runAccountAction(restorePurchases)}
-          style={styles.restoreLink}
-        >
-          <ThemedText
-            size="sm"
-            style={[
-              styles.restoreText,
-              { opacity: billingBusy || !isConfigured ? 0.45 : 1 },
-            ]}
-            variant="tertiary"
-          >
-            Restore purchases
-          </ThemedText>
-        </Pressable>
-      </Card>
-
-      <Card style={styles.appearanceCard}>
-        <View style={styles.appearanceCopy}>
-          <ThemedText size="lg">Appearance</ThemedText>
-          <ThemedText size="sm" variant="secondary">
-            Applies to this device
-          </ThemedText>
-        </View>
-
-        <View style={styles.appearanceOptionsRow}>
-          {(["dark", "light"] as const).map((option) => {
-            const selected = themePreference === option;
-
-            return (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                key={option}
-                onPress={() => setThemePreference(option)}
-                style={[styles.appearanceOption, buildAppearanceOptionStyle(selected)]}
-                testID={`appearance-option-${option}`}
-              >
-                <ThemedText size="sm" variant={selected ? "accent1" : "secondary"}>
-                  {option === "dark" ? "Dark" : "Light"}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
-        </View>
-      </Card>
-
-      <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
-        Your plan
-      </ThemedText>
-
-      <ProfileSummaryCard
-        actionLabel="Edit"
-        items={buildGoalsAndTargetsSummary(planSettings)}
-        onPress={() => router.push("/profile/plan-settings")}
-        title="Goals & Targets"
-      />
-
-      <ProfileSummaryCard
-        actionLabel="Edit"
-        items={buildBodyAndPreferencesSummary(planSettings)}
-        onPress={() => router.push("/profile/plan-settings")}
-        title="Body & Preferences"
-      />
-
-      <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
-        Reminders
-      </ThemedText>
-
-      <ProfileReminderSummary
-        items={buildReminderSummaryItems(currentUser.reminders)}
-        onPress={() => router.push("/profile/reminder-settings")}
-        windowLabel={formatReminderWindow(
-          currentUser.reminders.wakeTime,
-          currentUser.reminders.sleepTime
-        )}
-      />
-
-      {aiUsage ? (
-        <Card
-          style={[
-            styles.usageCard,
-            aiUsage.photo.isWarning || aiUsage.text.isWarning
-              ? {
-                  backgroundColor: `${theme.accent3}10`,
-                  borderColor: `${theme.accent3}26`,
-                  shadowColor: theme.shadow,
-                }
-              : null,
-          ]}
-        >
-          <View style={styles.usageHeader}>
-            <View style={styles.usageHeaderCopy}>
-              <ThemedText size="lg">AI usage</ThemedText>
-              <ThemedText size="sm" variant="secondary">
-                Free trial totals and monthly fair-use limits update when AI starts.
-              </ThemedText>
-            </View>
-            {aiUsage.photo.isWarning || aiUsage.text.isWarning ? (
-              <View
-                style={[
-                  styles.usageBadge,
-                  {
-                    backgroundColor: `${theme.accent3}16`,
-                    borderColor: `${theme.accent3}2c`,
-                  },
-                ]}
-              >
-                <ThemedText size="sm" variant="accent3">
-                  Approaching limit
-                </ThemedText>
-              </View>
-            ) : null}
-          </View>
-
-          <View style={styles.usageRow}>
-            <View style={styles.usageRowCopy}>
-              <ThemedText size="sm">Photo scans</ThemedText>
-              <ThemedText
-                size="sm"
-                style={styles.usagePrimaryLine}
-                variant={aiUsage.photo.isWarning ? "accent3" : "accent1"}
-              >
-                {formatUsageBucketRemaining(
-                  aiUsage.photo.primaryBucketLabel,
-                  aiUsage.photo.primaryBucketLabel === aiUsage.photo.daily.label
-                    ? aiUsage.photo.daily.remaining
-                    : aiUsage.photo.period.remaining
-                )}
-              </ThemedText>
-              {aiUsage.photo.primaryBucketLabel !== aiUsage.photo.period.label ? (
-                <ThemedText size="sm" variant="secondary">
-                  {formatUsageBucketRemaining(
-                    aiUsage.photo.period.label,
-                    aiUsage.photo.period.remaining
-                  )}
-                </ThemedText>
-              ) : null}
-              {aiUsage.photo.primaryBucketLabel !== aiUsage.photo.daily.label ? (
-                <ThemedText size="sm" variant="secondary">
-                  {formatUsageBucketRemaining(
-                    aiUsage.photo.daily.label,
-                    aiUsage.photo.daily.remaining
-                  )}
-                </ThemedText>
-              ) : null}
-            </View>
-          </View>
-
-          <View style={[styles.usageDivider, { backgroundColor: theme.cardBorder }]} />
-
-          <View style={styles.usageRow}>
-            <View style={styles.usageRowCopy}>
-              <ThemedText size="sm">AI text entries</ThemedText>
-              <ThemedText
-                size="sm"
-                style={styles.usagePrimaryLine}
-                variant={aiUsage.text.isWarning ? "accent3" : "accent1"}
-              >
-                {formatUsageBucketRemaining(
-                  aiUsage.text.period.label,
-                  aiUsage.text.period.remaining
-                )}
-              </ThemedText>
-              <ThemedText size="sm" variant="secondary">
-                {aiUsage.text.period.resetLabel}
-              </ThemedText>
-            </View>
+              return (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  key={option}
+                  onPress={() => setThemePreference(option)}
+                  style={[styles.appearanceOption, buildAppearanceOptionStyle(selected)]}
+                  testID={`appearance-option-${option}`}
+                >
+                  <ThemedText size="sm" variant={selected ? "accent1" : "secondary"}>
+                    {option === "dark" ? "Dark" : "Light"}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
           </View>
         </Card>
-      ) : null}
 
-      <Card style={styles.accountCard}>
-        <View style={styles.accountCopy}>
-          <ThemedText size="sm">{accountName}</ThemedText>
-          <ThemedText size="sm" variant="secondary">
-            {accountEmail}
-          </ThemedText>
-        </View>
-        <Pressable
-          hitSlop={8}
-          onPress={() =>
-            void runAccountAction(async () => {
-              await authClient.signOut();
-              router.replace("/(auth)/welcome");
-            })
-          }
-        >
-          <ThemedText size="sm" variant="tertiary">
-            Sign out
-          </ThemedText>
-        </Pressable>
-      </Card>
+        <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
+          Your plan
+        </ThemedText>
 
-      {showInternalTestingTools ? (
-        <View style={[styles.testingSection, { borderTopColor: theme.cardBorder }]}>
-          <View style={[styles.testingCard, { borderColor: theme.cardBorder }]}>
-            <ThemedText size="xs" variant="tertiary">
-              Internal testing
-            </ThemedText>
-            <ThemedText style={styles.testingBody} variant="tertiary">
-              Force the paywall path without waiting for the trial to finish naturally.
-            </ThemedText>
+        <ProfileSummaryCard
+          actionLabel="Edit"
+          items={buildGoalsAndTargetsSummary(planSettings)}
+          onPress={() => router.push("/profile/plan-settings")}
+          title="Goals & Targets"
+        />
+
+        <ProfileSummaryCard
+          actionLabel="Edit"
+          items={buildBodyAndPreferencesSummary(planSettings)}
+          onPress={() => router.push("/profile/plan-settings")}
+          title="Body & Preferences"
+        />
+
+        <ThemedText size="xs" style={styles.sectionLabel} variant="tertiary">
+          Reminders
+        </ThemedText>
+
+        <ProfileReminderSummary
+          items={buildReminderSummaryItems(currentUser.reminders)}
+          onPress={() => router.push("/profile/reminder-settings")}
+          windowLabel={formatReminderWindow(
+            currentUser.reminders.wakeTime,
+            currentUser.reminders.sleepTime
+          )}
+        />
+
+        {aiUsage ? (
+          <Card
+            style={[
+              styles.usageCard,
+              aiUsage.photo.isWarning || aiUsage.text.isWarning
+                ? {
+                    backgroundColor: `${theme.accent3}10`,
+                    borderColor: `${theme.accent3}26`,
+                    shadowColor: theme.shadow,
+                  }
+                : null,
+            ]}
+          >
+            <View style={styles.usageHeader}>
+              <View style={styles.usageHeaderCopy}>
+                <ThemedText size="lg">AI usage</ThemedText>
+                <ThemedText size="sm" variant="secondary">
+                  Free trial totals and monthly fair-use limits update when AI starts.
+                </ThemedText>
+              </View>
+              {aiUsage.photo.isWarning || aiUsage.text.isWarning ? (
+                <View
+                  style={[
+                    styles.usageBadge,
+                    {
+                      backgroundColor: `${theme.accent3}16`,
+                      borderColor: `${theme.accent3}2c`,
+                    },
+                  ]}
+                >
+                  <ThemedText size="sm" variant="accent3">
+                    Approaching limit
+                  </ThemedText>
+                </View>
+              ) : null}
+            </View>
+
+            <View style={styles.usageRow}>
+              <View style={styles.usageRowCopy}>
+                <ThemedText size="sm">Photo scans</ThemedText>
+                <ThemedText
+                  size="sm"
+                  style={styles.usagePrimaryLine}
+                  variant={aiUsage.photo.isWarning ? "accent3" : "accent1"}
+                >
+                  {formatUsageBucketRemaining(
+                    aiUsage.photo.primaryBucketLabel,
+                    aiUsage.photo.primaryBucketLabel === aiUsage.photo.daily.label
+                      ? aiUsage.photo.daily.remaining
+                      : aiUsage.photo.period.remaining
+                  )}
+                </ThemedText>
+                {aiUsage.photo.primaryBucketLabel !== aiUsage.photo.period.label ? (
+                  <ThemedText size="sm" variant="secondary">
+                    {formatUsageBucketRemaining(
+                      aiUsage.photo.period.label,
+                      aiUsage.photo.period.remaining
+                    )}
+                  </ThemedText>
+                ) : null}
+                {aiUsage.photo.primaryBucketLabel !== aiUsage.photo.daily.label ? (
+                  <ThemedText size="sm" variant="secondary">
+                    {formatUsageBucketRemaining(
+                      aiUsage.photo.daily.label,
+                      aiUsage.photo.daily.remaining
+                    )}
+                  </ThemedText>
+                ) : null}
+              </View>
+            </View>
+
+            <View style={[styles.usageDivider, { backgroundColor: theme.cardBorder }]} />
+
+            <View style={styles.usageRow}>
+              <View style={styles.usageRowCopy}>
+                <ThemedText size="sm">AI text entries</ThemedText>
+                <ThemedText
+                  size="sm"
+                  style={styles.usagePrimaryLine}
+                  variant={aiUsage.text.isWarning ? "accent3" : "accent1"}
+                >
+                  {formatUsageBucketRemaining(
+                    aiUsage.text.period.label,
+                    aiUsage.text.period.remaining
+                  )}
+                </ThemedText>
+                <ThemedText size="sm" variant="secondary">
+                  {aiUsage.text.period.resetLabel}
+                </ThemedText>
+              </View>
+            </View>
+          </Card>
+        ) : null}
+
+        <Card style={styles.accountCard}>
+          <View style={styles.accountHeaderRow}>
+            {canSurfaceDevToolsFlow ? (
+              <Pressable
+                delayLongPress={DEV_TOOLS_REVEAL_HOLD_DURATION_MS}
+                onLongPress={revealDevToolsTrigger}
+                style={styles.accountCopy}
+                testID="profile-dev-tools-trigger"
+              >
+                <ThemedText size="sm">{accountName}</ThemedText>
+                <ThemedText size="sm" variant="secondary">
+                  {accountEmail}
+                </ThemedText>
+              </Pressable>
+            ) : (
+              <View style={styles.accountCopy}>
+                <ThemedText size="sm">{accountName}</ThemedText>
+                <ThemedText size="sm" variant="secondary">
+                  {accountEmail}
+                </ThemedText>
+              </View>
+            )}
             <Pressable
+              hitSlop={8}
               onPress={() =>
                 void runAccountAction(async () => {
-                  await forceTrialExpired({});
+                  resetDevToolsAccess();
+                  closeUnlockCard();
+                  await authClient.signOut();
+                  router.replace("/(auth)/welcome");
                 })
               }
-              style={[styles.testingButton, { borderColor: theme.cardBorder }]}
             >
-              <ThemedText size="xs" variant="tertiary">
-                Force trial expiry
+              <ThemedText size="sm" variant="tertiary">
+                Sign out
               </ThemedText>
             </Pressable>
           </View>
 
-          <View style={[styles.testingCard, { borderColor: theme.cardBorder }]}>
-            <ThemedText size="xs" variant="tertiary">
-              AI diagnostics
+          {showDevToolsEntryPoint ? (
+            <Pressable onPress={() => setIsUnlockCardVisible(true)} style={styles.devToolsLink}>
+              <ThemedText size="sm" variant="tertiary">
+                Dev tools
+              </ThemedText>
+            </Pressable>
+          ) : null}
+        </Card>
+
+        {showDevToolsEntryPoint && isUnlockCardVisible ? (
+          <Card style={styles.unlockCard} testID="profile-dev-tools-unlock-card">
+            <ThemedText size="lg">Unlock dev tools</ThemedText>
+            <ThemedText size="sm" variant="secondary">
+              Enter the internal tools password for this build.
             </ThemedText>
-            <ThemedText style={styles.testingBody} variant="tertiary">
-              Last 30 days from rollups, plus the latest 5 raw events.
-            </ThemedText>
-            {aiDiagnostics ? (
-              <View style={styles.diagnosticsBlock}>
-                <View style={styles.diagnosticsTotalsRow}>
-                  <ThemedText size="sm">
-                    {formatDiagnosticsRequestCount(aiDiagnostics.totals.requestCount)}
+
+            <View
+              style={[
+                styles.unlockField,
+                {
+                  backgroundColor: theme.surfaceSoft,
+                  borderColor: theme.cardBorder,
+                },
+              ]}
+            >
+              <TextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={setUnlockPassword}
+                placeholder="Password"
+                placeholderTextColor={theme.textMuted}
+                secureTextEntry
+                style={[styles.unlockInput, { color: theme.text }]}
+                testID="profile-dev-tools-password-input"
+                value={unlockPassword}
+              />
+            </View>
+
+            {unlockError ? (
+              <ThemedText size="sm" variant="accent3">
+                {unlockError}
+              </ThemedText>
+            ) : null}
+
+            <View style={styles.unlockActions}>
+              <Button
+                label="Cancel"
+                onPress={closeUnlockCard}
+                style={styles.unlockActionButton}
+                variant="secondary"
+              />
+              <Button
+                disabled={isUnlocking || !unlockPassword.trim()}
+                label={isUnlocking ? "Unlocking..." : "Unlock"}
+                onPress={() => void submitUnlockRequest()}
+                style={styles.unlockActionButton}
+              />
+            </View>
+          </Card>
+        ) : null}
+
+        {showUnlockedDevTools ? (
+          <View style={[styles.testingSection, { borderTopColor: theme.cardBorder }]}>
+            <View style={[styles.testingCard, { borderColor: theme.cardBorder }]}>
+              <ThemedText size="xs" variant="tertiary">
+                Internal testing
+              </ThemedText>
+              <ThemedText style={styles.testingBody} variant="tertiary">
+                Force the paywall path or restore a fresh local 7-day trial while you test this dev
+                build.
+              </ThemedText>
+              <View style={styles.testingActions}>
+                <Pressable
+                  onPress={() =>
+                    void runDevToolsAction(async () => {
+                      if (!unlockToken) {
+                        throw new Error("Missing unlock token.");
+                      }
+
+                      await forceTrialExpired({ unlockToken });
+                    })
+                  }
+                  style={[styles.testingButton, { borderColor: theme.cardBorder }]}
+                  testID="profile-testing-force-trial-expiry"
+                >
+                  <ThemedText size="xs" variant="tertiary">
+                    Force trial expiry
                   </ThemedText>
-                  <ThemedText size="sm" variant="secondary">
-                    {`${formatDiagnosticsCurrency(aiDiagnostics.totals.estimatedCostUsdMicros)} estimated cost`}
+                </Pressable>
+                <Pressable
+                  accessibilityState={{ disabled: !canRestoreTrial }}
+                  disabled={!canRestoreTrial}
+                  onPress={() =>
+                    void runDevToolsAction(async () => {
+                      if (!unlockToken) {
+                        throw new Error("Missing unlock token.");
+                      }
+
+                      await restoreTrial({ unlockToken });
+                    })
+                  }
+                  style={[
+                    styles.testingButton,
+                    {
+                      borderColor: canRestoreTrial ? theme.cardBorder : `${theme.cardBorder}99`,
+                      opacity: canRestoreTrial ? 1 : 0.45,
+                    },
+                  ]}
+                  testID="profile-testing-restore-trial"
+                >
+                  <ThemedText size="xs" variant="tertiary">
+                    Restore 7-day trial
                   </ThemedText>
-                </View>
+                </Pressable>
+              </View>
+              {!canRestoreTrial ? (
                 <ThemedText size="sm" variant="secondary">
-                  {`${aiDiagnostics.totals.blockedCount} blocked • ${aiDiagnostics.totals.postprocessErrorCount} postprocess issues • ${aiDiagnostics.totals.usageMissingCount} usage missing`}
+                  Trial restore stays disabled while this account already has active access.
                 </ThemedText>
+              ) : null}
+            </View>
 
-                <View style={[styles.testingDivider, { backgroundColor: theme.cardBorder }]} />
-
-                {aiDiagnostics.breakdown.map((row) => (
-                  <View key={row.callKind} style={styles.diagnosticsRow}>
-                    <View style={styles.diagnosticsRowCopy}>
-                      <ThemedText size="sm">{formatDiagnosticsCallKindLabel(row.callKind)}</ThemedText>
-                      <ThemedText size="sm" variant="secondary">
-                        {formatDiagnosticsRequestCount(row.requestCount)}
-                      </ThemedText>
-                    </View>
-                    <ThemedText size="sm" variant="tertiary">
-                      {formatDiagnosticsCurrency(row.estimatedCostUsdMicros)}
+            <View style={[styles.testingCard, { borderColor: theme.cardBorder }]}>
+              <ThemedText size="xs" variant="tertiary">
+                AI diagnostics
+              </ThemedText>
+              <ThemedText style={styles.testingBody} variant="tertiary">
+                Last 30 days from rollups, plus the latest 5 raw events.
+              </ThemedText>
+              {aiDiagnostics ? (
+                <View style={styles.diagnosticsBlock}>
+                  <View style={styles.diagnosticsTotalsRow}>
+                    <ThemedText size="sm">
+                      {formatDiagnosticsRequestCount(aiDiagnostics.totals.requestCount)}
+                    </ThemedText>
+                    <ThemedText size="sm" variant="secondary">
+                      {`${formatDiagnosticsCurrency(aiDiagnostics.totals.estimatedCostUsdMicros)} estimated cost`}
                     </ThemedText>
                   </View>
-                ))}
-
-                <View style={[styles.testingDivider, { backgroundColor: theme.cardBorder }]} />
-
-                <View style={styles.diagnosticsRecentHeader}>
-                  <ThemedText size="sm">Recent requests</ThemedText>
                   <ThemedText size="sm" variant="secondary">
-                    Latest 5
+                    {`${aiDiagnostics.totals.blockedCount} blocked • ${aiDiagnostics.totals.postprocessErrorCount} postprocess issues • ${aiDiagnostics.totals.usageMissingCount} usage missing`}
                   </ThemedText>
-                </View>
 
-                {aiDiagnostics.recentEvents.length ? (
-                  aiDiagnostics.recentEvents.map((event, index) => (
-                    <View
-                      key={`${event.callKind}-${event.completedAt}-${index}`}
-                      style={styles.diagnosticsRow}
-                    >
+                  <View style={[styles.testingDivider, { backgroundColor: theme.cardBorder }]} />
+
+                  {aiDiagnostics.breakdown.map((row) => (
+                    <View key={row.callKind} style={styles.diagnosticsRow}>
                       <View style={styles.diagnosticsRowCopy}>
-                        <ThemedText size="sm">{formatDiagnosticsEventTitle(event.callKind)}</ThemedText>
+                        <ThemedText size="sm">{formatDiagnosticsCallKindLabel(row.callKind)}</ThemedText>
                         <ThemedText size="sm" variant="secondary">
-                          {`${event.model} • ${formatDiagnosticsStatusLabel({
-                            resultStatus: event.resultStatus,
-                            usageState: event.usageState,
-                          })}`}
-                        </ThemedText>
-                        <ThemedText size="sm" variant="secondary">
-                          {formatDiagnosticsTokenLabel(event.totalTokens)}
+                          {formatDiagnosticsRequestCount(row.requestCount)}
                         </ThemedText>
                       </View>
                       <ThemedText size="sm" variant="tertiary">
-                        {event.estimatedCostUsdMicros === null
-                          ? "No cost"
-                          : formatDiagnosticsCurrency(event.estimatedCostUsdMicros)}
+                        {formatDiagnosticsCurrency(row.estimatedCostUsdMicros)}
                       </ThemedText>
                     </View>
-                  ))
-                ) : (
-                  <ThemedText size="sm" variant="secondary">
-                    No AI requests yet.
-                  </ThemedText>
-                )}
-              </View>
-            ) : (
-              <ThemedText size="sm" variant="secondary">
-                Loading diagnostics...
-              </ThemedText>
-            )}
+                  ))}
+
+                  <View style={[styles.testingDivider, { backgroundColor: theme.cardBorder }]} />
+
+                  <View style={styles.diagnosticsRecentHeader}>
+                    <ThemedText size="sm">Recent requests</ThemedText>
+                    <ThemedText size="sm" variant="secondary">
+                      Latest 5
+                    </ThemedText>
+                  </View>
+
+                  {aiDiagnostics.recentEvents.length ? (
+                    aiDiagnostics.recentEvents.map((event, index) => (
+                      <View
+                        key={`${event.callKind}-${event.completedAt}-${index}`}
+                        style={styles.diagnosticsRow}
+                      >
+                        <View style={styles.diagnosticsRowCopy}>
+                          <ThemedText size="sm">{formatDiagnosticsEventTitle(event.callKind)}</ThemedText>
+                          <ThemedText size="sm" variant="secondary">
+                            {`${event.model} • ${formatDiagnosticsStatusLabel({
+                              resultStatus: event.resultStatus,
+                              usageState: event.usageState,
+                            })}`}
+                          </ThemedText>
+                          <ThemedText size="sm" variant="secondary">
+                            {formatDiagnosticsTokenLabel(event.totalTokens)}
+                          </ThemedText>
+                        </View>
+                        <ThemedText size="sm" variant="tertiary">
+                          {event.estimatedCostUsdMicros === null
+                            ? "No cost"
+                            : formatDiagnosticsCurrency(event.estimatedCostUsdMicros)}
+                        </ThemedText>
+                      </View>
+                    ))
+                  ) : (
+                    <ThemedText size="sm" variant="secondary">
+                      No AI requests yet.
+                    </ThemedText>
+                  )}
+                </View>
+              ) : (
+                <ThemedText size="sm" variant="secondary">
+                  Loading diagnostics...
+                </ThemedText>
+              )}
+            </View>
           </View>
-        </View>
-      ) : null}
-    </ScrollView>
+        ) : null}
+      </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   accountCard: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 14,
+    gap: 12,
   },
   accountCopy: {
     flex: 1,
     gap: 2,
+  },
+  accountHeaderRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 14,
   },
   appearanceCard: {
     gap: 14,
@@ -655,6 +894,10 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
     paddingHorizontal: 20,
     paddingTop: 28,
+  },
+  devToolsLink: {
+    alignSelf: "flex-start",
+    paddingVertical: 4,
   },
   diagnosticsBlock: {
     gap: 10,
@@ -728,6 +971,61 @@ const styles = StyleSheet.create({
   restoreText: {
     letterSpacing: 0.4,
   },
+  sectionLabel: {
+    marginTop: 8,
+    paddingLeft: 4,
+  },
+  testingActions: {
+    gap: 10,
+  },
+  testingBody: {
+    lineHeight: 18,
+  },
+  testingButton: {
+    alignItems: "center",
+    borderRadius: 12,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  testingCard: {
+    borderRadius: 16,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    gap: 10,
+    padding: 14,
+  },
+  testingDivider: {
+    height: 1,
+    width: "100%",
+  },
+  testingSection: {
+    borderTopWidth: 1,
+    gap: 12,
+    marginTop: 24,
+    paddingTop: 20,
+  },
+  unlockActionButton: {
+    flex: 1,
+  },
+  unlockActions: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  unlockField: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+  },
+  unlockInput: {
+    fontSize: 16,
+    minHeight: 44,
+  },
+  unlockCard: {
+    gap: 12,
+  },
   usageBadge: {
     borderRadius: 999,
     borderWidth: 1,
@@ -759,37 +1057,5 @@ const styles = StyleSheet.create({
   },
   usageRowCopy: {
     gap: 2,
-  },
-  sectionLabel: {
-    marginTop: 8,
-    paddingLeft: 4,
-  },
-  testingBody: {
-    lineHeight: 18,
-  },
-  testingButton: {
-    alignItems: "center",
-    borderRadius: 12,
-    borderStyle: "dashed",
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  testingCard: {
-    borderRadius: 16,
-    borderStyle: "dashed",
-    borderWidth: 1,
-    gap: 10,
-    padding: 14,
-  },
-  testingDivider: {
-    height: 1,
-    width: "100%",
-  },
-  testingSection: {
-    borderTopWidth: 1,
-    gap: 12,
-    marginTop: 24,
-    paddingTop: 20,
   },
 });

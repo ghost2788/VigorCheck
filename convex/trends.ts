@@ -195,6 +195,7 @@ export const weekly = query({
     const days = weekDateKeys.map((dateKey) =>
       buildTrendDay({
         dateKey,
+        goalType: user.goalType,
         hydrationLogs: dateKey > todayDateKey ? [] : (hydrationByDate.get(dateKey) ?? []).map((entry) => ({
           amountOz: entry.amountOz,
           id: entry._id,
@@ -233,6 +234,8 @@ export const weekly = query({
       overview,
       targets: {
         calories: macroTargets.calories,
+        carbs: macroTargets.carbs,
+        fat: macroTargets.fat,
         hydration: user.targetHydration,
         protein: macroTargets.protein,
       },

@@ -11,13 +11,23 @@ import { getDefaultMealType } from "../../lib/domain/meals";
 import { useScanFlow } from "../../lib/scan/ScanFlowProvider";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 
+function hexToRgba(hex: string, alpha: number) {
+  const normalized = hex.replace("#", "");
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export default function BarcodeScannerScreen() {
   const router = useRouter();
-  const { theme } = useTheme();
+  const { mode, theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { enqueueBarcodeJob } = useScanFlow();
   const [permission, requestPermission] = useCameraPermissions();
   const [hasHandledScan, setHasHandledScan] = useState(false);
+  const overlayBackground = hexToRgba(theme.background, mode === "dark" ? 0.9 : 0.92);
 
   if (!permission) {
     return (
@@ -72,7 +82,7 @@ export default function BarcodeScannerScreen() {
           style={[
             styles.scanFrame,
             {
-              borderColor: "rgba(255,255,255,0.28)",
+              borderColor: theme.textTertiary,
             },
           ]}
           testID="barcode-scan-frame"
@@ -120,9 +130,10 @@ export default function BarcodeScannerScreen() {
           style={[
             styles.overlayCard,
             {
-              backgroundColor: "rgba(26, 24, 20, 0.9)",
+              backgroundColor: overlayBackground,
             },
           ]}
+          testID="barcode-overlay-card"
         >
           <ThemedText size="sm" style={styles.overlayTitle}>
             Scan barcode

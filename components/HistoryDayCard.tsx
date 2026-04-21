@@ -73,22 +73,22 @@ export function HistoryDayCard({ summary, onPress }: HistoryDayCardProps) {
             <View style={styles.metric}>
               <ThemedText
                 size="xs"
-                style={{ color: theme.metricHydration }}
-                testID="history-day-card-hydration-label"
+                style={{ color: theme.metricCarbs }}
+                testID="history-day-card-carbs-label"
               >
-                Hydration
+                Carbs
               </ThemedText>
-              <ThemedText size="sm">{summary.hydrationCups.toFixed(1)} cups</ThemedText>
+              <ThemedText size="sm">{summary.carbs}g carbs</ThemedText>
             </View>
             <View style={styles.metric}>
               <ThemedText
                 size="xs"
-                style={{ color: theme.metricNutrition }}
-                testID="history-day-card-nutrition-label"
+                style={{ color: theme.metricFat }}
+                testID="history-day-card-fat-label"
               >
-                Nutrition
+                Fat
               </ThemedText>
-              <ThemedText size="sm">{summary.nutritionCoveragePercent}%</ThemedText>
+              <ThemedText size="sm">{summary.fat}g fat</ThemedText>
             </View>
           </View>
 

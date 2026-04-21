@@ -262,12 +262,14 @@ export function buildGoalsAndTargetsSummary(settings: PlanSettings): SummaryItem
       label: "Goal",
       value: formatGoalTypeLabel(settings.goalType),
     },
-    {
-      label: "Pace",
-      value: requiresGoalPace(settings.goalType)
-        ? formatGoalPaceLabel(settings.goalPace)
-        : "Not used",
-    },
+    ...(requiresGoalPace(settings.goalType)
+      ? [
+          {
+            label: "Pace",
+            value: formatGoalPaceLabel(settings.goalPace),
+          },
+        ]
+      : []),
     {
       label: "Calories",
       value: `${settings.targets.calories} kcal`,
@@ -329,4 +331,3 @@ export function buildReminderSummaryItems(settings: ReminderSettings): ReminderS
     { label: "End-of-day", enabled: settings.notifyEndOfDay },
   ];
 }
-

@@ -25,8 +25,10 @@ describe("HistoryScreen", () => {
       results: [
         {
           calories: 745,
+          carbs: 68,
           dateKey: "2026-03-29",
           entryCount: 3,
+          fat: 24,
           footerLabel: "3 logged items • 1 supplement",
           hydrationCups: 2,
           mealCount: 2,
@@ -46,8 +48,8 @@ describe("HistoryScreen", () => {
     expect(getByText("64")).toBeTruthy();
     expect(getByText("745 kcal")).toBeTruthy();
     expect(getByText("23g protein")).toBeTruthy();
-    expect(getByText("2.0 cups")).toBeTruthy();
-    expect(getByText("18%")).toBeTruthy();
+    expect(getByText("68g carbs")).toBeTruthy();
+    expect(getByText("24g fat")).toBeTruthy();
     expect(getByText("3 logged items • 1 supplement")).toBeTruthy();
   });
 

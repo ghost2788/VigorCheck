@@ -22,7 +22,8 @@ type ManualMealFormProps = {
   mealTypeMode?: "fixed" | "select";
   onSubmit: (values: ManualMealFormSubmission) => Promise<void> | void;
   resetOnSubmit?: boolean;
-  sectionTitle?: string;
+  sectionTitle?: string | null;
+  surface?: "card" | "embedded";
   submitButtonTestId?: string;
   submitLabel?: string;
 };
@@ -107,6 +108,7 @@ export function ManualMealForm({
   onSubmit,
   resetOnSubmit = true,
   sectionTitle = "Quick add",
+  surface = "card",
   submitButtonTestId,
   submitLabel = "Log meal",
 }: ManualMealFormProps) {
@@ -170,11 +172,13 @@ export function ManualMealForm({
     }
   };
 
-  return (
-    <Card>
-      <ThemedText size="sm" style={styles.sectionTitle}>
-        {sectionTitle}
-      </ThemedText>
+  const content = (
+    <View testID={surface === "embedded" ? "manual-meal-form-embedded" : undefined}>
+      {sectionTitle ? (
+        <ThemedText size="md" style={styles.sectionTitle}>
+          {sectionTitle}
+        </ThemedText>
+      ) : null}
       {mealTypeMode === "select" ? (
         <View style={styles.typeRow}>
           {MEAL_TYPE_OPTIONS.map((option) => (
@@ -229,8 +233,14 @@ export function ManualMealForm({
         onPress={submit}
         testID={submitButtonTestId}
       />
-    </Card>
+    </View>
   );
+
+  if (surface === "embedded") {
+    return content;
+  }
+
+  return <Card testID="manual-meal-form-card">{content}</Card>;
 }
 
 const styles = StyleSheet.create({

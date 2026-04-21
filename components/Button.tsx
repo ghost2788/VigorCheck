@@ -66,7 +66,9 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   label: {
+    alignSelf: "stretch",
     letterSpacing: 0.8,
+    textAlign: "center",
     textTransform: "uppercase",
   },
 });

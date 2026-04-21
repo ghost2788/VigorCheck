@@ -9,6 +9,7 @@ const mockReplace = jest.fn();
 const mockUseMutation = jest.fn();
 const mockUseQuery = jest.fn();
 const mockUseSession = jest.fn();
+const mockUseSubscription = jest.fn();
 const asyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>;
 
 const profileUser = {
@@ -82,6 +83,7 @@ const profileAiUsage = {
 };
 
 const diagnosticsSnapshot = {
+  status: "ready" as const,
   recentEvents: [
     {
       callKind: "photo_scan",
@@ -140,6 +142,10 @@ const diagnosticsSnapshot = {
   },
 };
 
+const lockedDiagnosticsSnapshot = {
+  status: "locked" as const,
+};
+
 async function flushThemeHydration() {
   await waitFor(() => {
     expect(asyncStorage.getItem).toHaveBeenCalledWith(THEME_PREFERENCE_STORAGE_KEY);
@@ -170,21 +176,50 @@ jest.mock("../../lib/auth/authClient", () => ({
 }));
 
 jest.mock("../../lib/billing/SubscriptionProvider", () => ({
-  useSubscription: () => ({
-    accessState: {
-      status: "trial",
-    },
-    isConfigured: true,
-    isLoading: false,
-    manageSubscription: jest.fn(),
-    purchaseMonthly: jest.fn(),
-    restorePurchases: jest.fn(),
-    statusLabel: "7 days left in your free trial",
-    supportMessage: null,
-  }),
+  useSubscription: () => mockUseSubscription(),
 }));
 
 describe("ProfileScreen", () => {
+  function mockTestingMutations() {
+    const unlockInternalTools = jest.fn().mockResolvedValue({
+      unlockToken: "dev-unlock-token",
+    });
+    const forceTrialExpired = jest.fn().mockResolvedValue(undefined);
+    const restoreTrial = jest.fn().mockResolvedValue(undefined);
+    let mutationCall = 0;
+    mockUseMutation.mockReset();
+    mockUseMutation.mockImplementation(() => {
+      mutationCall += 1;
+      const cycleIndex = ((mutationCall - 1) % 3) + 1;
+
+      if (cycleIndex === 1) {
+        return unlockInternalTools;
+      }
+
+      if (cycleIndex === 2) {
+        return forceTrialExpired;
+      }
+
+      return restoreTrial;
+    });
+
+    return { forceTrialExpired, restoreTrial, unlockInternalTools };
+  }
+
+  async function unlockDevTools(
+    screen: ReturnType<typeof render>,
+    password = "correct horse battery staple"
+  ) {
+    fireEvent(screen.getByTestId("profile-dev-tools-trigger"), "longPress");
+    fireEvent.press(screen.getByText("Dev tools"));
+    fireEvent.changeText(screen.getByTestId("profile-dev-tools-password-input"), password);
+    fireEvent.press(screen.getByText("Unlock"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Internal testing")).toBeTruthy();
+    });
+  }
+
   beforeEach(() => {
     (global as typeof globalThis & { __DEV__?: boolean }).__DEV__ = true;
     jest.clearAllMocks();
@@ -195,6 +230,7 @@ describe("ProfileScreen", () => {
     mockUseMutation.mockReset();
     mockUseQuery.mockReset();
     mockUseSession.mockReset();
+    mockUseSubscription.mockReset();
     mockUseSession.mockReturnValue({
       data: {
         user: {
@@ -203,10 +239,23 @@ describe("ProfileScreen", () => {
         },
       },
     });
+    mockUseSubscription.mockReturnValue({
+      accessState: {
+        daysRemaining: 7,
+        status: "trial",
+      },
+      isConfigured: true,
+      isLoading: false,
+      manageSubscription: jest.fn(),
+      purchaseMonthly: jest.fn(),
+      restorePurchases: jest.fn(),
+      statusLabel: "7 days left in your free trial",
+      supportMessage: null,
+    });
     let queryCall = 0;
     mockUseQuery.mockImplementation((_, args) => {
       queryCall += 1;
-      const cycleIndex = ((queryCall - 1) % 3) + 1;
+      const cycleIndex = ((queryCall - 1) % 4) + 1;
 
       if (args === "skip") {
         return undefined;
@@ -220,13 +269,16 @@ describe("ProfileScreen", () => {
         return profileAiUsage;
       }
 
+      if (cycleIndex === 3) {
+        return { enabled: true };
+      }
+
       return diagnosticsSnapshot;
     });
   });
 
   it("renders summary cards and pushes into dedicated settings screens", async () => {
-    const forceTrialExpired = jest.fn();
-    mockUseMutation.mockReturnValue(forceTrialExpired);
+    mockTestingMutations();
 
     const { getAllByText, getByText } = render(<ProfileScreen />, { hydrateTheme: true });
 
@@ -247,9 +299,46 @@ describe("ProfileScreen", () => {
     expect(mockPush).toHaveBeenCalledWith("/profile/reminder-settings");
   });
 
+  it("hides the unused pace summary row for goals that do not use pace", async () => {
+    mockTestingMutations();
+    let queryCall = 0;
+    mockUseQuery.mockImplementation((_, args) => {
+      queryCall += 1;
+      const cycleIndex = ((queryCall - 1) % 4) + 1;
+
+      if (args === "skip") {
+        return undefined;
+      }
+
+      if (cycleIndex === 1) {
+        return {
+          ...profileUser,
+          goalPace: undefined,
+          goalType: "general_health",
+        };
+      }
+
+      if (cycleIndex === 2) {
+        return profileAiUsage;
+      }
+
+      if (cycleIndex === 3) {
+        return { enabled: true };
+      }
+
+      return diagnosticsSnapshot;
+    });
+
+    const { getByText, queryByText } = render(<ProfileScreen />, { hydrateTheme: true });
+
+    await flushThemeHydration();
+
+    expect(getByText("Goals & Targets")).toBeTruthy();
+    expect(queryByText("Not used")).toBeNull();
+  });
+
   it("renders an Appearance card and lets the user switch to light mode", async () => {
-    const forceTrialExpired = jest.fn();
-    mockUseMutation.mockReturnValue(forceTrialExpired);
+    mockTestingMutations();
 
     const { getByTestId, getByText } = render(<ProfileScreen />, { hydrateTheme: true });
 
@@ -273,47 +362,223 @@ describe("ProfileScreen", () => {
     });
   });
 
-  it("shows an internal testing shortcut that force-expires the current trial", async () => {
-    const expireTrial = jest.fn().mockResolvedValue(undefined);
-    mockUseMutation.mockReturnValue(expireTrial);
-
-    const { getByText } = render(<ProfileScreen />, { hydrateTheme: true });
+  it("keeps dev tools hidden until the secret flow succeeds", async () => {
+    const { unlockInternalTools } = mockTestingMutations();
+    const screen = render(<ProfileScreen />, { hydrateTheme: true });
 
     await flushThemeHydration();
 
-    fireEvent.press(getByText("Force trial expiry"));
+    expect(screen.queryByText("Internal testing")).toBeNull();
+    expect(screen.queryByText("AI diagnostics")).toBeNull();
+    expect(screen.queryByText("Dev tools")).toBeNull();
+
+    fireEvent(screen.getByTestId("profile-dev-tools-trigger"), "longPress");
+
+    expect(screen.getByText("Dev tools")).toBeTruthy();
+    expect(screen.queryByTestId("profile-dev-tools-unlock-card")).toBeNull();
+
+    fireEvent.press(screen.getByText("Dev tools"));
+    expect(screen.getByTestId("profile-dev-tools-unlock-card")).toBeTruthy();
+    fireEvent.changeText(
+      screen.getByTestId("profile-dev-tools-password-input"),
+      "correct horse battery staple"
+    );
+    fireEvent.press(screen.getByText("Unlock"));
 
     await waitFor(() => {
-      expect(expireTrial).toHaveBeenCalledTimes(1);
+      expect(unlockInternalTools).toHaveBeenCalledWith({
+        password: "correct horse battery staple",
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Internal testing")).toBeTruthy();
+      expect(screen.getByText("AI diagnostics")).toBeTruthy();
     });
   });
 
-  it("renders AI diagnostics inside internal testing when enabled", async () => {
-    const expireTrial = jest.fn().mockResolvedValue(undefined);
-    mockUseMutation.mockReturnValue(expireTrial);
+  it("shows an internal testing shortcut that force-expires the current trial", async () => {
+    const { forceTrialExpired } = mockTestingMutations();
+    const screen = render(<ProfileScreen />, { hydrateTheme: true });
 
-    const { getAllByText, getByText } = render(<ProfileScreen />, { hydrateTheme: true });
+    await flushThemeHydration();
+    await unlockDevTools(screen);
+
+    fireEvent.press(screen.getByTestId("profile-testing-force-trial-expiry"));
+
+    await waitFor(() => {
+      expect(forceTrialExpired).toHaveBeenCalledTimes(1);
+      expect(forceTrialExpired).toHaveBeenCalledWith({ unlockToken: "dev-unlock-token" });
+    });
+  });
+
+  it("shows an internal testing shortcut that restores a fresh seven day trial", async () => {
+    const { restoreTrial } = mockTestingMutations();
+    const screen = render(<ProfileScreen />, { hydrateTheme: true });
+
+    await flushThemeHydration();
+    await unlockDevTools(screen);
+
+    fireEvent.press(screen.getByTestId("profile-testing-restore-trial"));
+
+    await waitFor(() => {
+      expect(restoreTrial).toHaveBeenCalledTimes(1);
+      expect(restoreTrial).toHaveBeenCalledWith({ unlockToken: "dev-unlock-token" });
+    });
+  });
+
+  it("disables restore when the current account is already active", async () => {
+    mockTestingMutations();
+    mockUseSubscription.mockReturnValue({
+      accessState: {
+        daysRemaining: 0,
+        status: "active",
+      },
+      isConfigured: true,
+      isLoading: false,
+      manageSubscription: jest.fn(),
+      purchaseMonthly: jest.fn(),
+      restorePurchases: jest.fn(),
+      statusLabel: "Pro active",
+      supportMessage: null,
+    });
+
+    const screen = render(<ProfileScreen />, { hydrateTheme: true });
+
+    await flushThemeHydration();
+    await unlockDevTools(screen);
+
+    const restoreButton = screen.getByTestId("profile-testing-restore-trial");
+    expect(restoreButton.props.accessibilityState?.disabled).toBe(true);
+    expect(
+      screen.getByText("Trial restore stays disabled while this account already has active access.")
+    ).toBeTruthy();
+  });
+
+  it("renders AI diagnostics inside internal testing when unlocked", async () => {
+    mockTestingMutations();
+    const screen = render(<ProfileScreen />, { hydrateTheme: true });
+
+    await flushThemeHydration();
+    await unlockDevTools(screen);
+
+    expect(screen.getByText("AI diagnostics")).toBeTruthy();
+    expect(screen.getByText("8 requests")).toBeTruthy();
+    expect(screen.getByText("$0.02 estimated cost")).toBeTruthy();
+    expect(screen.getAllByText("Photo scans")).toHaveLength(2);
+    expect(screen.getAllByText("Drink estimates").length).toBeGreaterThan(0);
+    expect(screen.getByText("Supplement scans")).toBeTruthy();
+    expect(screen.getByText("Photo scan")).toBeTruthy();
+    expect(screen.getByText("gpt-4.1 • Completed")).toBeTruthy();
+    expect(screen.getByText("1,500 tokens")).toBeTruthy();
+  });
+
+  it("keeps sections hidden and shows an inline error when the password is wrong", async () => {
+    const { unlockInternalTools } = mockTestingMutations();
+    unlockInternalTools.mockRejectedValueOnce(new Error("The internal tools password is incorrect."));
+    const screen = render(<ProfileScreen />, { hydrateTheme: true });
 
     await flushThemeHydration();
 
-    expect(getByText("AI diagnostics")).toBeTruthy();
-    expect(getByText("8 requests")).toBeTruthy();
-    expect(getByText("$0.02 estimated cost")).toBeTruthy();
-    expect(getAllByText("Photo scans")).toHaveLength(2);
-    expect(getAllByText("Drink estimates").length).toBeGreaterThan(0);
-    expect(getByText("Supplement scans")).toBeTruthy();
-    expect(getByText("Photo scan")).toBeTruthy();
-    expect(getByText("gpt-4.1 • Completed")).toBeTruthy();
-    expect(getByText("1,500 tokens")).toBeTruthy();
+    fireEvent(screen.getByTestId("profile-dev-tools-trigger"), "longPress");
+    fireEvent.press(screen.getByText("Dev tools"));
+    fireEvent.changeText(screen.getByTestId("profile-dev-tools-password-input"), "wrong password");
+    fireEvent.press(screen.getByText("Unlock"));
+
+    await waitFor(() => {
+      expect(screen.getByText("The internal tools password is incorrect.")).toBeTruthy();
+    });
+
+    expect(screen.queryByText("Internal testing")).toBeNull();
+    expect(screen.queryByText("AI diagnostics")).toBeNull();
   });
 
-  it("skips the diagnostics query entirely when internal testing is disabled", () => {
+  it("does not surface the hidden flow when the backend availability query is false", async () => {
+    mockTestingMutations();
+    let queryCall = 0;
+    mockUseQuery.mockImplementation((_, args) => {
+      queryCall += 1;
+      const cycleIndex = ((queryCall - 1) % 4) + 1;
+
+      if (args === "skip") {
+        return undefined;
+      }
+
+      if (cycleIndex === 1) {
+        return profileUser;
+      }
+
+      if (cycleIndex === 2) {
+        return profileAiUsage;
+      }
+
+      if (cycleIndex === 3) {
+        return { enabled: false };
+      }
+
+      return diagnosticsSnapshot;
+    });
+
+    const screen = render(<ProfileScreen />, { hydrateTheme: true });
+
+    await flushThemeHydration();
+
+    expect(screen.queryByTestId("profile-dev-tools-trigger")).toBeNull();
+    expect(screen.queryByText("Dev tools")).toBeNull();
+    expect(screen.queryByText("Internal testing")).toBeNull();
+    expect(screen.queryByText("AI diagnostics")).toBeNull();
+  });
+
+  it("relocks the hidden tools if diagnostics reports a locked sentinel", async () => {
+    mockTestingMutations();
+    let queryCall = 0;
+    mockUseQuery.mockImplementation((_, args) => {
+      queryCall += 1;
+      const cycleIndex = ((queryCall - 1) % 4) + 1;
+
+      if (args === "skip") {
+        return undefined;
+      }
+
+      if (cycleIndex === 1) {
+        return profileUser;
+      }
+
+      if (cycleIndex === 2) {
+        return profileAiUsage;
+      }
+
+      if (cycleIndex === 3) {
+        return { enabled: true };
+      }
+
+      return lockedDiagnosticsSnapshot;
+    });
+
+    const screen = render(<ProfileScreen />, { hydrateTheme: true });
+
+    await flushThemeHydration();
+    fireEvent(screen.getByTestId("profile-dev-tools-trigger"), "longPress");
+    fireEvent.press(screen.getByText("Dev tools"));
+    fireEvent.changeText(
+      screen.getByTestId("profile-dev-tools-password-input"),
+      "correct horse battery staple"
+    );
+    fireEvent.press(screen.getByText("Unlock"));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Internal testing")).toBeNull();
+      expect(screen.getByText("Dev tools locked. Unlock again to continue.")).toBeTruthy();
+    });
+  });
+
+  it("skips the hidden dev-tools queries entirely when internal testing is disabled", () => {
     (global as typeof globalThis & { __DEV__?: boolean }).__DEV__ = false;
-    const expireTrial = jest.fn().mockResolvedValue(undefined);
-    mockUseMutation.mockReturnValue(expireTrial);
+    mockTestingMutations();
 
     render(<ProfileScreen />, { hydrateTheme: true });
 
     expect(mockUseQuery.mock.calls[2]?.[1]).toBe("skip");
+    expect(mockUseQuery.mock.calls[3]?.[1]).toBe("skip");
   });
 });

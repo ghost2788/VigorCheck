@@ -8,6 +8,7 @@ import {
   roundPercent,
   scoreCaloriesTargetCloseness,
   scoreGoalProgress,
+  scoreWeightedWellness,
   WellnessKey,
 } from "./wellness";
 import {
@@ -26,6 +27,7 @@ import {
 import { buildEntryTimeline, type TimelineEntry } from "./entryTimeline";
 import { MealType } from "./meals";
 import { SupplementLogSnapshot } from "./supplements";
+import type { GoalType } from "./targets";
 
 export type DashboardMeal = {
   id: string;
@@ -91,6 +93,20 @@ export type DashboardPayload = {
       contributors: DashboardContributor[];
       rawProgressPercent: number;
       remaining: number;
+      score: number;
+      target: number;
+    };
+    carbs: {
+      consumed: number;
+      contributors: DashboardContributor[];
+      rawProgressPercent: number;
+      score: number;
+      target: number;
+    };
+    fat: {
+      consumed: number;
+      contributors: DashboardContributor[];
+      rawProgressPercent: number;
       score: number;
       target: number;
     };
@@ -252,12 +268,14 @@ function toNutritionAmounts(nutrients: DetailedNutrientInput): NutritionAmounts 
 }
 
 export function buildTodayDashboard({
+  goalType = "energy_balance",
   hydrationLogs,
   mealItems,
   meals,
   supplementLogs = [],
   targets,
 }: {
+  goalType?: GoalType;
   hydrationLogs: HydrationLogInput[];
   mealItems: MealItemInput[];
   meals: MealInput[];
@@ -328,6 +346,8 @@ export function buildTodayDashboard({
   });
 
   const caloriesRawProgressPercent = roundPercent(aggregateTotals.calories, targets.calories);
+  const carbsRawProgressPercent = roundPercent(aggregateTotals.carbs, targets.carbs);
+  const fatRawProgressPercent = roundPercent(aggregateTotals.fat, targets.fat);
   const proteinRawProgressPercent = roundPercent(aggregateTotals.protein, targets.protein);
   const hydrationRawProgressPercent = roundPercent(totalHydrationCups, targets.hydration);
   const nutrientRows = getNutritionKeys().map((key) => ({
@@ -349,12 +369,22 @@ export function buildTodayDashboard({
       nutrientRows.length
   );
   const caloriesScore = scoreCaloriesTargetCloseness(aggregateTotals.calories, targets.calories);
+  const carbsScore = scoreCaloriesTargetCloseness(aggregateTotals.carbs, targets.carbs);
+  const fatScore = scoreCaloriesTargetCloseness(aggregateTotals.fat, targets.fat);
   const proteinScore = scoreGoalProgress(aggregateTotals.protein, targets.protein);
   const hydrationScore = scoreGoalProgress(totalHydrationCups, targets.hydration);
   const rings: DashboardPayload["wellness"]["rings"] = {
     calories: {
       rawProgressPercent: caloriesRawProgressPercent,
       score: caloriesScore,
+    },
+    carbs: {
+      rawProgressPercent: carbsRawProgressPercent,
+      score: carbsScore,
+    },
+    fat: {
+      rawProgressPercent: fatRawProgressPercent,
+      score: fatScore,
     },
     hydration: {
       rawProgressPercent: hydrationRawProgressPercent,
@@ -369,13 +399,17 @@ export function buildTodayDashboard({
       score: proteinScore,
     },
   };
-  const biggestGapKey = (["calories", "protein", "hydration", "nutrition"] as WellnessKey[]).reduce(
-    (lowest, current) => (rings[current].score < rings[lowest].score ? current : lowest),
-    "calories"
-  );
-  const wellnessScore = Math.round(
-    (caloriesScore + proteinScore + hydrationScore + nutritionScore) / 4
-  );
+  const biggestGapKey = (
+    ["calories", "protein", "carbs", "fat", "hydration", "nutrition"] as WellnessKey[]
+  ).reduce((lowest, current) => (rings[current].score < rings[lowest].score ? current : lowest), "calories");
+  const wellnessScore = scoreWeightedWellness(goalType, {
+    calories: caloriesScore,
+    carbs: carbsScore,
+    fat: fatScore,
+    hydration: hydrationScore,
+    nutrition: nutritionScore,
+    protein: proteinScore,
+  });
   const contributorBase: ContributorBase[] = [
     ...orderedMeals.map((meal) => {
       const label = deriveMealTimelineLabel(meal, itemsByMeal.get(meal.id) ?? []);
@@ -435,6 +469,60 @@ export function buildTodayDashboard({
         remaining: targets.calories - aggregateTotals.calories,
         score: caloriesScore,
         target: targets.calories,
+      },
+      carbs: {
+        consumed: aggregateTotals.carbs,
+        contributors: sortMealsByValue(
+          contributorBase.map((entry): DashboardContributor =>
+            entry.kind === "meal"
+              ? {
+                  id: entry.id,
+                  kind: "meal",
+                  label: entry.label,
+                  mealType: entry.mealType,
+                  timestamp: entry.timestamp,
+                  value: entry.totals.carbs,
+                }
+              : {
+                  id: entry.id,
+                  kind: "supplement",
+                  label: entry.label,
+                  servingLabel: entry.servingLabel,
+                  timestamp: entry.timestamp,
+                  value: entry.totals.carbs,
+                }
+          )
+        ),
+        rawProgressPercent: carbsRawProgressPercent,
+        score: carbsScore,
+        target: targets.carbs,
+      },
+      fat: {
+        consumed: aggregateTotals.fat,
+        contributors: sortMealsByValue(
+          contributorBase.map((entry): DashboardContributor =>
+            entry.kind === "meal"
+              ? {
+                  id: entry.id,
+                  kind: "meal",
+                  label: entry.label,
+                  mealType: entry.mealType,
+                  timestamp: entry.timestamp,
+                  value: entry.totals.fat,
+                }
+              : {
+                  id: entry.id,
+                  kind: "supplement",
+                  label: entry.label,
+                  servingLabel: entry.servingLabel,
+                  timestamp: entry.timestamp,
+                  value: entry.totals.fat,
+                }
+          )
+        ),
+        rawProgressPercent: fatRawProgressPercent,
+        score: fatScore,
+        target: targets.fat,
       },
       hydration: {
         consumedCups: totalHydrationCups,

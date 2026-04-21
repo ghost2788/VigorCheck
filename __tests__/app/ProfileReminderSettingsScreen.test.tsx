@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { Alert } from "react-native";
 import { fireEvent, render, waitFor } from "../../lib/test-utils";
 import ProfileReminderSettingsScreen from "../../app/profile/reminder-settings";
@@ -127,5 +128,14 @@ describe("ProfileReminderSettingsScreen", () => {
     });
 
     expect(Alert.alert).toHaveBeenCalled();
+  });
+
+  it("uses the stronger md title for the no-profile fallback card", () => {
+    mockUseMutation.mockReturnValue(jest.fn().mockResolvedValue(undefined));
+    mockUseQuery.mockReturnValue(null);
+
+    const { getByText } = render(<ProfileReminderSettingsScreen />);
+
+    expect(StyleSheet.flatten(getByText("No profile yet").props.style).fontSize).toBe(15);
   });
 });

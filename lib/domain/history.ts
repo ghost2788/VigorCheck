@@ -8,6 +8,7 @@ import { getMealEntryMethodLabel, MealTimelineEntryMethod } from "./mealTimeline
 import { SupplementLogSnapshot } from "./supplements";
 import { getNutritionKeys, NutritionAmounts } from "./wellness";
 import { MealType } from "./meals";
+import type { GoalType } from "./targets";
 
 type HistoryMealInput = {
   id: string;
@@ -41,8 +42,10 @@ type HistoryHydrationInput = {
 
 export type HistoryDaySummary = {
   calories: number;
+  carbs: number;
   dateKey: string;
   entryCount: number;
+  fat: number;
   footerLabel: string;
   hydrationCups: number;
   mealCount: number;
@@ -107,18 +110,21 @@ export { getMealEntryMethodLabel };
 
 export function buildHistoryDaySummary({
   dateKey,
+  goalType = "energy_balance",
   hydrationLogs,
   meals,
   supplementLogs = [],
   targets,
 }: {
   dateKey: string;
+  goalType?: GoalType;
   hydrationLogs: Array<Pick<HistoryHydrationInput, "amountOz" | "id" | "timestamp">>;
   meals: HistorySummaryMealInput[];
   supplementLogs?: SupplementLogSnapshot[];
   targets: DashboardTargets;
 }): HistoryDaySummary {
   const dashboard = buildTodayDashboard({
+    goalType,
     hydrationLogs,
     mealItems: [],
     meals,
@@ -131,8 +137,10 @@ export function buildHistoryDaySummary({
 
   return {
     calories: dashboard.totals.calories,
+    carbs: dashboard.totals.carbs,
     dateKey,
     entryCount: hydrationCount + mealCount + supplementCount,
+    fat: dashboard.totals.fat,
     footerLabel: buildHistoryFooterLabel({
       hydrationCount,
       mealCount,

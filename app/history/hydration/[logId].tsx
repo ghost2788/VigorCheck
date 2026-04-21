@@ -1,9 +1,11 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
+  Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -124,20 +126,31 @@ export default function HydrationEditScreen() {
       showsVerticalScrollIndicator={false}
       style={{ backgroundColor: theme.background, flex: 1 }}
     >
-      <ThemedText
-        onPress={() => router.back()}
-        size="sm"
-        variant="secondary"
-        style={styles.backLink}
-      >
-        Back
-      </ThemedText>
-      <ThemedText size="xl" style={styles.title}>
-        Edit hydration
-      </ThemedText>
+      <View style={styles.headerRow}>
+        <View style={styles.titleBlock}>
+          <ThemedText size="xs" style={styles.eyebrow} variant="tertiary">
+            Hydration log
+          </ThemedText>
+          <ThemedText size="xl" style={styles.title}>
+            Edit hydration
+          </ThemedText>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={() => router.back()}
+          style={styles.backButton}
+          testID="hydration-edit-back-button"
+        >
+          <Ionicons color={theme.accent1} name="chevron-back" size={18} />
+          <ThemedText size="sm" variant="accent1">
+            Back
+          </ThemedText>
+        </Pressable>
+      </View>
 
       <Card style={styles.card}>
-        <ThemedText size="sm" style={styles.sectionTitle}>
+        <ThemedText size="md" style={styles.sectionTitle} testID="hydration-edit-amount-title">
           Amount
         </ThemedText>
         <TextInput
@@ -187,8 +200,11 @@ export default function HydrationEditScreen() {
 }
 
 const styles = StyleSheet.create({
-  backLink: {
-    marginBottom: 10,
+  backButton: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 2,
+    paddingVertical: 6,
   },
   card: {
     marginBottom: 14,
@@ -207,11 +223,22 @@ const styles = StyleSheet.create({
   emptyCard: {
     width: "100%",
   },
+  eyebrow: {
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    textTransform: "uppercase",
+  },
   error: {
     marginBottom: 16,
   },
   footerActions: {
     gap: 10,
+  },
+  headerRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 18,
   },
   input: {
     borderRadius: 16,
@@ -227,6 +254,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    marginBottom: 18,
+    marginBottom: 0,
+  },
+  titleBlock: {
+    flex: 1,
+    marginRight: 12,
   },
 });

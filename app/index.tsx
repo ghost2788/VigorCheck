@@ -17,13 +17,14 @@ export default function BootstrapScreen() {
   const { draft, isHydrated, markPostOnboardingHomeCTA, resetDraft } = useOnboardingFlow();
   const { isAuthenticated, isLoading } = useConvexAuth();
   const { accessState } = useSubscription();
-  const currentUser = useQuery(api.users.current);
+  const currentUser = useQuery(api.users.current, isAuthenticated ? {} : "skip");
   const completeOnboarding = useMutation(api.users.completeOnboarding);
   const draftComplete = isOnboardingDraftComplete(draft);
   const [isAutoCompleting, setIsAutoCompleting] = React.useState(false);
   const [autoCompleteFailed, setAutoCompleteFailed] = React.useState(false);
   const hasAttemptedAutoComplete = React.useRef(false);
   const isMounted = React.useRef(true);
+  const hasFinishedAutoComplete = React.useRef(false);
 
   React.useEffect(
     () => () => {
@@ -31,6 +32,26 @@ export default function BootstrapScreen() {
     },
     []
   );
+
+  const finishAutoComplete = React.useCallback(() => {
+    if (hasFinishedAutoComplete.current || !isMounted.current) {
+      return;
+    }
+
+    hasFinishedAutoComplete.current = true;
+    setIsAutoCompleting(false);
+    markPostOnboardingHomeCTA();
+    resetDraft();
+    router.replace("/(tabs)");
+  }, [markPostOnboardingHomeCTA, resetDraft, router]);
+
+  React.useEffect(() => {
+    if (!isAutoCompleting || !currentUser) {
+      return;
+    }
+
+    finishAutoComplete();
+  }, [currentUser, finishAutoComplete, isAutoCompleting]);
 
   React.useEffect(() => {
     if (
@@ -46,6 +67,7 @@ export default function BootstrapScreen() {
     }
 
     hasAttemptedAutoComplete.current = true;
+    hasFinishedAutoComplete.current = false;
     setIsAutoCompleting(true);
 
     const completedDraft = draft;
@@ -65,13 +87,7 @@ export default function BootstrapScreen() {
 
     void autoSavePromise
       .then(() => {
-        if (!isMounted.current) {
-          return;
-        }
-
-        markPostOnboardingHomeCTA();
-        resetDraft();
-        router.replace("/(tabs)");
+        finishAutoComplete();
       })
       .catch((error) => {
         console.error(error);
@@ -93,12 +109,10 @@ export default function BootstrapScreen() {
     isAuthenticated,
     isHydrated,
     isLoading,
-    markPostOnboardingHomeCTA,
-    resetDraft,
-    router,
+    finishAutoComplete,
   ]);
 
-  if (isLoading || !isHydrated || currentUser === undefined || isAutoCompleting) {
+  if (isLoading || !isHydrated || (isAuthenticated && currentUser === undefined) || isAutoCompleting) {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
         <ActivityIndicator color={theme.accent1} size="small" />

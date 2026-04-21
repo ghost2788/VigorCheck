@@ -21,6 +21,10 @@ describe("GoalPaceStep", () => {
     expect(getByText("Aggressive")).toBeTruthy();
     expect(getByText("Recommended")).toBeTruthy();
     expect(StyleSheet.flatten(getByTestId("goal-pace-stack").props.style).flexDirection).toBe("column");
+    expect(
+      StyleSheet.flatten(getByTestId("goal-pace-card-copy-moderate").props.style).flexDirection
+    ).toBe("column");
+    expect(getByTestId("goal-pace-recommended-chip-moderate")).toBeTruthy();
     expect(getByLabelText("Moderate pace").props.accessibilityState).toEqual({ selected: true });
   });
 

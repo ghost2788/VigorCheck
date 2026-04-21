@@ -1,0 +1,1040 @@
+4/9/2026, 2:07:23 PM [CONVEX Q(adapter:findMany)] Function executed in 48 ms
+4/9/2026, 2:07:23 PM [CONVEX Q(adapter:findMany)] Function executed in 40 ms
+4/9/2026, 2:07:23 PM [CONVEX M(adapter:deleteMany)] Function executed in 46 ms
+4/9/2026, 2:07:23 PM [CONVEX Q(adapter:findMany)] Function executed in 65 ms
+4/9/2026, 2:07:23 PM [CONVEX M(adapter:deleteOne)] Function executed in 57 ms
+4/9/2026, 2:07:23 PM [CONVEX Q(adapter:findOne)] Function executed in 55 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findOne)] Function executed in 56 ms
+4/9/2026, 2:07:24 PM [CONVEX M(adapter:updateOne)] Function executed in 52 ms
+4/9/2026, 2:07:24 PM [CONVEX M(adapter:create)] Function executed in 49 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX H(GET /api/auth/*)] Function executed in 770 ms
+4/9/2026, 2:07:24 PM [CONVEX M(users:completeOnboarding)] Function executed in 56 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findOne)] Function executed in 107 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findOne)] Function executed in 57 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX H(GET /api/auth/*)] Function executed in 242 ms
+4/9/2026, 2:07:24 PM [CONVEX H(GET /api/auth/*)] Function executed in 243 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX H(GET /api/auth/*)] Function executed in 102 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:24 PM [CONVEX H(GET /api/auth/*)] Function executed in 106 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX H(GET /api/auth/*)] Function executed in 107 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX H(GET /api/auth/*)] Function executed in 183 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX H(GET /api/auth/*)] Function executed in 187 ms
+4/9/2026, 2:07:25 PM [CONVEX M(users:completeOnboarding)] Function executed in 10 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:25 PM [CONVEX H(GET /api/auth/*)] Function executed in 82 ms
+4/9/2026, 2:07:39 PM [CONVEX M(adapter:create)] Function executed in 98 ms
+4/9/2026, 2:07:39 PM [CONVEX H(POST /api/auth/*)] Function executed in 252 ms
+4/9/2026, 2:07:40 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:40 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:40 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:40 PM [CONVEX H(GET /api/auth/*)] Function executed in 87 ms
+4/9/2026, 2:07:40 PM [CONVEX H(GET /api/auth/*)] Function executed in 67 ms
+4/9/2026, 2:07:44 PM [CONVEX Q(adapter:findMany)] Function executed in 109 ms
+4/9/2026, 2:07:44 PM [CONVEX Q(adapter:findMany)] Function executed in 52 ms
+4/9/2026, 2:07:44 PM [CONVEX M(adapter:deleteMany)] Function executed in 66 ms
+4/9/2026, 2:07:44 PM [CONVEX Q(adapter:findMany)] Function executed in 43 ms
+4/9/2026, 2:07:44 PM [CONVEX M(adapter:deleteOne)] Function executed in 52 ms
+4/9/2026, 2:07:44 PM [CONVEX Q(adapter:findOne)] Function executed in 46 ms
+4/9/2026, 2:07:44 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:44 PM [CONVEX M(adapter:updateOne)] Function executed in 48 ms
+4/9/2026, 2:07:44 PM [CONVEX M(adapter:create)] Function executed in 46 ms
+4/9/2026, 2:07:44 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:44 PM [CONVEX H(GET /api/auth/*)] Function executed in 755 ms
+4/9/2026, 2:07:45 PM [CONVEX M(users:completeOnboarding)] Function executed in 12 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 103 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 46 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 40 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 176 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 179 ms
+4/9/2026, 2:07:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 178 ms
+4/9/2026, 2:07:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 134 ms
+4/9/2026, 2:07:45 PM [CONVEX M(users:completeOnboarding)] Function executed in 12 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 71 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 61 ms
+4/9/2026, 2:07:46 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 63 ms
+4/9/2026, 2:07:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:07:46 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 91 ms
+4/9/2026, 2:07:46 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:07:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 88 ms
+4/9/2026, 2:08:06 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:08:06 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:08:06 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:08:06 PM [CONVEX H(GET /api/auth/*)] Function executed in 165 ms
+4/9/2026, 2:15:31 PM [CONVEX Q(status:get)] Function executed in 146 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX H(GET /api/auth/*)] Function executed in 375 ms
+4/9/2026, 2:25:35 PM [CONVEX H(GET /api/auth/*)] Function executed in 387 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX H(GET /api/auth/*)] Function executed in 117 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:25:35 PM [CONVEX H(GET /api/auth/*)] Function executed in 64 ms
+4/9/2026, 2:25:35 PM [CONVEX H(GET /api/auth/*)] Function executed in 59 ms
+4/9/2026, 2:25:36 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:25:36 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 2:25:36 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 2:25:36 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 25 ms
+4/9/2026, 2:25:36 PM [CONVEX M(users:completeOnboarding)] Function executed in 17 ms
+4/9/2026, 2:25:36 PM [CONVEX Q(auth:status)] Function executed in 36 ms
+4/9/2026, 2:25:36 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 2:25:36 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 40 ms
+4/9/2026, 2:25:36 PM [CONVEX M(users:completeOnboarding)] Function executed in 13 ms
+4/9/2026, 2:25:36 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 2:25:36 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 21 ms
+4/9/2026, 2:25:36 PM [CONVEX M(users:completeOnboarding)] Function executed in 10 ms
+4/9/2026, 2:25:36 PM [CONVEX M(users:completeOnboarding)] Function executed in 10 ms
+4/9/2026, 2:25:36 PM [CONVEX M(users:completeOnboarding)] Function executed in 10 ms
+4/9/2026, 2:25:36 PM [CONVEX M(users:completeOnboarding)] Function executed in 9 ms
+4/9/2026, 2:25:36 PM [CONVEX M(users:completeOnboarding)] Function executed in 11 ms
+4/9/2026, 2:25:36 PM [CONVEX Q(dashboard:today)] Function executed in 17 ms
+4/9/2026, 2:25:37 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 13 ms
+4/9/2026, 2:25:37 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 2:25:37 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 23 ms
+4/9/2026, 2:25:37 PM [CONVEX Q(dashboard:today)] Function executed in 23 ms
+4/9/2026, 2:25:37 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 14 ms
+4/9/2026, 2:25:37 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 2:25:37 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 16 ms
+4/9/2026, 2:25:37 PM [CONVEX Q(dashboard:today)] Function executed in 23 ms
+4/9/2026, 2:25:46 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 37 ms
+4/9/2026, 2:25:56 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 2:25:56 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 8 ms
+4/9/2026, 2:25:56 PM [CONVEX Q(dashboard:today)] Function executed in 8 ms
+4/9/2026, 2:25:56 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 2:25:56 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 8 ms
+4/9/2026, 2:25:56 PM [CONVEX Q(adapter:findMany)] Function executed in 231 ms
+4/9/2026, 2:25:56 PM [CONVEX M(adapter:deleteOne)] Function executed in 41 ms
+4/9/2026, 2:25:56 PM [CONVEX H(POST /api/auth/*)] Function executed in 400 ms
+4/9/2026, 2:25:57 PM [CONVEX H(GET /api/auth/*)] Function executed in 52 ms
+4/9/2026, 2:26:00 PM [CONVEX M(adapter:create)] Function executed in 46 ms
+4/9/2026, 2:26:00 PM [CONVEX H(POST /api/auth/*)] Function executed in 129 ms
+4/9/2026, 2:26:00 PM [CONVEX H(GET /api/auth/*)] Function executed in 54 ms
+4/9/2026, 2:26:01 PM [CONVEX H(GET /api/auth/*)] Function executed in 59 ms
+4/9/2026, 2:26:07 PM [CONVEX Q(adapter:findMany)] Function executed in 92 ms
+4/9/2026, 2:26:07 PM [CONVEX Q(adapter:findMany)] Function executed in 41 ms
+4/9/2026, 2:26:07 PM [CONVEX M(adapter:deleteMany)] Function executed in 43 ms
+4/9/2026, 2:26:07 PM [CONVEX Q(adapter:findMany)] Function executed in 42 ms
+4/9/2026, 2:26:07 PM [CONVEX M(adapter:deleteOne)] Function executed in 46 ms
+4/9/2026, 2:26:07 PM [CONVEX Q(adapter:findOne)] Function executed in 42 ms
+4/9/2026, 2:26:07 PM [CONVEX Q(adapter:findOne)] Function executed in 46 ms
+4/9/2026, 2:26:07 PM [CONVEX M(adapter:updateOne)] Function executed in 43 ms
+4/9/2026, 2:26:07 PM [CONVEX M(adapter:create)] Function executed in 48 ms
+4/9/2026, 2:26:07 PM [CONVEX Q(adapter:findMany)] Function executed in 44 ms
+4/9/2026, 2:26:07 PM [CONVEX H(GET /api/auth/*)] Function executed in 764 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 95 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 44 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 31 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX H(GET /api/auth/*)] Function executed in 157 ms
+4/9/2026, 2:26:08 PM [CONVEX H(GET /api/auth/*)] Function executed in 163 ms
+4/9/2026, 2:26:08 PM [CONVEX H(GET /api/auth/*)] Function executed in 156 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX H(GET /api/auth/*)] Function executed in 58 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX H(GET /api/auth/*)] Function executed in 61 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX H(GET /api/auth/*)] Function executed in 61 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:08 PM [CONVEX H(GET /api/auth/*)] Function executed in 55 ms
+4/9/2026, 2:26:08 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 19 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 60 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 2:26:09 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 11 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 16 ms
+4/9/2026, 2:26:09 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 10 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 2:26:09 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 17 ms
+4/9/2026, 2:26:17 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:17 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:17 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:17 PM [CONVEX H(GET /api/auth/*)] Function executed in 129 ms
+4/9/2026, 2:26:27 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:27 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:27 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 123 ms
+4/9/2026, 2:26:27 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:27 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:27 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 128 ms
+4/9/2026, 2:26:27 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:27 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:26:27 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:26:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 2:26:28 PM [CONVEX M(subscriptions:applyRevenueCatWebhookEvent)] Function executed in 13 ms
+4/9/2026, 2:26:28 PM [CONVEX H(POST /webhooks/revenuecat)] Function executed in 82 ms
+4/9/2026, 2:26:28 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 2:26:28 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 19 ms
+4/9/2026, 2:26:28 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 12 ms
+4/9/2026, 2:26:28 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 2:26:28 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 16 ms
+4/9/2026, 2:26:28 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 15 ms
+4/9/2026, 2:26:28 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 2:26:28 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 15 ms
+4/9/2026, 2:26:28 PM [CONVEX Q(dashboard:today)] Function executed in 21 ms
+4/9/2026, 2:26:40 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 20 ms
+4/9/2026, 2:27:19 PM [CONVEX Q(supplements:currentStack)] Function executed in 33 ms
+4/9/2026, 2:27:19 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 12 ms
+4/9/2026, 2:27:19 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 81 ms
+4/9/2026, 2:27:19 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 14 ms
+4/9/2026, 2:27:19 PM [CONVEX Q(users:current)] Function executed in 15 ms
+4/9/2026, 2:27:19 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 20 ms
+4/9/2026, 2:27:19 PM [CONVEX Q(supplements:currentStack)] Function executed in 23 ms
+4/9/2026, 2:27:19 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 26 ms
+4/9/2026, 2:27:19 PM [CONVEX Q(dashboard:today)] Function executed in 27 ms
+4/9/2026, 2:27:19 PM [CONVEX M(supplements:ensureReady)] Function executed in 26 ms
+4/9/2026, 2:27:20 PM [CONVEX Q(history:listDays)] Function executed in 45 ms
+4/9/2026, 2:27:23 PM [CONVEX Q(trends:weekly)] Function executed in 25 ms
+4/9/2026, 2:27:36 PM [CONVEX Q(trends:weekly)] Function executed in 50 ms
+4/9/2026, 2:27:37 PM [CONVEX Q(trends:weekly)] Function executed in 1 ms
+4/9/2026, 2:27:43 PM [CONVEX Q(trends:weekly)] Function executed in 1 ms
+4/9/2026, 2:27:48 PM [CONVEX Q(trends:weekly)] Function executed in 37 ms
+4/9/2026, 2:29:48 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:29:48 PM [CONVEX H(GET /api/auth/*)] Function executed in 129 ms
+4/9/2026, 2:29:48 PM [CONVEX M(aiUsage:reserve)] Function executed in 15 ms
+4/9/2026, 2:29:48 PM [CONVEX Q(users:current)] Function executed in 17 ms
+4/9/2026, 2:29:48 PM [CONVEX Q(supplements:currentStack)] Function executed in 40 ms
+4/9/2026, 2:29:48 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 49 ms
+4/9/2026, 2:29:48 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 50 ms
+4/9/2026, 2:29:48 PM [CONVEX Q(trends:weekly)] Function executed in 51 ms
+4/9/2026, 2:29:48 PM [CONVEX Q(history:listDays)] Function executed in 65 ms
+4/9/2026, 2:29:48 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 65 ms
+4/9/2026, 2:29:48 PM [CONVEX Q(dashboard:today)] Function executed in 66 ms
+4/9/2026, 2:29:59 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:29:59 PM [CONVEX H(GET /api/auth/*)] Function executed in 116 ms
+4/9/2026, 2:29:59 PM [CONVEX Q(usda:searchByName)] Function executed in 22 ms
+4/9/2026, 2:29:59 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:29:59 PM [CONVEX H(GET /api/auth/*)] Function executed in 51 ms
+4/9/2026, 2:29:59 PM [CONVEX M(aiObservability:recordRequest)] Function executed in 16 ms
+4/9/2026, 2:29:59 PM [CONVEX A(textAnalysis:analyzeMealDescription)] Function executed in 12874 ms
+4/9/2026, 2:30:07 PM [CONVEX Q(scanReview:getContext)] Function executed in 14 ms
+4/9/2026, 2:30:20 PM [CONVEX M(meals:saveAiEntry)] Function executed in 44 ms
+4/9/2026, 2:30:20 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 21 ms
+4/9/2026, 2:30:21 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 30 ms
+4/9/2026, 2:30:21 PM [CONVEX Q(dashboard:today)] Function executed in 35 ms
+4/9/2026, 2:30:21 PM [CONVEX Q(trends:weekly)] Function executed in 37 ms
+4/9/2026, 2:30:21 PM [CONVEX Q(history:listDays)] Function executed in 43 ms
+4/9/2026, 2:30:21 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 15 ms
+4/9/2026, 2:30:21 PM [CONVEX M(supplements:ensureReady)] Function executed in 22 ms
+4/9/2026, 2:30:21 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 11 ms
+4/9/2026, 2:30:21 PM [CONVEX M(supplements:ensureReady)] Function executed in 25 ms
+4/9/2026, 2:30:28 PM [CONVEX Q(history:listDays)] Function executed in 55 ms
+4/9/2026, 2:31:05 PM [CONVEX Q(trends:weekly)] Function executed in 55 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(dashboard:today)] Function executed in 1 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 1 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 9 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(trends:weekly)] Function executed in 9 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(history:listDays)] Function executed in 10 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(history:listDays)] Function executed in 9 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(trends:weekly)] Function executed in 10 ms
+4/9/2026, 2:31:44 PM [CONVEX Q(supplements:currentStack)] Function executed in 12 ms
+4/9/2026, 2:31:45 PM [CONVEX Q(adapter:findMany)] Function executed in 221 ms
+4/9/2026, 2:31:45 PM [CONVEX M(adapter:deleteOne)] Function executed in 73 ms
+4/9/2026, 2:31:45 PM [CONVEX H(POST /api/auth/*)] Function executed in 455 ms
+4/9/2026, 2:31:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 99 ms
+4/9/2026, 2:31:48 PM [CONVEX M(adapter:create)] Function executed in 42 ms
+4/9/2026, 2:31:48 PM [CONVEX H(POST /api/auth/*)] Function executed in 213 ms
+4/9/2026, 2:31:49 PM [CONVEX H(GET /api/auth/*)] Function executed in 190 ms
+4/9/2026, 2:31:49 PM [CONVEX H(GET /api/auth/*)] Function executed in 75 ms
+4/9/2026, 2:31:53 PM [CONVEX Q(adapter:findMany)] Function executed in 104 ms
+4/9/2026, 2:31:53 PM [CONVEX Q(adapter:findMany)] Function executed in 45 ms
+4/9/2026, 2:31:53 PM [CONVEX M(adapter:deleteMany)] Function executed in 48 ms
+4/9/2026, 2:31:53 PM [CONVEX Q(adapter:findMany)] Function executed in 51 ms
+4/9/2026, 2:31:53 PM [CONVEX M(adapter:deleteOne)] Function executed in 44 ms
+4/9/2026, 2:31:53 PM [CONVEX Q(adapter:findOne)] Function executed in 50 ms
+4/9/2026, 2:31:53 PM [CONVEX Q(adapter:findOne)] Function executed in 48 ms
+4/9/2026, 2:31:53 PM [CONVEX M(adapter:updateOne)] Function executed in 52 ms
+4/9/2026, 2:31:53 PM [CONVEX M(adapter:create)] Function executed in 47 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findMany)] Function executed in 47 ms
+4/9/2026, 2:31:54 PM [CONVEX H(GET /api/auth/*)] Function executed in 802 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 97 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 28 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX H(GET /api/auth/*)] Function executed in 160 ms
+4/9/2026, 2:31:54 PM [CONVEX H(GET /api/auth/*)] Function executed in 153 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX H(GET /api/auth/*)] Function executed in 143 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX H(GET /api/auth/*)] Function executed in 77 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:54 PM [CONVEX H(GET /api/auth/*)] Function executed in 154 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX H(GET /api/auth/*)] Function executed in 58 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(users:current)] Function executed in 18 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 20 ms
+4/9/2026, 2:31:55 PM [CONVEX H(GET /api/auth/*)] Function executed in 67 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 30 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 32 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(dashboard:today)] Function executed in 33 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(supplements:currentStack)] Function executed in 40 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX H(GET /api/auth/*)] Function executed in 77 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(trends:weekly)] Function executed in 64 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(history:listDays)] Function executed in 66 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(auth:status)] Function executed in 82 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(supplements:currentStack)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(trends:weekly)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(history:listDays)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 4 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(dashboard:today)] Function executed in 4 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 4 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(users:current)] Function executed in 4 ms
+4/9/2026, 2:31:55 PM [CONVEX M(subscriptions:applyRevenueCatWebhookEvent)] Function executed in 11 ms
+4/9/2026, 2:31:55 PM [CONVEX H(POST /webhooks/revenuecat)] Function executed in 92 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX H(GET /api/auth/*)] Function executed in 64 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(dashboard:today)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(history:listDays)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(supplements:currentStack)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(trends:weekly)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:31:55 PM [CONVEX H(GET /api/auth/*)] Function executed in 66 ms
+4/9/2026, 2:31:55 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 21 ms
+4/9/2026, 2:31:56 PM [CONVEX M(supplements:ensureReady)] Function executed in 75 ms
+4/9/2026, 2:31:56 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 16 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(users:current)] Function executed in 9 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 17 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 20 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 24 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(dashboard:today)] Function executed in 26 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(supplements:currentStack)] Function executed in 33 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(trends:weekly)] Function executed in 47 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(history:listDays)] Function executed in 57 ms
+4/9/2026, 2:31:56 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 31 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(users:current)] Function executed in 10 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 19 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 21 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 32 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(dashboard:today)] Function executed in 33 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(trends:weekly)] Function executed in 48 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(supplements:currentStack)] Function executed in 50 ms
+4/9/2026, 2:31:56 PM [CONVEX Q(history:listDays)] Function executed in 53 ms
+4/9/2026, 2:31:58 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 25 ms
+4/9/2026, 2:31:58 PM [CONVEX M(supplements:ensureReady)] Function executed in 44 ms
+4/9/2026, 2:32:02 PM [CONVEX Q(history:listDays)] Function executed in 50 ms
+4/9/2026, 2:33:09 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:33:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 114 ms
+4/9/2026, 2:33:09 PM [CONVEX M(aiUsage:reserve)] Function executed in 12 ms
+4/9/2026, 2:33:09 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 14 ms
+4/9/2026, 2:33:15 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:33:15 PM [CONVEX H(GET /api/auth/*)] Function executed in 114 ms
+4/9/2026, 2:33:15 PM [CONVEX Q(usda:searchByName)] Function executed in 19 ms
+4/9/2026, 2:33:15 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:33:15 PM [CONVEX H(GET /api/auth/*)] Function executed in 53 ms
+4/9/2026, 2:33:15 PM [CONVEX M(aiObservability:recordRequest)] Function executed in 14 ms
+4/9/2026, 2:33:15 PM [CONVEX A(textAnalysis:analyzeMealDescription)] Function executed in 5795 ms
+4/9/2026, 2:33:21 PM [CONVEX Q(scanReview:getContext)] Function executed in 19 ms
+4/9/2026, 2:33:32 PM [CONVEX M(meals:saveAiEntry)] Function executed in 28 ms
+4/9/2026, 2:33:32 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 19 ms
+4/9/2026, 2:33:32 PM [CONVEX Q(dashboard:today)] Function executed in 23 ms
+4/9/2026, 2:33:32 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 24 ms
+4/9/2026, 2:33:32 PM [CONVEX Q(history:listDays)] Function executed in 46 ms
+4/9/2026, 2:33:32 PM [CONVEX Q(history:listDays)] Function executed in 46 ms
+4/9/2026, 2:33:32 PM [CONVEX Q(trends:weekly)] Function executed in 49 ms
+4/9/2026, 2:33:33 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 10 ms
+4/9/2026, 2:33:33 PM [CONVEX M(supplements:ensureReady)] Function executed in 22 ms
+4/9/2026, 2:33:33 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 2:33:33 PM [CONVEX M(supplements:ensureReady)] Function executed in 20 ms
+4/9/2026, 2:33:33 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 2:33:33 PM [CONVEX M(supplements:ensureReady)] Function executed in 22 ms
+4/9/2026, 2:33:38 PM [CONVEX Q(history:listDays)] Function executed in 38 ms
+4/9/2026, 2:33:54 PM [CONVEX M(hydration:logQuickAdd)] Function executed in 25 ms
+4/9/2026, 2:33:54 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 20 ms
+4/9/2026, 2:33:54 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 24 ms
+4/9/2026, 2:33:54 PM [CONVEX Q(dashboard:today)] Function executed in 30 ms
+4/9/2026, 2:33:54 PM [CONVEX Q(history:listDays)] Function executed in 47 ms
+4/9/2026, 2:33:54 PM [CONVEX Q(trends:weekly)] Function executed in 51 ms
+4/9/2026, 2:33:54 PM [CONVEX Q(history:listDays)] Function executed in 53 ms
+4/9/2026, 2:33:54 PM [CONVEX Q(history:listDays)] Function executed in 55 ms
+4/9/2026, 2:33:55 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 11 ms
+4/9/2026, 2:33:55 PM [CONVEX M(supplements:ensureReady)] Function executed in 20 ms
+4/9/2026, 2:33:55 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 10 ms
+4/9/2026, 2:33:55 PM [CONVEX M(supplements:ensureReady)] Function executed in 18 ms
+4/9/2026, 2:33:55 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 12 ms
+4/9/2026, 2:33:55 PM [CONVEX M(supplements:ensureReady)] Function executed in 22 ms
+4/9/2026, 2:33:55 PM [CONVEX M(hydration:logQuickAdd)] Function executed in 22 ms
+4/9/2026, 2:33:55 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 18 ms
+4/9/2026, 2:33:55 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 22 ms
+4/9/2026, 2:33:55 PM [CONVEX Q(dashboard:today)] Function executed in 24 ms
+4/9/2026, 2:33:55 PM [CONVEX Q(history:listDays)] Function executed in 39 ms
+4/9/2026, 2:33:55 PM [CONVEX Q(history:listDays)] Function executed in 40 ms
+4/9/2026, 2:33:55 PM [CONVEX Q(trends:weekly)] Function executed in 42 ms
+4/9/2026, 2:33:55 PM [CONVEX Q(history:listDays)] Function executed in 47 ms
+4/9/2026, 2:33:55 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 11 ms
+4/9/2026, 2:33:55 PM [CONVEX M(supplements:ensureReady)] Function executed in 24 ms
+4/9/2026, 2:33:56 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 2:33:56 PM [CONVEX M(supplements:ensureReady)] Function executed in 19 ms
+4/9/2026, 2:33:56 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 2:33:56 PM [CONVEX M(supplements:ensureReady)] Function executed in 18 ms
+4/9/2026, 2:33:56 PM [CONVEX M(hydration:logQuickAdd)] Function executed in 21 ms
+4/9/2026, 2:33:56 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 16 ms
+4/9/2026, 2:33:56 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 21 ms
+4/9/2026, 2:33:56 PM [CONVEX Q(dashboard:today)] Function executed in 23 ms
+4/9/2026, 2:33:56 PM [CONVEX Q(history:listDays)] Function executed in 39 ms
+4/9/2026, 2:33:56 PM [CONVEX Q(trends:weekly)] Function executed in 39 ms
+4/9/2026, 2:33:56 PM [CONVEX Q(history:listDays)] Function executed in 43 ms
+4/9/2026, 2:33:56 PM [CONVEX Q(history:listDays)] Function executed in 45 ms
+4/9/2026, 2:33:56 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 2:33:56 PM [CONVEX M(supplements:ensureReady)] Function executed in 22 ms
+4/9/2026, 2:33:56 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 10 ms
+4/9/2026, 2:33:56 PM [CONVEX M(supplements:ensureReady)] Function executed in 20 ms
+4/9/2026, 2:33:57 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 10 ms
+4/9/2026, 2:33:57 PM [CONVEX M(supplements:ensureReady)] Function executed in 21 ms
+4/9/2026, 2:33:57 PM [CONVEX M(hydration:logQuickAdd)] Function executed in 18 ms
+4/9/2026, 2:33:57 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 23 ms
+4/9/2026, 2:33:57 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 24 ms
+4/9/2026, 2:33:57 PM [CONVEX Q(dashboard:today)] Function executed in 26 ms
+4/9/2026, 2:33:57 PM [CONVEX Q(history:listDays)] Function executed in 40 ms
+4/9/2026, 2:33:57 PM [CONVEX Q(trends:weekly)] Function executed in 41 ms
+4/9/2026, 2:33:57 PM [CONVEX Q(history:listDays)] Function executed in 43 ms
+4/9/2026, 2:33:57 PM [CONVEX Q(history:listDays)] Function executed in 47 ms
+4/9/2026, 2:33:57 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 10 ms
+4/9/2026, 2:33:57 PM [CONVEX M(supplements:ensureReady)] Function executed in 25 ms
+4/9/2026, 2:33:57 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 2:33:57 PM [CONVEX M(supplements:ensureReady)] Function executed in 19 ms
+4/9/2026, 2:33:57 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 2:33:57 PM [CONVEX M(supplements:ensureReady)] Function executed in 24 ms
+4/9/2026, 2:36:25 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:36:25 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:36:25 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:36:25 PM [CONVEX H(GET /api/auth/*)] Function executed in 132 ms
+4/9/2026, 2:37:37 PM [CONVEX M(subscriptions:applyRevenueCatWebhookEvent)] Function executed in 31 ms
+4/9/2026, 2:37:37 PM [CONVEX H(POST /webhooks/revenuecat)] Function executed in 189 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findOne)] Function executed in 160 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findOne)] Function executed in 231 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findOne)] Function executed in 42 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findOne)] Function executed in 42 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findMany)] Function executed in 46 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findMany)] Function executed in 46 ms
+4/9/2026, 2:40:05 PM [CONVEX H(GET /api/auth/*)] Function executed in 375 ms
+4/9/2026, 2:40:05 PM [CONVEX H(GET /api/auth/*)] Function executed in 452 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:40:05 PM [CONVEX H(GET /api/auth/*)] Function executed in 123 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(history:listDays)] Function executed in 1 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 1 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(history:listDays)] Function executed in 1 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(history:listDays)] Function executed in 1 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(users:current)] Function executed in 9 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 18 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 22 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(supplements:currentStack)] Function executed in 23 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(dashboard:today)] Function executed in 27 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(trends:weekly)] Function executed in 46 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(auth:status)] Function executed in 82 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:40:05 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:40:06 PM [CONVEX H(GET /api/auth/*)] Function executed in 97 ms
+4/9/2026, 2:40:06 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 13 ms
+4/9/2026, 2:40:06 PM [CONVEX M(supplements:ensureReady)] Function executed in 23 ms
+4/9/2026, 2:40:06 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 11 ms
+4/9/2026, 2:40:06 PM [CONVEX M(supplements:ensureReady)] Function executed in 20 ms
+4/9/2026, 2:40:06 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 13 ms
+4/9/2026, 2:40:06 PM [CONVEX M(supplements:ensureReady)] Function executed in 20 ms
+4/9/2026, 2:41:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:41:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:41:11 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:41:11 PM [CONVEX H(GET /api/auth/*)] Function executed in 129 ms
+4/9/2026, 2:41:39 PM [CONVEX M(subscriptions:applyRevenueCatWebhookEvent)] Function executed in 14 ms
+4/9/2026, 2:41:39 PM [CONVEX H(POST /webhooks/revenuecat)] Function executed in 145 ms
+4/9/2026, 2:49:42 PM [CONVEX M(subscriptions:applyRevenueCatWebhookEvent)] Function executed in 40 ms
+4/9/2026, 2:49:42 PM [CONVEX H(POST /webhooks/revenuecat)] Function executed in 327 ms
+4/9/2026, 2:53:41 PM [CONVEX M(subscriptions:applyRevenueCatWebhookEvent)] Function executed in 26 ms
+4/9/2026, 2:53:41 PM [CONVEX H(POST /webhooks/revenuecat)] Function executed in 290 ms
+4/9/2026, 2:55:52 PM [CONVEX Q(adapter:findOne)] Function executed in 228 ms
+4/9/2026, 2:55:52 PM [CONVEX Q(adapter:findOne)] Function executed in 42 ms
+4/9/2026, 2:55:53 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:55:53 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:55:53 PM [CONVEX Q(adapter:findMany)] Function executed in 26 ms
+4/9/2026, 2:55:53 PM [CONVEX Q(adapter:findMany)] Function executed in 44 ms
+4/9/2026, 2:55:53 PM [CONVEX H(GET /api/auth/*)] Function executed in 437 ms
+4/9/2026, 2:55:53 PM [CONVEX H(GET /api/auth/*)] Function executed in 151 ms
+4/9/2026, 2:55:53 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:55:53 PM [CONVEX H(GET /api/auth/*)] Function executed in 54 ms
+4/9/2026, 2:55:53 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:55:53 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:55:53 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:55:53 PM [CONVEX H(GET /api/auth/*)] Function executed in 60 ms
+4/9/2026, 2:57:30 PM [CONVEX H(GET /api/auth/*)] Function executed in 132 ms
+4/9/2026, 2:57:30 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 6 ms
+4/9/2026, 2:57:30 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 2:57:37 PM [CONVEX Q(auth:status)] Function executed in 84 ms
+4/9/2026, 2:57:39 PM [CONVEX M(adapter:create)] Function executed in 89 ms
+4/9/2026, 2:57:39 PM [CONVEX H(POST /api/auth/*)] Function executed in 187 ms
+4/9/2026, 2:57:40 PM [CONVEX H(GET /api/auth/*)] Function executed in 64 ms
+4/9/2026, 2:57:40 PM [CONVEX H(GET /api/auth/*)] Function executed in 124 ms
+4/9/2026, 2:57:41 PM [CONVEX M(subscriptions:applyRevenueCatWebhookEvent)] Function executed in 32 ms
+4/9/2026, 2:57:41 PM [CONVEX H(POST /webhooks/revenuecat)] Function executed in 122 ms
+4/9/2026, 2:57:45 PM [CONVEX Q(adapter:findMany)] Function executed in 46 ms
+4/9/2026, 2:57:45 PM [CONVEX Q(adapter:findMany)] Function executed in 46 ms
+4/9/2026, 2:57:45 PM [CONVEX M(adapter:deleteMany)] Function executed in 41 ms
+4/9/2026, 2:57:45 PM [CONVEX Q(adapter:findMany)] Function executed in 45 ms
+4/9/2026, 2:57:45 PM [CONVEX M(adapter:deleteOne)] Function executed in 48 ms
+4/9/2026, 2:57:45 PM [CONVEX Q(adapter:findOne)] Function executed in 46 ms
+4/9/2026, 2:57:45 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:45 PM [CONVEX M(adapter:updateOne)] Function executed in 54 ms
+4/9/2026, 2:57:45 PM [CONVEX M(adapter:create)] Function executed in 88 ms
+4/9/2026, 2:57:45 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 676 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 92 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 160 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 136 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 68 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 69 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 78 ms
+4/9/2026, 2:57:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 70 ms
+4/9/2026, 2:57:47 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:47 PM [CONVEX H(GET /api/auth/*)] Function executed in 70 ms
+4/9/2026, 2:57:47 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 2:57:47 PM [CONVEX Q(users:current)] Function executed in 12 ms
+4/9/2026, 2:57:47 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 31 ms
+4/9/2026, 2:57:47 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:48 PM [CONVEX H(GET /api/auth/*)] Function executed in 74 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(dashboard:today)] Function executed in 58 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 2:57:48 PM [CONVEX H(GET /api/auth/*)] Function executed in 63 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(dashboard:today)] Function executed in 1 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 2:57:48 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 40 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(users:current)] Function executed in 10 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 46 ms
+4/9/2026, 2:57:48 PM [CONVEX Q(dashboard:today)] Function executed in 71 ms
+4/9/2026, 2:57:49 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 20 ms
+4/9/2026, 2:57:49 PM [CONVEX Q(users:current)] Function executed in 46 ms
+4/9/2026, 2:57:49 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 86 ms
+4/9/2026, 2:57:49 PM [CONVEX Q(dashboard:today)] Function executed in 101 ms
+4/9/2026, 2:57:50 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 33 ms
+4/9/2026, 2:57:50 PM [CONVEX Q(testing:devToolsAvailability)] Function executed in 4 ms
+4/9/2026, 2:58:10 PM [CONVEX M(users:updateCurrentPlanSettings)] Function executed in 18 ms
+4/9/2026, 2:58:10 PM [CONVEX Q(users:current)] Function executed in 14 ms
+4/9/2026, 2:58:10 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 30 ms
+4/9/2026, 2:58:10 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 40 ms
+4/9/2026, 2:58:10 PM [CONVEX Q(dashboard:today)] Function executed in 47 ms
+4/9/2026, 3:01:01 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:01:01 PM [CONVEX Q(testing:devToolsAvailability)] Function executed in 1 ms
+4/9/2026, 3:01:01 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:01:01 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:01:01 PM [CONVEX Q(dashboard:today)] Function executed in 89 ms
+4/9/2026, 3:01:01 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 109 ms
+4/9/2026, 3:01:02 PM [CONVEX Q(adapter:findMany)] Function executed in 339 ms
+4/9/2026, 3:01:02 PM [CONVEX M(adapter:deleteOne)] Function executed in 94 ms
+4/9/2026, 3:01:02 PM [CONVEX H(POST /api/auth/*)] Function executed in 732 ms
+4/9/2026, 3:01:02 PM [CONVEX H(GET /api/auth/*)] Function executed in 59 ms
+4/9/2026, 3:01:06 PM [CONVEX M(adapter:create)] Function executed in 97 ms
+4/9/2026, 3:01:06 PM [CONVEX H(POST /api/auth/*)] Function executed in 178 ms
+4/9/2026, 3:01:06 PM [CONVEX H(GET /api/auth/*)] Function executed in 53 ms
+4/9/2026, 3:01:06 PM [CONVEX H(GET /api/auth/*)] Function executed in 54 ms
+4/9/2026, 3:01:10 PM [CONVEX Q(adapter:findMany)] Function executed in 44 ms
+4/9/2026, 3:01:10 PM [CONVEX Q(adapter:findMany)] Function executed in 42 ms
+4/9/2026, 3:01:10 PM [CONVEX M(adapter:deleteMany)] Function executed in 42 ms
+4/9/2026, 3:01:10 PM [CONVEX Q(adapter:findMany)] Function executed in 46 ms
+4/9/2026, 3:01:10 PM [CONVEX M(adapter:deleteOne)] Function executed in 41 ms
+4/9/2026, 3:01:10 PM [CONVEX Q(adapter:findOne)] Function executed in 51 ms
+4/9/2026, 3:01:10 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:10 PM [CONVEX M(adapter:updateOne)] Function executed in 41 ms
+4/9/2026, 3:01:10 PM [CONVEX M(adapter:create)] Function executed in 45 ms
+4/9/2026, 3:01:10 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:10 PM [CONVEX H(GET /api/auth/*)] Function executed in 569 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 42 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX H(GET /api/auth/*)] Function executed in 106 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX H(GET /api/auth/*)] Function executed in 64 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX H(GET /api/auth/*)] Function executed in 130 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX H(GET /api/auth/*)] Function executed in 61 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX H(GET /api/auth/*)] Function executed in 59 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX H(GET /api/auth/*)] Function executed in 60 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX H(GET /api/auth/*)] Function executed in 53 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(users:current)] Function executed in 11 ms
+4/9/2026, 3:01:11 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 24 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:12 PM [CONVEX H(GET /api/auth/*)] Function executed in 58 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(dashboard:today)] Function executed in 21 ms
+4/9/2026, 3:01:12 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 11 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 19 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(dashboard:today)] Function executed in 27 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:12 PM [CONVEX H(GET /api/auth/*)] Function executed in 115 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(dashboard:today)] Function executed in 1 ms
+4/9/2026, 3:01:12 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:01:13 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 14 ms
+4/9/2026, 3:01:13 PM [CONVEX Q(testing:devToolsAvailability)] Function executed in 1 ms
+4/9/2026, 3:01:15 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:01:15 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:01:15 PM [CONVEX Q(testing:devToolsAvailability)] Function executed in 1 ms
+4/9/2026, 3:01:15 PM [CONVEX Q(dashboard:today)] Function executed in 1 ms
+4/9/2026, 3:01:15 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:01:15 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 1 ms
+4/9/2026, 3:01:15 PM [CONVEX Q(adapter:findMany)] Function executed in 90 ms
+4/9/2026, 3:01:15 PM [CONVEX M(adapter:deleteOne)] Function executed in 42 ms
+4/9/2026, 3:01:15 PM [CONVEX H(POST /api/auth/*)] Function executed in 210 ms
+4/9/2026, 3:01:15 PM [CONVEX H(GET /api/auth/*)] Function executed in 53 ms
+4/9/2026, 3:01:26 PM [CONVEX M(adapter:create)] Function executed in 91 ms
+4/9/2026, 3:01:26 PM [CONVEX H(POST /api/auth/*)] Function executed in 282 ms
+4/9/2026, 3:01:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 53 ms
+4/9/2026, 3:01:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 3:01:30 PM [CONVEX Q(adapter:findMany)] Function executed in 47 ms
+4/9/2026, 3:01:30 PM [CONVEX Q(adapter:findMany)] Function executed in 51 ms
+4/9/2026, 3:01:30 PM [CONVEX M(adapter:deleteMany)] Function executed in 43 ms
+4/9/2026, 3:01:30 PM [CONVEX Q(adapter:findMany)] Function executed in 57 ms
+4/9/2026, 3:01:30 PM [CONVEX M(adapter:deleteOne)] Function executed in 44 ms
+4/9/2026, 3:01:30 PM [CONVEX Q(adapter:findOne)] Function executed in 48 ms
+4/9/2026, 3:01:30 PM [CONVEX Q(adapter:findOne)] Function executed in 42 ms
+4/9/2026, 3:01:30 PM [CONVEX M(adapter:updateOne)] Function executed in 50 ms
+4/9/2026, 3:01:31 PM [CONVEX M(adapter:create)] Function executed in 42 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:31 PM [CONVEX H(GET /api/auth/*)] Function executed in 645 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findOne)] Function executed in 46 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:31 PM [CONVEX H(GET /api/auth/*)] Function executed in 106 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:31 PM [CONVEX H(GET /api/auth/*)] Function executed in 63 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:31 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:31 PM [CONVEX H(GET /api/auth/*)] Function executed in 123 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:32 PM [CONVEX H(GET /api/auth/*)] Function executed in 62 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:32 PM [CONVEX H(GET /api/auth/*)] Function executed in 59 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 21 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:01:32 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:01:32 PM [CONVEX H(GET /api/auth/*)] Function executed in 64 ms
+4/9/2026, 3:01:33 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 10 ms
+4/9/2026, 3:01:33 PM [CONVEX Q(users:current)] Function executed in 9 ms
+4/9/2026, 3:01:33 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 20 ms
+4/9/2026, 3:01:33 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 9 ms
+4/9/2026, 3:01:33 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 3:01:33 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 20 ms
+4/9/2026, 3:01:44 PM [CONVEX M(subscriptions:applyRevenueCatWebhookEvent)] Function executed in 17 ms
+4/9/2026, 3:01:44 PM [CONVEX H(POST /webhooks/revenuecat)] Function executed in 143 ms
+4/9/2026, 3:01:44 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 3:01:44 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 22 ms
+4/9/2026, 3:01:44 PM [CONVEX M(subscriptions:applyRevenueCatWebhookEvent)] Function executed in 12 ms
+4/9/2026, 3:01:44 PM [CONVEX H(POST /webhooks/revenuecat)] Function executed in 137 ms
+4/9/2026, 3:01:44 PM [CONVEX Q(users:current)] Function executed in 13 ms
+4/9/2026, 3:01:44 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 37 ms
+4/9/2026, 3:01:48 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:01:48 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:01:48 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:01:48 PM [CONVEX Q(adapter:findMany)] Function executed in 115 ms
+4/9/2026, 3:01:48 PM [CONVEX M(adapter:deleteOne)] Function executed in 45 ms
+4/9/2026, 3:01:48 PM [CONVEX H(POST /api/auth/*)] Function executed in 271 ms
+4/9/2026, 3:01:49 PM [CONVEX H(GET /api/auth/*)] Function executed in 77 ms
+4/9/2026, 3:02:05 PM [CONVEX M(adapter:create)] Function executed in 90 ms
+4/9/2026, 3:02:05 PM [CONVEX H(POST /api/auth/*)] Function executed in 224 ms
+4/9/2026, 3:02:05 PM [CONVEX H(GET /api/auth/*)] Function executed in 51 ms
+4/9/2026, 3:02:05 PM [CONVEX H(GET /api/auth/*)] Function executed in 62 ms
+4/9/2026, 3:02:13 PM [CONVEX H(GET /api/auth/*)] Function executed in 114 ms
+4/9/2026, 3:02:13 PM [CONVEX H(GET /api/auth/*)] Function executed in 113 ms
+4/9/2026, 3:02:13 PM [CONVEX H(GET /api/auth/*)] Function executed in 115 ms
+4/9/2026, 3:02:13 PM [CONVEX H(GET /api/auth/*)] Function executed in 51 ms
+4/9/2026, 3:02:14 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:02:14 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:02:14 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:02:18 PM [CONVEX H(GET /api/auth/*)] Function executed in 112 ms
+4/9/2026, 3:02:43 PM [CONVEX H(GET /api/auth/*)] Function executed in 115 ms
+4/9/2026, 3:02:43 PM [CONVEX H(GET /api/auth/*)] Function executed in 112 ms
+4/9/2026, 3:02:43 PM [CONVEX H(GET /api/auth/*)] Function executed in 65 ms
+4/9/2026, 3:02:43 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:02:43 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:02:43 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:06:02 PM [CONVEX H(GET /api/auth/*)] Function executed in 108 ms
+4/9/2026, 3:06:03 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:06:03 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:08:59 PM [CONVEX Q(adapter:findOne)] Function executed in 226 ms
+4/9/2026, 3:08:59 PM [CONVEX Q(adapter:findOne)] Function executed in 45 ms
+4/9/2026, 3:08:59 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:08:59 PM [CONVEX H(GET /api/auth/*)] Function executed in 391 ms
+4/9/2026, 3:09:00 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:09:00 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:09:00 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:09:00 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:09:00 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:09:00 PM [CONVEX H(GET /api/auth/*)] Function executed in 66 ms
+4/9/2026, 3:09:00 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:09:00 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 3:09:00 PM [CONVEX Q(users:current)] Function executed in 10 ms
+4/9/2026, 3:09:01 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 19 ms
+4/9/2026, 3:09:01 PM [CONVEX Q(dashboard:today)] Function executed in 18 ms
+4/9/2026, 3:09:01 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:09:01 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:09:01 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:09:01 PM [CONVEX H(GET /api/auth/*)] Function executed in 114 ms
+4/9/2026, 3:09:01 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 11 ms
+4/9/2026, 3:09:01 PM [CONVEX Q(users:current)] Function executed in 11 ms
+4/9/2026, 3:09:01 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 15 ms
+4/9/2026, 3:09:01 PM [CONVEX Q(dashboard:today)] Function executed in 15 ms
+4/9/2026, 3:09:02 PM [CONVEX Q(adapter:findMany)] Function executed in 88 ms
+4/9/2026, 3:09:02 PM [CONVEX H(GET /api/auth/*)] Function executed in 139 ms
+4/9/2026, 3:09:02 PM [CONVEX Q(dashboard:today)] Function executed in 1 ms
+4/9/2026, 3:09:02 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:09:02 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:09:02 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 97 ms
+4/9/2026, 3:09:02 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 3:09:02 PM [CONVEX Q(dashboard:today)] Function executed in 15 ms
+4/9/2026, 3:09:02 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 18 ms
+4/9/2026, 3:09:06 PM [CONVEX Q(history:listDays)] Function executed in 13 ms
+4/9/2026, 3:09:50 PM [CONVEX Q(auth:status)] Function executed in 79 ms
+4/9/2026, 3:09:53 PM [CONVEX M(adapter:create)] Function executed in 88 ms
+4/9/2026, 3:09:53 PM [CONVEX H(POST /api/auth/*)] Function executed in 187 ms
+4/9/2026, 3:09:54 PM [CONVEX H(GET /api/auth/*)] Function executed in 55 ms
+4/9/2026, 3:09:54 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 3:10:43 PM [CONVEX H(GET /api/auth/*)] Function executed in 110 ms
+4/9/2026, 3:10:44 PM [CONVEX H(GET /api/auth/*)] Function executed in 112 ms
+4/9/2026, 3:10:44 PM [CONVEX H(GET /api/auth/*)] Function executed in 51 ms
+4/9/2026, 3:10:44 PM [CONVEX H(GET /api/auth/*)] Function executed in 60 ms
+4/9/2026, 3:10:44 PM [CONVEX Q(users:current)] Function executed in 25 ms
+4/9/2026, 3:10:44 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 26 ms
+4/9/2026, 3:36:24 PM [CONVEX H(GET /api/auth/*)] Function executed in 349 ms
+4/9/2026, 3:36:58 PM [CONVEX H(GET /api/auth/*)] Function executed in 115 ms
+4/9/2026, 3:37:03 PM [CONVEX H(GET /api/auth/*)] Function executed in 52 ms
+4/9/2026, 3:37:04 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 3:37:04 PM [CONVEX H(GET /api/auth/*)] Function executed in 54 ms
+4/9/2026, 3:37:14 PM [CONVEX H(GET /api/auth/*)] Function executed in 111 ms
+4/9/2026, 3:37:29 PM [CONVEX H(GET /api/auth/*)] Function executed in 110 ms
+4/9/2026, 3:37:51 PM [CONVEX H(GET /api/auth/*)] Function executed in 118 ms
+4/9/2026, 3:37:55 PM [CONVEX H(GET /api/auth/*)] Function executed in 51 ms
+4/9/2026, 3:37:55 PM [CONVEX H(GET /api/auth/*)] Function executed in 58 ms
+4/9/2026, 3:37:56 PM [CONVEX H(GET /api/auth/*)] Function executed in 53 ms
+4/9/2026, 3:38:24 PM [CONVEX H(GET /api/auth/*)] Function executed in 105 ms
+4/9/2026, 3:40:41 PM [CONVEX H(GET /api/auth/*)] Function executed in 153 ms
+4/9/2026, 3:41:16 PM [CONVEX H(GET /api/auth/*)] Function executed in 108 ms
+4/9/2026, 3:41:22 PM [CONVEX H(GET /api/auth/*)] Function executed in 110 ms
+4/9/2026, 3:41:22 PM [CONVEX H(GET /api/auth/*)] Function executed in 50 ms
+4/9/2026, 3:41:22 PM [CONVEX H(GET /api/auth/*)] Function executed in 113 ms
+4/9/2026, 3:42:03 PM [CONVEX H(GET /api/auth/*)] Function executed in 110 ms
+4/9/2026, 3:42:03 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:42:03 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:42:08 PM [CONVEX H(GET /api/auth/*)] Function executed in 108 ms
+4/9/2026, 3:42:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 51 ms
+4/9/2026, 3:42:22 PM [CONVEX H(GET /api/auth/*)] Function executed in 115 ms
+4/9/2026, 3:42:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 122 ms
+4/9/2026, 3:42:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 79 ms
+4/9/2026, 3:42:28 PM [CONVEX H(GET /api/auth/*)] Function executed in 68 ms
+4/9/2026, 3:42:39 PM [CONVEX H(GET /api/auth/*)] Function executed in 108 ms
+4/9/2026, 3:42:44 PM [CONVEX H(GET /api/auth/*)] Function executed in 109 ms
+4/9/2026, 3:42:44 PM [CONVEX H(GET /api/auth/*)] Function executed in 52 ms
+4/9/2026, 3:42:44 PM [CONVEX H(GET /api/auth/*)] Function executed in 57 ms
+4/9/2026, 3:42:56 PM [CONVEX H(GET /api/auth/*)] Function executed in 110 ms
+4/9/2026, 3:43:01 PM [CONVEX H(GET /api/auth/*)] Function executed in 108 ms
+4/9/2026, 3:43:02 PM [CONVEX H(GET /api/auth/*)] Function executed in 49 ms
+4/9/2026, 3:43:02 PM [CONVEX H(GET /api/auth/*)] Function executed in 52 ms
+4/9/2026, 3:43:13 PM [CONVEX H(GET /api/auth/*)] Function executed in 115 ms
+4/9/2026, 3:43:18 PM [CONVEX H(GET /api/auth/*)] Function executed in 113 ms
+4/9/2026, 3:43:18 PM [CONVEX H(GET /api/auth/*)] Function executed in 58 ms
+4/9/2026, 3:43:18 PM [CONVEX H(GET /api/auth/*)] Function executed in 80 ms
+4/9/2026, 3:43:29 PM [CONVEX H(GET /api/auth/*)] Function executed in 138 ms
+4/9/2026, 3:43:34 PM [CONVEX H(GET /api/auth/*)] Function executed in 120 ms
+4/9/2026, 3:43:35 PM [CONVEX H(GET /api/auth/*)] Function executed in 112 ms
+4/9/2026, 3:43:35 PM [CONVEX H(GET /api/auth/*)] Function executed in 52 ms
+4/9/2026, 3:43:46 PM [CONVEX H(GET /api/auth/*)] Function executed in 119 ms
+4/9/2026, 3:43:51 PM [CONVEX H(GET /api/auth/*)] Function executed in 104 ms
+4/9/2026, 3:43:51 PM [CONVEX H(GET /api/auth/*)] Function executed in 50 ms
+4/9/2026, 3:43:51 PM [CONVEX H(GET /api/auth/*)] Function executed in 55 ms
+4/9/2026, 3:44:04 PM [CONVEX H(GET /api/auth/*)] Function executed in 110 ms
+4/9/2026, 3:44:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 111 ms
+4/9/2026, 3:44:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 3:44:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 53 ms
+4/9/2026, 3:44:22 PM [CONVEX H(GET /api/auth/*)] Function executed in 112 ms
+4/9/2026, 3:44:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 54 ms
+4/9/2026, 3:44:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 57 ms
+4/9/2026, 3:44:27 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 3:44:40 PM [CONVEX H(GET /api/auth/*)] Function executed in 113 ms
+4/9/2026, 3:44:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 118 ms
+4/9/2026, 3:44:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 70 ms
+4/9/2026, 3:44:45 PM [CONVEX H(GET /api/auth/*)] Function executed in 75 ms
+4/9/2026, 3:44:56 PM [CONVEX H(GET /api/auth/*)] Function executed in 117 ms
+4/9/2026, 3:45:01 PM [CONVEX H(GET /api/auth/*)] Function executed in 170 ms
+4/9/2026, 3:45:01 PM [CONVEX H(GET /api/auth/*)] Function executed in 121 ms
+4/9/2026, 3:45:01 PM [CONVEX H(GET /api/auth/*)] Function executed in 55 ms
+4/9/2026, 3:45:01 PM [CONVEX H(GET /api/auth/*)] Function executed in 55 ms
+4/9/2026, 3:45:01 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:45:01 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:45:14 PM [CONVEX H(GET /api/auth/*)] Function executed in 116 ms
+4/9/2026, 3:45:29 PM [CONVEX Q(auth:status)] Function executed in 91 ms
+4/9/2026, 3:45:31 PM [CONVEX M(adapter:create)] Function executed in 257 ms
+4/9/2026, 3:45:31 PM [CONVEX H(POST /api/auth/*)] Function executed in 358 ms
+4/9/2026, 3:45:31 PM [CONVEX H(GET /api/auth/*)] Function executed in 58 ms
+4/9/2026, 3:45:31 PM [CONVEX H(GET /api/auth/*)] Function executed in 62 ms
+4/9/2026, 3:45:33 PM [CONVEX H(GET /api/auth/*)] Function executed in 59 ms
+4/9/2026, 3:45:33 PM [CONVEX H(GET /api/auth/*)] Function executed in 68 ms
+4/9/2026, 3:45:33 PM [CONVEX H(GET /api/auth/*)] Function executed in 62 ms
+4/9/2026, 3:47:08 PM [CONVEX Q(adapter:findMany)] Function executed in 88 ms
+4/9/2026, 3:47:08 PM [CONVEX Q(adapter:findMany)] Function executed in 42 ms
+4/9/2026, 3:47:08 PM [CONVEX M(adapter:deleteMany)] Function executed in 48 ms
+4/9/2026, 3:47:08 PM [CONVEX Q(adapter:findMany)] Function executed in 39 ms
+4/9/2026, 3:47:08 PM [CONVEX M(adapter:deleteOne)] Function executed in 51 ms
+4/9/2026, 3:47:08 PM [CONVEX Q(adapter:findOne)] Function executed in 42 ms
+4/9/2026, 3:47:08 PM [CONVEX Q(adapter:findOne)] Function executed in 53 ms
+4/9/2026, 3:47:08 PM [CONVEX M(adapter:create)] Function executed in 96 ms
+4/9/2026, 3:47:08 PM [CONVEX M(adapter:create)] Function executed in 43 ms
+4/9/2026, 3:47:08 PM [CONVEX M(adapter:create)] Function executed in 40 ms
+4/9/2026, 3:47:08 PM [CONVEX Q(adapter:findMany)] Function executed in 45 ms
+4/9/2026, 3:47:08 PM [CONVEX H(GET /api/auth/*)] Function executed in 931 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 88 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 27 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 8 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 41 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 40 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 40 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 190 ms
+4/9/2026, 3:47:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 171 ms
+4/9/2026, 3:47:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 184 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 60 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 63 ms
+4/9/2026, 3:47:09 PM [CONVEX H(GET /api/auth/*)] Function executed in 56 ms
+4/9/2026, 3:47:10 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:10 PM [CONVEX H(GET /api/auth/*)] Function executed in 54 ms
+4/9/2026, 3:47:10 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:47:10 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 8 ms
+4/9/2026, 3:47:10 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 3:47:10 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:47:10 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:47:10 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:10 PM [CONVEX H(GET /api/auth/*)] Function executed in 60 ms
+4/9/2026, 3:47:10 PM [CONVEX M(users:completeOnboarding)] Function executed in 13 ms
+4/9/2026, 3:47:10 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 3:47:10 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 17 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(dashboard:today)] Function executed in 20 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:11 PM [CONVEX H(GET /api/auth/*)] Function executed in 58 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(dashboard:today)] Function executed in 1 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(users:current)] Function executed in 1 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(auth:status)] Function executed in 1 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 1 ms
+4/9/2026, 3:47:11 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 11 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(users:current)] Function executed in 7 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 26 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(dashboard:today)] Function executed in 27 ms
+4/9/2026, 3:47:11 PM [CONVEX M(subscriptions:syncCustomerInfo)] Function executed in 10 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(users:current)] Function executed in 9 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(dashboard:today)] Function executed in 17 ms
+4/9/2026, 3:47:11 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 19 ms
+4/9/2026, 3:47:19 PM [CONVEX Q(supplements:currentStack)] Function executed in 21 ms
+4/9/2026, 3:47:19 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 11 ms
+4/9/2026, 3:47:19 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 23 ms
+4/9/2026, 3:47:19 PM [CONVEX Q(users:current)] Function executed in 12 ms
+4/9/2026, 3:47:19 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 17 ms
+4/9/2026, 3:47:19 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 22 ms
+4/9/2026, 3:47:19 PM [CONVEX Q(supplements:currentStack)] Function executed in 22 ms
+4/9/2026, 3:47:19 PM [CONVEX Q(dashboard:today)] Function executed in 22 ms
+4/9/2026, 3:47:19 PM [CONVEX M(supplements:ensureReady)] Function executed in 23 ms
+4/9/2026, 3:47:38 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:38 PM [CONVEX H(GET /api/auth/*)] Function executed in 118 ms
+4/9/2026, 3:47:38 PM [CONVEX M(aiUsage:reserve)] Function executed in 14 ms
+4/9/2026, 3:47:38 PM [CONVEX Q(users:current)] Function executed in 12 ms
+4/9/2026, 3:47:38 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 18 ms
+4/9/2026, 3:47:38 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 20 ms
+4/9/2026, 3:47:38 PM [CONVEX Q(supplements:currentStack)] Function executed in 21 ms
+4/9/2026, 3:47:38 PM [CONVEX Q(dashboard:today)] Function executed in 23 ms
+4/9/2026, 3:47:48 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:48 PM [CONVEX H(GET /api/auth/*)] Function executed in 124 ms
+4/9/2026, 3:47:48 PM [CONVEX Q(usda:searchByName)] Function executed in 8 ms
+4/9/2026, 3:47:48 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:47:48 PM [CONVEX H(GET /api/auth/*)] Function executed in 63 ms
+4/9/2026, 3:47:48 PM [CONVEX M(aiObservability:recordRequest)] Function executed in 28 ms
+4/9/2026, 3:47:48 PM [CONVEX A(textAnalysis:analyzeMealDescription)] Function executed in 11596 ms
+4/9/2026, 3:47:49 PM [CONVEX Q(scanReview:getContext)] Function executed in 7 ms
+4/9/2026, 3:48:01 PM [CONVEX M(meals:saveAiEntry)] Function executed in 29 ms
+4/9/2026, 3:48:01 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 12 ms
+4/9/2026, 3:48:01 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 22 ms
+4/9/2026, 3:48:01 PM [CONVEX Q(dashboard:today)] Function executed in 26 ms
+4/9/2026, 3:48:01 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 3:48:01 PM [CONVEX M(supplements:ensureReady)] Function executed in 19 ms
+4/9/2026, 3:48:01 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 3:48:01 PM [CONVEX M(supplements:ensureReady)] Function executed in 19 ms
+4/9/2026, 3:48:17 PM [CONVEX Q(history:listDays)] Function executed in 24 ms
+4/9/2026, 3:48:18 PM [CONVEX Q(trends:weekly)] Function executed in 86 ms
+4/9/2026, 3:48:35 PM [CONVEX M(hydration:logQuickAdd)] Function executed in 24 ms
+4/9/2026, 3:48:35 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 23 ms
+4/9/2026, 3:48:35 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 29 ms
+4/9/2026, 3:48:36 PM [CONVEX Q(history:listDays)] Function executed in 42 ms
+4/9/2026, 3:48:36 PM [CONVEX Q(dashboard:today)] Function executed in 42 ms
+4/9/2026, 3:48:36 PM [CONVEX Q(trends:weekly)] Function executed in 45 ms
+4/9/2026, 3:48:36 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 11 ms
+4/9/2026, 3:48:36 PM [CONVEX M(supplements:ensureReady)] Function executed in 20 ms
+4/9/2026, 3:48:36 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 10 ms
+4/9/2026, 3:48:36 PM [CONVEX M(supplements:ensureReady)] Function executed in 19 ms
+4/9/2026, 3:48:36 PM [CONVEX M(hydration:logQuickAdd)] Function executed in 19 ms
+4/9/2026, 3:48:36 PM [CONVEX Q(rememberedEntries:listForCurrentUser)] Function executed in 12 ms
+4/9/2026, 3:48:36 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 17 ms
+4/9/2026, 3:48:36 PM [CONVEX Q(history:listDays)] Function executed in 19 ms
+4/9/2026, 3:48:36 PM [CONVEX Q(dashboard:today)] Function executed in 21 ms
+4/9/2026, 3:48:36 PM [CONVEX Q(trends:weekly)] Function executed in 29 ms
+4/9/2026, 3:48:36 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 10 ms
+4/9/2026, 3:48:36 PM [CONVEX M(supplements:ensureReady)] Function executed in 20 ms
+4/9/2026, 3:48:36 PM [CONVEX M(rememberedEntries:ensureMigrated)] Function executed in 9 ms
+4/9/2026, 3:48:36 PM [CONVEX M(supplements:ensureReady)] Function executed in 19 ms
+4/9/2026, 3:49:17 PM [CONVEX Q(aiUsage:currentStatus)] Function executed in 18 ms
+4/9/2026, 3:49:24 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:49:24 PM [CONVEX Q(adapter:findOne)] Function executed in 1 ms
+4/9/2026, 3:49:24 PM [CONVEX Q(adapter:findMany)] Function executed in 1 ms
+4/9/2026, 3:49:24 PM [CONVEX H(GET /api/auth/*)] Function executed in 128 ms
+4/9/2026, 3:51:14 PM [CONVEX H(GET /api/auth/*)] Function executed in 120 ms
+4/9/2026, 3:51:15 PM [CONVEX Q(dashboard:reminderSnapshot)] Function executed in 5 ms
+4/9/2026, 3:51:15 PM [CONVEX Q(users:current)] Function executed in 8 ms
+4/9/2026, 3:51:16 PM [CONVEX H(GET /api/auth/*)] Function executed in 111 ms
+4/9/2026, 3:51:17 PM [CONVEX H(GET /api/auth/*)] Function executed in 51 ms
+4/9/2026, 3:51:22 PM [CONVEX H(GET /api/auth/*)] Function executed in 112 ms
+4/9/2026, 3:51:22 PM [CONVEX H(GET /api/auth/*)] Function executed in 52 ms
+4/9/2026, 3:51:28 PM [CONVEX H(GET /api/auth/*)] Function executed in 113 ms
+4/9/2026, 3:51:29 PM [CONVEX H(GET /api/auth/*)] Function executed in 51 ms
+4/9/2026, 3:51:34 PM [CONVEX H(GET /api/auth/*)] Function executed in 111 ms
+4/9/2026, 3:51:35 PM [CONVEX H(GET /api/auth/*)] Function executed in 53 ms
+4/9/2026, 3:51:40 PM [CONVEX H(GET /api/auth/*)] Function executed in 115 ms

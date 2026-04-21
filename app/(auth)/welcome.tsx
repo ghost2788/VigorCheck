@@ -4,11 +4,10 @@ import { Animated, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WelcomeHudHero } from "../../components/auth/WelcomeHudHero";
 import { Button } from "../../components/Button";
+import { LegalLinksRow } from "../../components/LegalLinksRow";
 import { ThemedText } from "../../components/ThemedText";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 import { useReducedMotionPreference } from "../../lib/ui/useReducedMotionPreference";
-
-const FLAGSHIP_HEART_IMAGE = require("../../assets/branding/vigorcheck-heart-flagship.png");
 
 export default function AuthWelcomeScreen() {
   const router = useRouter();
@@ -113,7 +112,7 @@ export default function AuthWelcomeScreen() {
           </ThemedText>
         </View>
         <View style={styles.heroWrap}>
-          <WelcomeHudHero heartImageSource={FLAGSHIP_HEART_IMAGE} testID="welcome-hud-hero" />
+          <WelcomeHudHero testID="welcome-hud-hero" />
         </View>
       </Animated.View>
 
@@ -128,10 +127,10 @@ export default function AuthWelcomeScreen() {
         testID="welcome-copy"
       >
         <ThemedText size="xl" style={styles.title}>
-          A better way to track nutrition
+          Hit your macros without the logging grind.
         </ThemedText>
         <ThemedText style={styles.subtitle} variant="secondary">
-          Build your plan in minutes.
+          Build your plan in minutes. Track calories, protein, carbs, and fat faster with AI.
         </ThemedText>
       </Animated.View>
 
@@ -151,6 +150,7 @@ export default function AuthWelcomeScreen() {
             <ThemedText style={{ color: theme.accent1 }}>Sign in</ThemedText>
           </Pressable>
         </View>
+        <LegalLinksRow testID="welcome-legal-links" textVariant="tertiary" />
       </Animated.View>
     </View>
   );
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   copyWrap: {
-    gap: 8,
+    gap: 14,
     maxWidth: 320,
   },
   footer: {
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 44,
     letterSpacing: -1.4,
-    lineHeight: 46,
+    lineHeight: 52,
     maxWidth: 320,
   },
 });

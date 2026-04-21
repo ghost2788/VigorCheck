@@ -19,6 +19,14 @@ export function getAtAGlanceMessage({
     return "Protein is still building today.";
   }
 
+  if (biggestGapKey === "carbs") {
+    return "Carbs are still off target today.";
+  }
+
+  if (biggestGapKey === "fat") {
+    return "Fat is still off target today.";
+  }
+
   if (biggestGapKey === "nutrition") {
     return "Nutrition coverage is still building today.";
   }

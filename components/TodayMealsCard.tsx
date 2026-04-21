@@ -62,7 +62,13 @@ export function TodayMealsCard({ emptyLabel, meals, title }: TodayMealsCardProps
         meals.map((meal, index) => (
           <View
             key={meal.id}
-            style={[styles.mealRow, index < meals.length - 1 ? styles.mealRowBorder : undefined]}
+            style={[
+              styles.mealRow,
+              index < meals.length - 1
+                ? [styles.mealRowBorder, { borderBottomColor: theme.cardBorder }]
+                : undefined,
+            ]}
+            testID={`today-meals-row-${meal.id}`}
           >
             <View style={styles.mealHeader}>
               <View style={styles.mealCopy}>
@@ -93,10 +99,11 @@ export function TodayMealsCard({ emptyLabel, meals, title }: TodayMealsCardProps
                 style={[
                   styles.caloriePill,
                   {
-                    backgroundColor: "rgba(255,255,255,0.04)",
-                    borderColor: hexToRgba(theme.metricNutrition, 0.14),
+                    backgroundColor: theme.surfaceSoft,
+                    borderColor: hexToRgba(theme.metricNutrition, 0.18),
                   },
                 ]}
+                testID={`today-meals-calorie-pill-${meal.id}`}
               >
                 <ThemedText size="sm">{meal.totals.calories} cal</ThemedText>
               </View>
@@ -162,7 +169,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   mealRowBorder: {
-    borderBottomColor: "rgba(255,255,255,0.08)",
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   metaStack: {

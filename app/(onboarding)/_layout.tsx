@@ -10,12 +10,12 @@ import { useTheme } from "../../lib/theme/ThemeProvider";
 
 export default function OnboardingLayout() {
   const { theme } = useTheme();
-  const { isLoading } = useConvexAuth();
-  const currentUser = useQuery(api.users.current);
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const currentUser = useQuery(api.users.current, isAuthenticated ? {} : "skip");
   const pathname = usePathname();
   const { draft, isHydrated } = useOnboardingFlow();
 
-  if (isLoading || !isHydrated || currentUser === undefined) {
+  if (isLoading || !isHydrated || (isAuthenticated && currentUser === undefined)) {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
         <ActivityIndicator color={theme.accent1} size="small" />

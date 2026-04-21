@@ -3,14 +3,16 @@ import { render } from "../../lib/test-utils";
 import TrendsScreen from "../../app/(tabs)/trends";
 
 const mockUseQuery = jest.fn();
+const mockWeeklyTrendChart = jest.fn();
 
 jest.mock("convex/react", () => ({
   useQuery: (...args: unknown[]) => mockUseQuery(...args),
 }));
 
 jest.mock("../../components/WeeklyTrendChart", () => ({
-  WeeklyTrendChart: () => {
+  WeeklyTrendChart: (props: unknown) => {
     const { Text } = require("react-native");
+    mockWeeklyTrendChart(props);
     return <Text testID="trends-weekly-chart">weekly-chart</Text>;
   },
 }));
@@ -26,12 +28,19 @@ const weeklyResponse = {
   days: [
     {
       calories: 1800,
+      caloriesScore: 82,
+      carbs: 180,
+      carbsScore: 83,
       dateKey: "2026-03-29",
       didLogAnything: true,
+      fat: 62,
+      fatScore: 92,
       hydrationCups: 5,
+      hydrationScore: 63,
       isFuture: false,
       nutritionCoveragePercent: 62,
       protein: 120,
+      proteinScore: 80,
       shortLabel: "Sun",
       wellnessScore: 78,
     },
@@ -79,11 +88,14 @@ const weeklyResponse = {
   },
   overview: {
     onTrackDays: 4,
-    summaryText: "You stayed consistent on protein and hydration this week.",
+    summaryText:
+      "This week you're averaging 1,800 kcal/day, 120g protein/day, 180g carbs/day, and 62g fat/day. Lowest coverage: vitamin D and fiber.",
     weeklyWellnessScore: 74,
   },
   targets: {
     calories: 2200,
+    carbs: 250,
+    fat: 70,
     hydration: 8,
     protein: 150,
   },
@@ -99,6 +111,7 @@ const weeklyResponse = {
 describe("TrendsScreen", () => {
   beforeEach(() => {
     mockUseQuery.mockReset();
+    mockWeeklyTrendChart.mockReset();
   });
 
   it("shows an analytics-first hero without the streak grid", () => {
@@ -111,6 +124,11 @@ describe("TrendsScreen", () => {
     expect(getByText("/ 100")).toBeTruthy();
     expect(getByText("4 of 5 days on track")).toBeTruthy();
     expect(getByTestId("trends-weekly-chart")).toBeTruthy();
+    expect(mockWeeklyTrendChart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activeMetric: "calories",
+      })
+    );
     expect(queryByText("Current streak")).toBeNull();
     expect(queryByText("Calories")).toBeNull();
     expect(queryByText("Logging")).toBeNull();

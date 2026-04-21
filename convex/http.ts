@@ -2,23 +2,10 @@ import { httpRouter } from "convex/server";
 import { internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
 import { authComponent, createAuth } from "./betterAuth/auth";
+import { authorizeRevenueCatWebhook } from "./lib/revenueCatWebhookAuth";
 
 const http = httpRouter();
 const revenueCatWebhookAuthToken = process.env.REVENUECAT_WEBHOOK_AUTH_TOKEN ?? null;
-
-function getRevenueCatAuthorizationToken(request: Request) {
-  const authorizationHeader = request.headers.get("authorization") ?? request.headers.get("Authorization");
-
-  if (!authorizationHeader) {
-    return null;
-  }
-
-  if (authorizationHeader.startsWith("Bearer ")) {
-    return authorizationHeader.slice("Bearer ".length).trim();
-  }
-
-  return authorizationHeader.trim();
-}
 
 function mapRevenueCatStore(store?: string) {
   switch (store) {
@@ -61,12 +48,18 @@ http.route({
   path: "/webhooks/revenuecat",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    if (revenueCatWebhookAuthToken) {
-      const providedToken = getRevenueCatAuthorizationToken(request);
+    const authorizationResult = authorizeRevenueCatWebhook({
+      authorizationHeader:
+        request.headers.get("authorization") ?? request.headers.get("Authorization"),
+      configuredToken: revenueCatWebhookAuthToken,
+    });
 
-      if (providedToken !== revenueCatWebhookAuthToken) {
-        return new Response("Unauthorized", { status: 401 });
+    if (!authorizationResult.ok) {
+      if (authorizationResult.status === 503) {
+        console.error("RevenueCat webhook auth is not configured.");
       }
+
+      return new Response(authorizationResult.message, { status: authorizationResult.status });
     }
 
     const body = await request.json();

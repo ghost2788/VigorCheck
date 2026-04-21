@@ -1,0 +1,95 @@
+route,component_file,route_type,stability_class,state_name,entry_method,evidence_type,evidence_status,evidence_source,priority_tier,findings_status,notes
+/,app/index.tsx,bootstrap,stable,loading bootstrap,Cold launch while auth and onboarding hydrate,real-session,source-only,app/index.tsx:101-108,T1,none,Shared loading gate
+/,app/index.tsx,bootstrap,stable,unauthenticated redirect,Launch without session,real-session,source-only,app/index.tsx:112-113,T1,none,Routes to auth welcome
+/,app/index.tsx,bootstrap,stable,paywall redirect,Launch with completed user and expired access,real-session,source-only,app/index.tsx:116-118,T1,none,Routes to paywall
+/,app/index.tsx,bootstrap,stable,app redirect,Launch with completed user and valid access,real-session,source-only,app/index.tsx:121,T1,none,Routes to tabs
+/,app/index.tsx,bootstrap,stable,onboarding redirect,Launch authenticated without completed user,real-session,source-only,app/index.tsx:124-128,T1,none,Routes to summary or goal
+_layout,app/_layout.tsx,global gate,stable,missing auth config,Boot with required auth config missing,synthetic-only,source-only,app/_layout.tsx,T3,none,Configuration guard
+/(auth)/welcome,app/(auth)/welcome.tsx,auth,stable,default welcome,Signed out launch or logout,real-session,source-only,app/(auth)/welcome.tsx,T1,F-05,Primary auth entry
+/(auth)/sign-in,app/(auth)/sign-in.tsx,auth,stable,default form,Direct route or footer link,real-session,source-only,app/(auth)/sign-in.tsx,T1,none,Shared auth scaffold
+/(auth)/sign-in,app/(auth)/sign-in.tsx,auth,stable,submitting,Submit credentials,real-session,source-only,app/(auth)/sign-in.tsx,T1,none,Disabled CTA and loading copy
+/(auth)/sign-in,app/(auth)/sign-in.tsx,auth,stable,error state,Use invalid credentials or provider failure,real-session,source-only,app/(auth)/sign-in.tsx,T1,none,Inline error placement
+/(auth)/create-account,app/(auth)/create-account.tsx,auth,stable,default form,Direct route from welcome,real-session,source-only,app/(auth)/create-account.tsx,T1,none,Shared auth scaffold
+/(auth)/create-account,app/(auth)/create-account.tsx,auth,stable,submitting,Submit new account details,real-session,source-only,app/(auth)/create-account.tsx,T1,none,Disabled CTA and loading copy
+/(auth)/create-account,app/(auth)/create-account.tsx,auth,stable,error state,Validation failure or provider error,real-session,source-only,app/(auth)/create-account.tsx,T1,none,Inline error placement
+/(auth)/name,app/(auth)/name.tsx,auth,stable,empty name capture,Fresh account after auth,real-session,source-only,app/(auth)/name.tsx,T2,none,First signed in identity capture
+/(auth)/name,app/(auth)/name.tsx,auth,stable,validation or save error,Continue with empty or failed save,real-session,source-only,app/(auth)/name.tsx,T2,none,Footer error placement
+/(onboarding)/welcome,app/(onboarding)/welcome.tsx,redirect bridge,legacy bridge,redirect to auth welcome,Direct navigation to deprecated welcome,synthetic-only,source-only,app/(onboarding)/welcome.tsx,T3,none,Deprecated wrapper
+/(onboarding)/goal,app/(onboarding)/goal.tsx,onboarding,stable,no selection yet,Fresh onboarding path,real-session,source-only,app/(onboarding)/goal.tsx,T2,F-03,Back control drift
+/(onboarding)/goal,app/(onboarding)/goal.tsx,onboarding,stable,selection made,Select a goal option,real-session,source-only,app/(onboarding)/goal.tsx,T2,F-03,Pill density and CTA spacing
+/(onboarding)/goal-pace,app/(onboarding)/goal-pace.tsx,onboarding,stable,no selection yet,Open after goal choice,real-session,source-only,app/(onboarding)/goal-pace.tsx,T2,F-03,Back control drift
+/(onboarding)/goal-pace,app/(onboarding)/goal-pace.tsx,onboarding,stable,selection made,Select a pace option,real-session,source-only,app/(onboarding)/goal-pace.tsx,T2,F-03,Pill density and CTA spacing
+/(onboarding)/challenge,app/(onboarding)/challenge.tsx,onboarding,stable,no selection yet,Open after pace choice,real-session,source-only,app/(onboarding)/challenge.tsx,T2,F-03,Back control drift
+/(onboarding)/challenge,app/(onboarding)/challenge.tsx,onboarding,stable,selection made,Select a challenge option,real-session,source-only,app/(onboarding)/challenge.tsx,T2,F-03,Pill density and CTA spacing
+/(onboarding)/sex,app/(onboarding)/sex.tsx,onboarding,stable,no selection yet,Open after challenge choice,real-session,source-only,app/(onboarding)/sex.tsx,T2,F-03,Back control drift
+/(onboarding)/sex,app/(onboarding)/sex.tsx,onboarding,stable,selection made,Select a sex option,real-session,source-only,app/(onboarding)/sex.tsx,T2,F-03,Pill density and CTA spacing
+/(onboarding)/age,app/(onboarding)/age.tsx,onboarding,stable,empty numeric field,Open after sex choice,real-session,source-only,app/(onboarding)/age.tsx,T2,F-03,Back control and field hierarchy
+/(onboarding)/age,app/(onboarding)/age.tsx,onboarding,stable,valid numeric entry,Enter a valid age,real-session,source-only,app/(onboarding)/age.tsx,T2,F-03,Keyboard and footer spacing
+/(onboarding)/height,app/(onboarding)/height.tsx,redirect bridge,legacy bridge,redirect to body metrics,Direct navigation to deprecated height route,synthetic-only,source-only,app/(onboarding)/height.tsx,T3,none,Deprecated wrapper
+/(onboarding)/weight,app/(onboarding)/weight.tsx,redirect bridge,legacy bridge,redirect to body metrics,Direct navigation to deprecated weight route,synthetic-only,source-only,app/(onboarding)/weight.tsx,T3,none,Deprecated wrapper
+/(onboarding)/body-metrics,app/(onboarding)/body-metrics.tsx,onboarding,stable,empty or partial fields,Open after age step,real-session,source-only,app/(onboarding)/body-metrics.tsx,T2,F-03,Field hierarchy and back control
+/(onboarding)/body-metrics,app/(onboarding)/body-metrics.tsx,onboarding,stable,valid body metrics,Enter height and weight values,real-session,source-only,app/(onboarding)/body-metrics.tsx,T2,F-03,Target row density
+/(onboarding)/activity,app/(onboarding)/activity.tsx,onboarding,stable,no selection yet,Open after body metrics,real-session,source-only,app/(onboarding)/activity.tsx,T2,F-03,Back control drift
+/(onboarding)/activity,app/(onboarding)/activity.tsx,onboarding,stable,selection made,Select an activity level,real-session,source-only,app/(onboarding)/activity.tsx,T2,F-03,Pill density and CTA spacing
+/(onboarding)/summary,app/(onboarding)/summary.tsx,onboarding,stable,summary review,Open after activity step,real-session,source-only,app/(onboarding)/summary.tsx,T1,F-03,Back control drift
+/(onboarding)/summary,app/(onboarding)/summary.tsx,onboarding,stable,save ready footer,Valid draft ready to build plan,real-session,source-only,app/(onboarding)/summary.tsx,T1,F-03,Sticky footer hierarchy
+/(onboarding)/build-plan,app/(onboarding)/build-plan.tsx,onboarding,stable,animated progress,Open after summary CTA,real-session,source-only,app/(onboarding)/build-plan.tsx,T1,F-03,Back control drift
+/(tabs)/index,app/(tabs)/index.tsx,tab,stable,loading dashboard,Open home while query is undefined,synthetic-only,source-only,app/(tabs)/index.tsx:164-171,T1,none,Query loading branch
+/(tabs)/index,app/(tabs)/index.tsx,tab,stable,finish setup fallback,Force dashboard null branch,synthetic-only,source-only,app/(tabs)/index.tsx:175-186,T3,none,Pre bootstrap inconsistency
+/(tabs)/index,app/(tabs)/index.tsx,tab,stable,empty todays entries,Use fully onboarded zero data account,real-empty,source-only,app/(tabs)/index.tsx:568-588,T1,none,Legitimate zero data state
+/(tabs)/index,app/(tabs)/index.tsx,tab,stable,populated dashboard,Use populated account with history,real-session,source-only,app/(tabs)/index.tsx,T1,none,Primary home surface
+/(tabs)/log,app/(tabs)/log.tsx,tab,stable,loading log,Open log while queries are undefined,synthetic-only,source-only,app/(tabs)/log.tsx:85-110,T1,none,Query loading branch
+/(tabs)/log,app/(tabs)/log.tsx,tab,stable,finish setup fallback,Force dashboard null branch,synthetic-only,source-only,app/(tabs)/log.tsx:114-128,T3,none,Pre bootstrap inconsistency
+/(tabs)/log,app/(tabs)/log.tsx,tab,stable,base cards no queue,Open populated or zero data account with no active jobs,real-session,source-only,app/(tabs)/log.tsx:160-243,T1,none,Primary log layout
+/(tabs)/log,app/(tabs)/log.tsx,analysis queue,session-bound transient,scan queue queued,Enqueue scan job and stay in same session,real-session,source-plus-tests,app/(tabs)/log.tsx:160-179; components/AnalysisQueueList.tsx,T1,none,Shared queue UI
+/(tabs)/log,app/(tabs)/log.tsx,analysis queue,session-bound transient,scan queue analyzing,Leave scan job in analyzing state,real-session,source-plus-tests,app/(tabs)/log.tsx:160-179; components/AnalysisQueueList.tsx,T1,none,Shared queue UI
+/(tabs)/log,app/(tabs)/log.tsx,analysis queue,session-bound transient,scan queue ready,Open scan job until review CTA appears,real-session,source-plus-tests,app/(tabs)/log.tsx:160-179; components/AnalysisQueueList.tsx,T1,none,Review CTA state
+/(tabs)/log,app/(tabs)/log.tsx,analysis queue,session-bound transient,scan queue failed,Force scan job failure and inspect retry dismiss actions,real-session,source-plus-tests,app/(tabs)/log.tsx:160-179; components/AnalysisQueueList.tsx,T1,none,Retry and dismiss state
+/(tabs)/log,app/(tabs)/log.tsx,analysis queue,session-bound transient,text queue queued,Enqueue text meal job and stay in same session,real-session,source-plus-tests,app/(tabs)/log.tsx:182-203; components/AiTextMealCard.tsx:118; components/AnalysisQueueList.tsx,T1,none,Shared queue UI in text card
+/(tabs)/log,app/(tabs)/log.tsx,analysis queue,session-bound transient,text queue analyzing,Leave text job in analyzing state,real-session,source-plus-tests,app/(tabs)/log.tsx:182-203; components/AiTextMealCard.tsx:118; components/AnalysisQueueList.tsx,T1,none,Shared queue UI in text card
+/(tabs)/log,app/(tabs)/log.tsx,analysis queue,session-bound transient,text queue ready,Open text job until review CTA appears,real-session,source-plus-tests,app/(tabs)/log.tsx:182-203; components/AiTextMealCard.tsx:118; components/AnalysisQueueList.tsx,T1,none,Review CTA state
+/(tabs)/log,app/(tabs)/log.tsx,analysis queue,session-bound transient,text queue failed,Force text job failure and inspect retry dismiss actions,real-session,source-plus-tests,app/(tabs)/log.tsx:182-203; components/AiTextMealCard.tsx:118; components/AnalysisQueueList.tsx,T1,none,Retry and dismiss state
+/(tabs)/log,app/(tabs)/log.tsx,tab,session-bound transient,barcode fallback modal,Trigger unsupported or blocked barcode path,real-session,source-only,app/(tabs)/log.tsx:245-260,T2,none,Modal sheet branch
+/(tabs)/history,app/(tabs)/history.tsx,tab,stable,loading first page,Open history with empty paginated cache,real-session,source-only,app/(tabs)/history.tsx:16-24,T1,none,Primary loading branch
+/(tabs)/history,app/(tabs)/history.tsx,tab,stable,empty list,Use fully onboarded zero data account,real-empty,source-only,app/(tabs)/history.tsx:32-40,T1,none,Legitimate empty state
+/(tabs)/history,app/(tabs)/history.tsx,tab,stable,populated list,Use populated account with 12 plus days,real-session,source-only,app/(tabs)/history.tsx:27-70,T1,none,Primary history surface
+/(tabs)/history,app/(tabs)/history.tsx,tab,stable,loading more footer,Scroll populated list to pagination threshold,real-session,source-only,app/(tabs)/history.tsx:42-47,T1,none,Pagination footer
+/(tabs)/trends,app/(tabs)/trends.tsx,tab,stable,loading trends,Open trends while query is undefined,synthetic-only,source-only,app/(tabs)/trends.tsx,T2,none,Query loading branch
+/(tabs)/trends,app/(tabs)/trends.tsx,tab,stable,sparse or empty trends,Use low history account,real-empty,source-only,app/(tabs)/trends.tsx,T2,none,Minimal chart state
+/(tabs)/trends,app/(tabs)/trends.tsx,tab,stable,populated trends,Use populated account with enough history,real-session,source-only,app/(tabs)/trends.tsx,T2,none,Primary trends surface
+/(tabs)/profile,app/(tabs)/profile.tsx,tab,stable,base profile,Open signed in profile tab,real-session,source-only,app/(tabs)/profile.tsx,T1,none,Reference surface
+/(tabs)/profile,app/(tabs)/profile.tsx,tab,stable,loaded account actions,Open with subscription and reminder data resolved,real-session,source-only,app/(tabs)/profile.tsx,T1,none,Reference surface
+/paywall,app/paywall.tsx,paywall,stable,loading user and subscription,Open route while currentUser is undefined,synthetic-only,source-only,app/paywall.tsx:33-38,T1,none,Query loading branch
+/paywall,app/paywall.tsx,paywall,stable,paywall required,Open expired or blocked subscription account,real-session,source-only,app/paywall.tsx:63-167,T1,F-02;F-05,Primary paywall surface
+/paywall,app/paywall.tsx,paywall,stable,action error or working,Trigger restore manage or purchase action,real-session,source-only,app/paywall.tsx:52-60;135-166,T1,F-02,Footer hierarchy holds under errors
+/paywall,app/paywall.tsx,paywall,stable,redirect away,Open paywall with valid access,real-session,source-only,app/paywall.tsx:45-46,T2,none,Guard branch
+/supplements,app/supplements.tsx,supplements,stable,loading stack,Open route while stack query is undefined,synthetic-only,source-only,app/supplements.tsx:663-670,T1,none,Query loading branch
+/supplements,app/supplements.tsx,supplements,stable,manage empty stack,Use onboarded account with no supplements,real-empty,source-only,app/supplements.tsx:674-723,T1,F-06,Real empty manage state
+/supplements,app/supplements.tsx,supplements,stable,manage populated stack,Use populated account with daily and archived items,real-session,source-only,app/supplements.tsx:674-723,T1,F-06,Primary supplements surface
+/supplements,app/supplements.tsx,supplements,stable,capture mode,Tap scan supplement from manage state,real-session,source-only,app/supplements.tsx:725-767,T1,F-06,Capture card hierarchy
+/supplements,app/supplements.tsx,supplements,stable,editor create mode,Open custom supplement editor,real-session,source-only,app/supplements.tsx:769-820,T1,F-06,Create editor hierarchy
+/supplements,app/supplements.tsx,supplements,stable,editor scan review mode,Analyze front label and open scan review editor,real-session,source-only,app/supplements.tsx:769-820,T1,F-06,Review editor hierarchy
+/supplements,app/supplements.tsx,supplements,stable,working or error,Trigger analyze or save failure,real-session,source-only,app/supplements.tsx:561-590;594-660,T1,none,Async feedback branch
+/supplements,app/supplements.tsx,supplements,stable,archive confirmation,Archive existing stack item,real-session,source-only,app/supplements.tsx,T2,none,Destructive path
+/history/[dateKey],app/history/[dateKey].tsx,detail,stable,loading or missing day,Open route before query resolves or with bad key,real-session,source-only,app/history/[dateKey].tsx,T2,none,Route guard branch
+/history/[dateKey],app/history/[dateKey].tsx,detail,stable,populated day detail,Open existing history day,real-session,source-only,app/history/[dateKey].tsx,T2,none,Reference detail surface
+/history/[dateKey],app/history/[dateKey].tsx,detail,stable,expanded timeline actions,Expand meal or supplement entry cards,real-session,source-only,app/history/[dateKey].tsx,T2,none,Edit and delete affordances
+/history/hydration/[logId],app/history/hydration/[logId].tsx,detail,stable,loading or missing log,Open route before query resolves or with bad id,real-session,source-only,app/history/hydration/[logId].tsx:50-65,T2,none,Route guard branch
+/history/hydration/[logId],app/history/hydration/[logId].tsx,detail,stable,edit form,Open existing hydration log,real-session,source-only,app/history/hydration/[logId].tsx:121-185,T2,F-04,Legacy edit scaffold
+/history/hydration/[logId],app/history/hydration/[logId].tsx,detail,stable,delete confirmation,Use disposable hydration entry,real-session,source-only,app/history/hydration/[logId].tsx:105-119,T2,F-04,Destructive flow sits on legacy scaffold
+/history/meals/[mealId],app/history/meals/[mealId].tsx,detail,stable,loading or missing meal,Open route before query resolves or with bad id,real-session,source-only,app/history/meals/[mealId].tsx:140-156,T2,none,Route guard branch
+/history/meals/[mealId],app/history/meals/[mealId].tsx,detail,stable,manual meal edit,Open manual meal entry,real-session,source-only,app/history/meals/[mealId].tsx:248-299,T2,F-04,Legacy edit scaffold
+/history/meals/[mealId],app/history/meals/[mealId].tsx,detail,stable,ai meal edit,Open AI meal entry,real-session,source-only,app/history/meals/[mealId].tsx:300-340,T2,F-04,Legacy edit scaffold
+/history/meals/[mealId],app/history/meals/[mealId].tsx,detail,stable,delete confirmation,Use disposable meal entry,real-session,source-only,app/history/meals/[mealId].tsx:205-219,T2,F-04,Destructive flow sits on legacy scaffold
+/profile/plan-settings,app/profile/plan-settings.tsx,settings,stable,loading settings,Open route while profile data is unresolved,synthetic-only,source-only,app/profile/plan-settings.tsx,T2,none,Query loading branch
+/profile/plan-settings,app/profile/plan-settings.tsx,settings,stable,editable form,Open with valid saved plan,real-session,source-only,app/profile/plan-settings.tsx,T2,none,Reference scaffold surface
+/profile/plan-settings,app/profile/plan-settings.tsx,settings,stable,validation or save error,Submit invalid values or fail mutation,real-session,source-only,app/profile/plan-settings.tsx,T2,none,Reference scaffold surface
+/profile/reminder-settings,app/profile/reminder-settings.tsx,settings,stable,loading settings,Open route while reminder data is unresolved,synthetic-only,source-only,app/profile/reminder-settings.tsx,T2,none,Query loading branch
+/profile/reminder-settings,app/profile/reminder-settings.tsx,settings,stable,editable reminders,Open with reminder rows resolved,real-session,source-only,app/profile/reminder-settings.tsx,T2,none,Reference scaffold surface
+/profile/reminder-settings,app/profile/reminder-settings.tsx,settings,stable,toggle and save feedback,Change a reminder row,real-session,source-only,app/profile/reminder-settings.tsx,T2,none,Reference scaffold surface
+/scan/barcode,app/scan/barcode.tsx,scan,stable,camera starting,Open route before permission object resolves,real-session,source-only,app/scan/barcode.tsx:22-27,T1,none,Permission bootstrap branch
+/scan/barcode,app/scan/barcode.tsx,scan,stable,permission denied,Open route after camera denial,real-session,source-only,app/scan/barcode.tsx:30-46,T1,none,Permission request branch
+/scan/barcode,app/scan/barcode.tsx,scan,stable,live scanner,Grant permission and open camera view,real-session,source-only,app/scan/barcode.tsx:49-132,T1,F-01,Theme unsafe overlay
+/scan/review,app/scan/review.tsx,scan,stable,empty fallback,Open route without activeReviewJob,real-session,source-only,app/scan/review.tsx:40-52,T1,none,Valid empty route state
+/scan/review,app/scan/review.tsx,scan,session-bound transient,active review and edit,Open ready scan or text job in same session,session-bound transient,source-only,app/scan/review.tsx:57-220,T1,none,Meaningful state exists only in memory
+/scan/analyzing,app/scan/analyzing.tsx,scan,legacy bridge,legacy bridge message,Direct navigation to old analyzing route,synthetic-only,source-only,app/scan/analyzing.tsx:13-24,T3,none,Review for consistency only

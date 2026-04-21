@@ -3,8 +3,12 @@ export type ThemePaletteId = "default";
 
 export type ThemeTokens = {
   metricCalories: string;
+  metricCarbs: string;
+  metricFat: string;
   metricHydration: string;
+  metricHydrationSupport: string;
   metricNutrition: string;
+  metricNutritionSupport: string;
   metricProtein: string;
   background: string;
   backgroundGradient: [string, string, string, string];
@@ -46,9 +50,13 @@ export const palettes: Record<ThemePaletteId, Record<ThemeMode, ThemeTokens>> = 
       accent3: "#78a0c8",
       accent3Start: "#6a9ec0",
       metricCalories: "#d8c49a",
+      metricCarbs: "#78a0c8",
+      metricFat: "#d38a3a",
       metricProtein: "#5ebaa9",
-      metricHydration: "#78a0c8",
-      metricNutrition: "#d38a3a",
+      metricHydration: "#5ea7c6",
+      metricHydrationSupport: "#5ea7c6",
+      metricNutrition: "#a59a63",
+      metricNutritionSupport: "#a59a63",
       ringTrack: "rgba(255,255,255,0.035)",
       tabBarBg: "rgba(20,18,16,0.96)",
       surfaceStrong: "rgba(255,255,255,0.05)",
@@ -72,9 +80,13 @@ export const palettes: Record<ThemePaletteId, Record<ThemeMode, ThemeTokens>> = 
       accent3: "#6090c0",
       accent3Start: "#5082b4",
       metricCalories: "#c2aa78",
+      metricCarbs: "#6090c0",
+      metricFat: "#bb7427",
       metricProtein: "#3a9e8a",
-      metricHydration: "#6090c0",
-      metricNutrition: "#bb7427",
+      metricHydration: "#4a8db1",
+      metricHydrationSupport: "#4a8db1",
+      metricNutrition: "#97864a",
+      metricNutritionSupport: "#97864a",
       ringTrack: "rgba(68,55,37,0.08)",
       tabBarBg: "rgba(245,242,237,0.97)",
       surfaceStrong: "rgba(255,255,255,0.88)",

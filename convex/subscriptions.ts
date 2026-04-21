@@ -3,6 +3,7 @@ import {
   buildRevenueCatAppUserId,
   getTrialEndsAt,
   normalizeSubscriptionSnapshot,
+  resolveStoredSubscriptionStatus,
   SubscriptionPlatform,
   SubscriptionStatus,
 } from "../lib/domain/subscription";
@@ -44,9 +45,13 @@ function getDefaultRevenueCatAppUserId(userId: string) {
 
 function resolveNextSubscriptionStatus({
   activeEntitlement,
+  now,
+  subscriptionExpiresAt,
   user,
 }: {
   activeEntitlement: boolean;
+  now: number;
+  subscriptionExpiresAt?: number;
   user: {
     lastBillingSyncAt?: number;
     revenueCatAppUserId?: string;
@@ -62,9 +67,14 @@ function resolveNextSubscriptionStatus({
     return "active" as const;
   }
 
-  const normalized = normalizeSubscriptionSnapshot(getStoredSubscriptionSnapshot(user));
-
-  return normalized.hasActiveTrial ? ("trial" as const) : ("expired" as const);
+  return resolveStoredSubscriptionStatus({
+    now,
+    snapshot: {
+      ...getStoredSubscriptionSnapshot(user),
+      subscriptionExpiresAt: subscriptionExpiresAt ?? user.subscriptionExpiresAt,
+      trialEndsAt: user.trialEndsAt ?? getTrialEndsAt(user.trialStartDate),
+    },
+  });
 }
 
 function buildSubscriptionPatch({
@@ -108,6 +118,8 @@ function buildSubscriptionPatch({
       revenueCatAppUserId ?? user.revenueCatAppUserId ?? getDefaultRevenueCatAppUserId(user._id),
     subscriptionStatus: resolveNextSubscriptionStatus({
       activeEntitlement,
+      now,
+      subscriptionExpiresAt,
       user,
     }),
     trialEndsAt: user.trialEndsAt ?? getTrialEndsAt(user.trialStartDate),

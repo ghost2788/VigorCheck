@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useEffect, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
@@ -677,16 +678,26 @@ export default function SupplementsScreen() {
       showsVerticalScrollIndicator={false}
       style={{ backgroundColor: theme.background, flex: 1 }}
     >
-      <View style={styles.headerRow}>
-        <ThemedText size="xl" style={styles.title}>
-          Manage supplements
+      <View style={styles.headerRow} testID="supplements-header-row">
+        <ThemedText size="xs" style={styles.routeEyebrow} variant="tertiary">
+          Supplement stack
         </ThemedText>
-        <Pressable accessibilityRole="button" onPress={() => router.back()}>
+        <Pressable
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={() => router.back()}
+          style={styles.backButton}
+          testID="supplements-back-button"
+        >
+          <Ionicons color={theme.accent1} name="chevron-back" size={18} />
           <ThemedText size="sm" variant="accent1">
             Back
           </ThemedText>
         </Pressable>
       </View>
+      <ThemedText size="xl" style={styles.title}>
+        Manage supplements
+      </ThemedText>
       {statusMessage ? (
         <View
           style={[
@@ -704,8 +715,8 @@ export default function SupplementsScreen() {
       ) : null}
 
       {screenMode === "manage" ? (
-        <Card>
-          <ThemedText size="sm" style={styles.cardTitle}>
+        <Card testID="supplements-manage-card">
+          <ThemedText size="md" style={styles.cardTitle} testID="supplements-manage-title">
             Add to My Supplements
           </ThemedText>
           <ThemedText size="sm" style={styles.cardCopy} variant="secondary">
@@ -724,7 +735,7 @@ export default function SupplementsScreen() {
 
       {screenMode === "capture" ? (
         <Card>
-          <ThemedText size="sm" style={styles.cardTitle}>
+          <ThemedText size="md" style={styles.cardTitle} testID="supplements-capture-title">
             Scan supplement
           </ThemedText>
           <ThemedText size="sm" style={styles.cardCopy} variant="secondary">
@@ -768,7 +779,7 @@ export default function SupplementsScreen() {
 
       {screenMode === "editor" && editorState ? (
         <Card>
-          <ThemedText size="sm" style={styles.cardTitle}>
+          <ThemedText size="md" style={styles.cardTitle} testID="supplements-editor-title">
             {editorTitle}
           </ThemedText>
 
@@ -1169,7 +1180,7 @@ export default function SupplementsScreen() {
       ) : null}
 
       {screenMode === "manage" ? (
-        <Card>
+        <Card style={styles.stackCard} testID="supplements-stack-card">
           <StackSection
             emptyLabel="Your daily stack will show up here."
             items={activeDaily}
@@ -1198,6 +1209,12 @@ export default function SupplementsScreen() {
 const styles = StyleSheet.create({
   actionGroup: {
     gap: 10,
+  },
+  backButton: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 2,
+    paddingVertical: 6,
   },
   captureActions: {
     gap: 10,
@@ -1284,7 +1301,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 8,
   },
   ingredientCard: {
     marginBottom: 14,
@@ -1322,6 +1339,10 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 12,
   },
+  routeEyebrow: {
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
   stackRow: {
     borderRadius: 18,
     borderWidth: 1,
@@ -1333,6 +1354,9 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: "center",
     marginLeft: 12,
+  },
+  stackCard: {
+    marginTop: 12,
   },
   stackRowCopy: {
     flex: 1,
@@ -1356,7 +1380,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   title: {
-    marginBottom: 0,
+    marginBottom: 16,
   },
   togglePill: {
     alignItems: "center",

@@ -45,9 +45,18 @@ function buildSnapshot(overrides: Partial<ReminderSnapshot> = {}): ReminderSnaps
     mealCount: 0,
     progress: {
       caloriesPercent: 0,
+      caloriesScore: 0,
+      caloriesOnTarget: false,
+      carbsPercent: 0,
+      carbsScore: 0,
+      carbsOnTarget: false,
+      fatPercent: 0,
+      fatScore: 0,
+      fatOnTarget: false,
       hydrationPercent: 0,
       nutritionPercent: 0,
       proteinPercent: 0,
+      proteinOnTarget: false,
     },
     timeZone,
     ...overrides,
@@ -79,9 +88,18 @@ describe("reminder scheduling", () => {
       snapshot: buildSnapshot({
         progress: {
           caloriesPercent: 0,
+          caloriesScore: 0,
+          caloriesOnTarget: false,
+          carbsPercent: 0,
+          carbsScore: 0,
+          carbsOnTarget: false,
+          fatPercent: 0,
+          fatScore: 0,
+          fatOnTarget: false,
           hydrationPercent: 10,
           nutritionPercent: 0,
           proteinPercent: 0,
+          proteinOnTarget: false,
         },
       }),
     });
@@ -103,9 +121,18 @@ describe("reminder scheduling", () => {
         lastHydrationTimestamp: at("09:15"),
         progress: {
           caloriesPercent: 0,
+          caloriesScore: 0,
+          caloriesOnTarget: false,
+          carbsPercent: 0,
+          carbsScore: 0,
+          carbsOnTarget: false,
+          fatPercent: 0,
+          fatScore: 0,
+          fatOnTarget: false,
           hydrationPercent: 20,
           nutritionPercent: 0,
           proteinPercent: 0,
+          proteinOnTarget: false,
         },
       }),
     });
@@ -159,10 +186,19 @@ describe("reminder scheduling", () => {
       settings: buildSettings({ notifyGoalCompletion: true }),
       snapshot: buildSnapshot({
         progress: {
-          caloriesPercent: 100,
-          hydrationPercent: 100,
+          caloriesPercent: 112,
+          caloriesScore: 100,
+          caloriesOnTarget: true,
+          carbsPercent: 95,
+          carbsScore: 100,
+          carbsOnTarget: true,
+          fatPercent: 103,
+          fatScore: 100,
+          fatOnTarget: true,
+          hydrationPercent: 40,
           nutritionPercent: 40,
           proteinPercent: 100,
+          proteinOnTarget: true,
         },
       }),
     });
@@ -181,10 +217,19 @@ describe("reminder scheduling", () => {
       settings: buildSettings({ notifyGoalCompletion: true }),
       snapshot: buildSnapshot({
         progress: {
-          caloriesPercent: 100,
-          hydrationPercent: 100,
+          caloriesPercent: 112,
+          caloriesScore: 100,
+          caloriesOnTarget: true,
+          carbsPercent: 95,
+          carbsScore: 100,
+          carbsOnTarget: true,
+          fatPercent: 103,
+          fatScore: 100,
+          fatOnTarget: true,
+          hydrationPercent: 40,
           nutritionPercent: 40,
           proteinPercent: 100,
+          proteinOnTarget: true,
         },
       }),
     });
@@ -205,9 +250,18 @@ describe("reminder scheduling", () => {
         biggestGapKey: "protein",
         progress: {
           caloriesPercent: 80,
+          caloriesScore: 50,
+          caloriesOnTarget: false,
+          carbsPercent: 0,
+          carbsScore: 0,
+          carbsOnTarget: false,
+          fatPercent: 0,
+          fatScore: 0,
+          fatOnTarget: false,
           hydrationPercent: 60,
           nutritionPercent: 30,
           proteinPercent: 55,
+          proteinOnTarget: false,
         },
       }),
     });
@@ -228,9 +282,18 @@ describe("reminder scheduling", () => {
         biggestGapKey: "protein",
         progress: {
           caloriesPercent: 80,
+          caloriesScore: 50,
+          caloriesOnTarget: false,
+          carbsPercent: 0,
+          carbsScore: 0,
+          carbsOnTarget: false,
+          fatPercent: 0,
+          fatScore: 0,
+          fatOnTarget: false,
           hydrationPercent: 60,
           nutritionPercent: 30,
           proteinPercent: 55,
+          proteinOnTarget: false,
         },
       }),
     });
@@ -252,13 +315,81 @@ describe("reminder scheduling", () => {
       snapshot: buildSnapshot({
         progress: {
           caloriesPercent: 100,
+          caloriesScore: 100,
+          caloriesOnTarget: true,
+          carbsPercent: 100,
+          carbsScore: 100,
+          carbsOnTarget: true,
+          fatPercent: 100,
+          fatScore: 100,
+          fatOnTarget: true,
           hydrationPercent: 100,
           nutritionPercent: 100,
           proteinPercent: 100,
+          proteinOnTarget: true,
         },
       }),
     });
 
     expect(completedDay.notifications.filter((notification) => notification.kind === "end_of_day")).toHaveLength(0);
+  });
+
+  it("uses macro-specific copy for carb and fat end-of-day gaps", () => {
+    const carbsSchedule = buildReminderSchedule({
+      lastEndOfDayReminderDate: null,
+      lastGoalCompletionReminderDate: null,
+      now: at("19:30"),
+      settings: buildSettings({ notifyEndOfDay: true, sleepTime: "20:00" }),
+      snapshot: buildSnapshot({
+        biggestGapKey: "carbs",
+        progress: {
+          caloriesPercent: 80,
+          caloriesScore: 50,
+          caloriesOnTarget: false,
+          carbsPercent: 60,
+          carbsScore: 35,
+          carbsOnTarget: false,
+          fatPercent: 100,
+          fatScore: 100,
+          fatOnTarget: true,
+          hydrationPercent: 60,
+          nutritionPercent: 30,
+          proteinPercent: 100,
+          proteinOnTarget: true,
+        },
+      }),
+    });
+
+    const fatSchedule = buildReminderSchedule({
+      lastEndOfDayReminderDate: null,
+      lastGoalCompletionReminderDate: null,
+      now: at("19:30"),
+      settings: buildSettings({ notifyEndOfDay: true, sleepTime: "20:00" }),
+      snapshot: buildSnapshot({
+        biggestGapKey: "fat",
+        progress: {
+          caloriesPercent: 80,
+          caloriesScore: 50,
+          caloriesOnTarget: false,
+          carbsPercent: 100,
+          carbsScore: 100,
+          carbsOnTarget: true,
+          fatPercent: 130,
+          fatScore: 20,
+          fatOnTarget: false,
+          hydrationPercent: 60,
+          nutritionPercent: 30,
+          proteinPercent: 100,
+          proteinOnTarget: true,
+        },
+      }),
+    });
+
+    expect(carbsSchedule.notifications.find((notification) => notification.kind === "end_of_day")?.body).toBe(
+      "Carbs are still off target today. There's still time for one more push."
+    );
+    expect(fatSchedule.notifications.find((notification) => notification.kind === "end_of_day")?.body).toBe(
+      "Fat is still off target today. There's still time for one more push."
+    );
   });
 });

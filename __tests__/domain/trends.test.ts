@@ -1,5 +1,6 @@
 import * as trendsDomain from "../../lib/domain/trends";
 import * as dayWindow from "../../lib/domain/dayWindow";
+import { buildTodayDashboard } from "../../lib/domain/dashboard";
 import { getNutritionTargets } from "../../lib/domain/wellness";
 import { getDetailedNutrientTargets } from "../../lib/domain/nutrients";
 
@@ -233,12 +234,144 @@ describe("weekly trend helpers", () => {
 
     expect(day.didLogAnything).toBe(true);
     expect(day.calories).toBe(130);
+    expect(day.carbs).toBe(4);
+    expect(day.fat).toBe(2);
     expect(day.protein).toBe(25);
     expect(day.nutrients.find((entry) => entry.key === "vitaminD")).toEqual(
       expect.objectContaining({
         consumed: 4,
       })
     );
+  });
+
+  it("passes goal context into trend days and counts on-track days from the weighted wellness score", () => {
+    const targets = {
+      calories: 2000,
+      carbs: 220,
+      detailedNutrition: getDetailedNutrientTargets({
+        age: 34,
+        sex: "male",
+        targetFiber: 20,
+      }),
+      fat: 70,
+      hydration: 4,
+      nutrition: {
+        calcium: 100,
+        fiber: 20,
+        iron: 10,
+        potassium: 1000,
+        vitaminC: 100,
+        vitaminD: 10,
+      },
+      protein: 100,
+    };
+    const hydrationLogs = [
+      {
+        amountOz: 8,
+        id: "water-1",
+        timestamp: Date.parse("2026-03-29T17:15:00.000Z"),
+      },
+      {
+        amountOz: 8,
+        id: "water-2",
+        timestamp: Date.parse("2026-03-29T20:45:00.000Z"),
+      },
+    ];
+    const meals = [
+      {
+        entryMethod: "search" as const,
+        id: "meal-1",
+        label: "Breakfast Plate",
+        mealType: "breakfast" as const,
+        nutrients: {
+          calcium: 40,
+          choline: 140,
+          copper: 0.1,
+          fiber: 6,
+          iron: 3,
+          manganese: 0.4,
+          omega3: 0.1,
+          potassium: 300,
+          selenium: 18,
+          vitaminC: 10,
+          vitaminD: 4,
+        },
+        timestamp: Date.parse("2026-03-29T16:30:00.000Z"),
+        totals: {
+          calories: 1000,
+          carbs: 70,
+          fat: 30,
+          protein: 30,
+        },
+      },
+      {
+        entryMethod: "barcode" as const,
+        id: "meal-2",
+        mealType: "lunch" as const,
+        nutrients: {
+          calcium: 10,
+          choline: 60,
+          copper: 0.4,
+          fiber: 4,
+          iron: 2,
+          manganese: 1.4,
+          omega3: 0.3,
+          potassium: 200,
+          selenium: 45,
+          vitaminC: 40,
+          vitaminD: 1,
+        },
+        timestamp: Date.parse("2026-03-29T21:10:00.000Z"),
+        totals: {
+          calories: 800,
+          carbs: 66,
+          fat: 22,
+          protein: 50,
+        },
+      },
+    ];
+
+    const homeDashboard = buildTodayDashboard({
+      goalType: "fat_loss",
+      hydrationLogs,
+      mealItems: [],
+      meals,
+      targets,
+    });
+    const fatLossDay = trendsDomain.buildTrendDay({
+      dateKey: "2026-03-29",
+      goalType: "fat_loss",
+      hydrationLogs,
+      isFuture: false,
+      meals,
+      targets,
+    });
+    const generalHealthDay = trendsDomain.buildTrendDay({
+      dateKey: "2026-03-30",
+      goalType: "general_health",
+      hydrationLogs,
+      isFuture: false,
+      meals,
+      targets,
+    });
+    const overview = trendsDomain.buildWeeklyOverview({
+      days: [fatLossDay, generalHealthDay],
+      recurringGaps: [],
+    });
+
+    expect(fatLossDay.wellnessScore).toBe(homeDashboard.wellness.score);
+    expect(fatLossDay.carbs).toBe(136);
+    expect(fatLossDay.fat).toBe(52);
+    expect(fatLossDay.carbsScore).toBe(30);
+    expect(fatLossDay.fatScore).toBe(61);
+    expect(fatLossDay.wellnessScore).toBe(69);
+    expect(generalHealthDay.wellnessScore).toBe(62);
+    expect(overview.onTrackDays).toBe(0);
+    expect(overview.weeklyWellnessScore).toBe(66);
+    expect(overview.summaryText).toContain("averaging 1,800 kcal/day");
+    expect(overview.summaryText).toContain("80g protein/day");
+    expect(overview.summaryText).toContain("136g carbs/day");
+    expect(overview.summaryText).toContain("52g fat/day");
   });
 
 });

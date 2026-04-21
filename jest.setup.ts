@@ -30,6 +30,13 @@ jest.mock("expo-web-browser", () => ({
   warmUpAsync: jest.fn(async () => undefined),
 }));
 
+jest.mock("expo-haptics", () => ({
+  ImpactFeedbackStyle: {
+    Light: "light",
+  },
+  impactAsync: jest.fn(async () => undefined),
+}));
+
 jest.mock("react-native-purchases", () => ({
   __esModule: true,
   default: {

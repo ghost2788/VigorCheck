@@ -54,7 +54,7 @@ export default function ProfilePlanSettingsScreen() {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
         <Card style={styles.card}>
-          <ThemedText size="sm" style={styles.cardTitle}>
+          <ThemedText size="md" style={styles.cardTitle}>
             No profile yet
           </ThemedText>
           <ThemedText style={styles.cardBody} variant="secondary">

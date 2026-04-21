@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>Paywall Footer Action Hierarchy Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --accent1: #5ebaa9;
+    --accent2: #c4a46c;
+    --shadow: rgba(0,0,0,0.42);
+  }
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --card: rgba(255,255,255,0.82);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --accent1: #3a9e8a;
+    --accent2: #b8965a;
+    --shadow: rgba(91,71,44,0.12);
+  }
+  body {
+    background: radial-gradient(circle at top, rgba(94,186,169,0.1), transparent 24%), var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 56px 20px 42px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    color: var(--textSecondary);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .eyebrow, .label {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+  }
+  .eyebrow { margin-bottom: 12px; }
+  .label { margin-bottom: 12px; }
+  h1 {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    margin-bottom: 10px;
+  }
+  .lead, .hero-copy, .summary p {
+    color: var(--textSecondary);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  .lead { margin-bottom: 24px; }
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--cardBorder);
+    margin: 26px 0;
+  }
+  .screen {
+    border-radius: 28px;
+    border: 1px solid var(--cardBorder);
+    overflow: hidden;
+    box-shadow: 0 18px 40px var(--shadow);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent 20%), var(--bg);
+    min-height: 500px;
+    position: relative;
+  }
+  .content {
+    padding: 20px 18px 170px;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--accent1);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .sub-eyebrow {
+    color: var(--accent2);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .hero-title {
+    font-size: 30px;
+    line-height: 34px;
+    letter-spacing: -1px;
+    font-weight: 300;
+    margin-bottom: 12px;
+  }
+  .hero-copy { margin-bottom: 18px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--cardBorder);
+    border-radius: 22px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 14px 18px 18px;
+    border-top: 1px solid var(--cardBorder);
+    background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent 28%), var(--bg);
+  }
+  .bad-inline-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+    color: var(--accent1);
+    font-size: 13px;
+  }
+  .good-utility-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 12px;
+    color: var(--textTertiary);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .signout {
+    text-align: center;
+    color: var(--textSecondary);
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+  .cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    border-radius: 16px;
+    background: rgba(94,186,169,0.18);
+    border: 1px solid rgba(94,186,169,0.28);
+    color: var(--accent1);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+  }
+  body.light .cta {
+    background: rgba(58,158,138,0.12);
+    border-color: rgba(58,158,138,0.22);
+  }
+  .summary {
+    border-radius: 20px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    padding: 14px 16px;
+    margin-top: 18px;
+  }
+  .summary strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? 'Dark' : 'Light';">Light</button>
+<div class="eyebrow">F-02 Purchase Flow</div>
+<h1>Paywall needs one dominant action</h1>
+<p class="lead">The purchase CTA should stay visually obvious while restore, manage, and sign-out stay available without competing for the same weight.</p>
+
+<div class="label">Before equal-weight footer cluster</div>
+<div class="screen">
+  <div class="content">
+    <div class="sub-eyebrow">Subscription required</div>
+    <div class="hero-title">Keep your full VigorCheck plan running</div>
+    <div class="hero-copy">Continue with AI meal scans, full nutrient insight, and the daily progress systems you set up during onboarding.</div>
+    <div class="card">
+      <div class="card-title">Monthly access</div>
+      <div class="hero-copy">$6.99 / month with 7-day free trial.</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="bad-inline-links">
+      <span>Restore purchases</span>
+      <span>Manage subscription</span>
+      <span style="color: var(--textSecondary);">Sign out</span>
+    </div>
+    <div class="cta">Start monthly plan</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="label">After dominant CTA plus tertiary utility row</div>
+<div class="screen">
+  <div class="content">
+    <div class="back">&#8249; Back</div>
+    <div class="sub-eyebrow">Subscription required</div>
+    <div class="hero-title">Keep your full VigorCheck plan running</div>
+    <div class="hero-copy">Continue with AI meal scans, full nutrient insight, and daily progress tools. Billing utilities stay available but no longer compete with the purchase decision.</div>
+    <div class="card">
+      <div class="card-title">Monthly access</div>
+      <div class="hero-copy">$6.99 / month with 7-day free trial.</div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="good-utility-row">
+      <span>Restore purchases</span>
+      <span>Manage subscription</span>
+    </div>
+    <div class="signout">Sign out</div>
+    <div class="cta">Start monthly plan</div>
+  </div>
+</div>
+
+<div class="summary">
+  <strong>Approval intent</strong>
+  <p>Add a light back affordance and reduce the non-purchase actions to tertiary text links so the primary CTA remains the only visually dominant decision in the footer.</p>
+</div>
+</body>
+</html>

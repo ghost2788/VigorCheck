@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>Welcome Hero Token Lock Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --accent2: #c4a46c;
+    --accent2Glow: rgba(196,164,108,0.28);
+    --accent2Halo: rgba(196,164,108,0.16);
+    --shadow: rgba(0,0,0,0.42);
+  }
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --card: rgba(255,255,255,0.82);
+    --cardBorder: rgba(68,55,37,0.12);
+    --accent2: #b8965a;
+    --accent2Glow: rgba(184,150,90,0.22);
+    --accent2Halo: rgba(184,150,90,0.12);
+    --shadow: rgba(91,71,44,0.12);
+  }
+  body {
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent 18%), var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 56px 20px 42px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    color: var(--textSecondary);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .eyebrow, .label {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+  }
+  .eyebrow { margin-bottom: 12px; }
+  .label { margin-bottom: 12px; }
+  h1 {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    margin-bottom: 10px;
+  }
+  .lead, .note, .summary p {
+    color: var(--textSecondary);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  .lead { margin-bottom: 24px; }
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--cardBorder);
+    margin: 26px 0;
+  }
+  .hero-card {
+    border-radius: 26px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    padding: 18px 18px 20px;
+    box-shadow: 0 18px 40px var(--shadow);
+    margin-bottom: 12px;
+  }
+  .hero-stage {
+    position: relative;
+    height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .halo {
+    position: absolute;
+    width: 180px;
+    height: 140px;
+    border-radius: 999px;
+  }
+  .halo.before {
+    background: rgba(244,153,61,0.18);
+    box-shadow: 0 0 0 42px rgba(244,153,61,0.1);
+  }
+  .halo.after {
+    background: var(--accent2Glow);
+    box-shadow: 0 0 0 42px var(--accent2Halo);
+  }
+  .frame {
+    position: absolute;
+    width: 196px;
+    height: 196px;
+  }
+  .rail {
+    position: absolute;
+    left: 50%;
+    width: 72px;
+    height: 2px;
+    margin-left: -36px;
+    border-radius: 999px;
+  }
+  .before .rail { background: rgba(240,161,77,0.18); }
+  .after .rail { background: var(--accent2Halo); }
+  .rail.top { top: 12px; }
+  .rail.bottom { bottom: 12px; }
+  .bracket {
+    position: absolute;
+    top: 34px;
+    width: 28px;
+    height: 128px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .before .bracket div { background: #F0A14D; }
+  .after .bracket div { background: var(--accent2); }
+  .bracket.left { left: 20px; align-items: flex-start; }
+  .bracket.right { right: 20px; align-items: flex-end; }
+  .bar-h {
+    width: 24px;
+    height: 4px;
+    border-radius: 999px;
+  }
+  .bar-v {
+    width: 4px;
+    height: 24px;
+    border-radius: 999px;
+  }
+  .heart {
+    width: 128px;
+    height: 118px;
+    position: relative;
+    transform: rotate(-45deg);
+  }
+  .heart::before,
+  .heart::after {
+    content: "";
+    position: absolute;
+    width: 64px;
+    height: 100px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.05)), var(--accent2);
+    border-radius: 64px 64px 0 0;
+  }
+  .heart::before {
+    left: 64px;
+    top: 18px;
+  }
+  .heart::after {
+    left: 0;
+    top: 82px;
+    transform: rotate(90deg);
+    transform-origin: top left;
+  }
+  .summary {
+    border-radius: 20px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    padding: 14px 16px;
+    margin-top: 18px;
+  }
+  .summary strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="document.body.classList.toggle('light'); this.textContent = document.body.classList.contains('light') ? 'Dark' : 'Light';">Light</button>
+<div class="eyebrow">F-05 Token Lock</div>
+<h1>The flagship hero should follow accent tuning</h1>
+<p class="lead">The welcome and paywall hero currently bakes in one gold. The proposal keeps the same silhouette and branded feeling but moves rails, glow, and brackets onto palette-driven accent layers.</p>
+
+<div class="label">Before fixed gold constants</div>
+<div class="hero-card before">
+  <div class="hero-stage">
+    <div class="halo before"></div>
+    <div class="frame before">
+      <div class="rail top"></div>
+      <div class="rail bottom"></div>
+      <div class="bracket left">
+        <div class="bar-h"></div><div class="bar-v"></div><div class="bar-v"></div><div class="bar-h"></div>
+      </div>
+      <div class="bracket right">
+        <div class="bar-h"></div><div class="bar-v"></div><div class="bar-v"></div><div class="bar-h"></div>
+      </div>
+    </div>
+    <div class="heart"></div>
+  </div>
+  <div class="note">Glow and frame stay the same even if the design system adjusts the accent palette.</div>
+</div>
+
+<hr class="divider">
+
+<div class="label">After accent2-driven frame and glow</div>
+<div class="hero-card after">
+  <div class="hero-stage">
+    <div class="halo after"></div>
+    <div class="frame after">
+      <div class="rail top"></div>
+      <div class="rail bottom"></div>
+      <div class="bracket left">
+        <div class="bar-h"></div><div class="bar-v"></div><div class="bar-v"></div><div class="bar-h"></div>
+      </div>
+      <div class="bracket right">
+        <div class="bar-h"></div><div class="bar-v"></div><div class="bar-v"></div><div class="bar-h"></div>
+      </div>
+    </div>
+    <div class="heart"></div>
+  </div>
+  <div class="note">The branded silhouette stays intact, but the component now moves with the active accent palette in dark and light mode.</div>
+</div>
+
+<div class="summary">
+  <strong>Approval intent</strong>
+  <p>Keep the hero composition and animation vocabulary. Only re-tokenize the rail, glow, and bracket color layers so auth and paywall branding do not bypass the theme system.</p>
+</div>
+</body>
+</html>

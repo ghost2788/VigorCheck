@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Favorites Row Layouts</title>
+    <style>
+      :root {
+        --bg: #171410;
+        --bg-top: #1d1914;
+        --card: rgba(255, 255, 255, 0.035);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --surface-soft: rgba(255, 255, 255, 0.03);
+        --surface-strong: rgba(255, 255, 255, 0.06);
+        --text: #ece2d5;
+        --text-secondary: rgba(255, 255, 255, 0.58);
+        --text-tertiary: rgba(255, 255, 255, 0.34);
+        --accent: #5ebaa9;
+        --accent-soft: rgba(94, 186, 169, 0.16);
+        --accent-strong: rgba(94, 186, 169, 0.28);
+        --gold: #d5b67d;
+        --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top, rgba(94, 186, 169, 0.1), transparent 34%),
+          linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 100%);
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        padding: 26px 18px 48px;
+      }
+
+      .frame {
+        max-width: 390px;
+        margin: 0 auto;
+      }
+
+      .eyebrow {
+        color: var(--text-tertiary);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.45px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .hero {
+        margin-bottom: 18px;
+      }
+
+      .hero h1 {
+        margin: 0 0 10px;
+        font-size: 28px;
+        font-weight: 300;
+        letter-spacing: -0.8px;
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .option {
+        margin-bottom: 22px;
+      }
+
+      .label {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 10px;
+      }
+
+      .label h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+      }
+
+      .label span {
+        color: var(--text-tertiary);
+        font-size: 12px;
+      }
+
+      .phone-card {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .section {
+        padding: 16px 16px 10px;
+      }
+
+      .section + .section {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .section-title {
+        margin: 0 0 12px;
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .row {
+        background: var(--surface-soft);
+        border: 1px solid var(--card-border);
+        border-radius: 18px;
+        margin-bottom: 10px;
+        padding: 13px 14px;
+      }
+
+      .row:last-child {
+        margin-bottom: 0;
+      }
+
+      .current {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .split {
+        display: grid;
+        gap: 10px;
+      }
+
+      .split-top {
+        min-width: 0;
+      }
+
+      .split-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .stacked {
+        display: grid;
+        gap: 10px;
+      }
+
+      .stacked-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .summary {
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.4;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .summary-wrap {
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .actions {
+        display: flex;
+        flex-shrink: 0;
+        gap: 8px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-tertiary);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--gold);
+        box-shadow: 0 0 10px rgba(213, 182, 125, 0.4);
+      }
+
+      .btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        background: var(--surface-strong);
+        color: var(--accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .btn.star {
+        color: var(--gold);
+        font-size: 15px;
+      }
+
+      .note {
+        margin-top: 10px;
+        color: var(--text-tertiary);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <div class="hero">
+        <div class="eyebrow">Log Screen</div>
+        <h1>Favorites card layout</h1>
+        <p>
+          Same content, different row structure. The goal is to stop the title from fighting the
+          action buttons on narrow phones.
+        </p>
+      </div>
+
+      <section class="option">
+        <div class="label">
+          <h2>Option A, current single-row pressure</h2>
+          <span>tight and truncation-heavy</span>
+        </div>
+        <div class="phone-card">
+          <div class="section">
+            <div class="section-title">Favorites</div>
+            <div class="row current">
+              <div>
+                <div class="title">Chipotle chicken burrito bowl with extra guacamole</div>
+                <div class="summary">Lunch • 640 cal • 48g protein</div>
+              </div>
+              <div class="actions">
+                <div class="btn">+</div>
+                <div class="btn star">★</div>
+              </div>
+            </div>
+            <div class="row current">
+              <div>
+                <div class="title">Cold brew protein shake</div>
+                <div class="summary">Snack • 220 cal • 30g protein</div>
+              </div>
+              <div class="actions">
+                <div class="btn">+</div>
+                <div class="btn star">★</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          Fast, but the controls steal width from the title and the whole row feels squeezed.
+        </div>
+      </section>
+
+      <section class="option">
+        <div class="label">
+          <h2>Option B, split-row compact</h2>
+          <span>recommended</span>
+        </div>
+        <div class="phone-card">
+          <div class="section">
+            <div class="section-title">Favorites</div>
+            <div class="row split">
+              <div class="split-top">
+                <div class="title">Chipotle chicken burrito bowl with extra guacamole</div>
+              </div>
+              <div class="split-bottom">
+                <div class="summary">Lunch • 640 cal • 48g protein</div>
+                <div class="actions">
+                  <div class="btn">+</div>
+                  <div class="btn star">★</div>
+                </div>
+              </div>
+            </div>
+            <div class="row split">
+              <div class="split-top">
+                <div class="title">Cold brew protein shake</div>
+              </div>
+              <div class="split-bottom">
+                <div class="summary">Snack • 220 cal • 30g protein</div>
+                <div class="actions">
+                  <div class="btn">+</div>
+                  <div class="btn star">★</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          Better title priority, same density, cleaner mobile rhythm. This is the best balance.
+        </div>
+      </section>
+
+      <section class="option">
+        <div class="label">
+          <h2>Option C, stacked with meta chip</h2>
+          <span>cleanest, but taller</span>
+        </div>
+        <div class="phone-card">
+          <div class="section">
+            <div class="section-title">Favorites</div>
+            <div class="row stacked">
+              <div class="chip"><span class="dot"></span>Lunch replay</div>
+              <div class="title">Chipotle chicken burrito bowl with extra guacamole</div>
+              <div class="summary-wrap">640 cal • 48g protein • last used yesterday</div>
+              <div class="stacked-actions">
+                <div class="btn">+</div>
+                <div class="btn star">★</div>
+              </div>
+            </div>
+            <div class="row stacked">
+              <div class="chip"><span class="dot"></span>Snack replay</div>
+              <div class="title">Cold brew protein shake</div>
+              <div class="summary-wrap">220 cal • 30g protein • last used today</div>
+              <div class="stacked-actions">
+                <div class="btn">+</div>
+                <div class="btn star">★</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          Most polished, but probably too tall for a frequently scanned quick-add list.
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

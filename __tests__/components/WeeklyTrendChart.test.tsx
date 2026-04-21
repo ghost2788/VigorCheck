@@ -6,6 +6,10 @@ const days = [
   {
     calories: 1800,
     caloriesScore: 44,
+    carbs: 180,
+    carbsScore: 83,
+    fat: 62,
+    fatScore: 92,
     hydrationCups: 5,
     hydrationScore: 63,
     isFuture: false,
@@ -18,6 +22,10 @@ const days = [
   {
     calories: 1500,
     caloriesScore: 71,
+    carbs: 150,
+    carbsScore: 68,
+    fat: 40,
+    fatScore: 61,
     hydrationCups: 4,
     hydrationScore: 50,
     isFuture: false,
@@ -30,6 +38,10 @@ const days = [
   {
     calories: 0,
     caloriesScore: 0,
+    carbs: 0,
+    carbsScore: 0,
+    fat: 0,
+    fatScore: 0,
     hydrationCups: 0,
     hydrationScore: 0,
     isFuture: true,
@@ -48,7 +60,7 @@ describe("WeeklyTrendChart", () => {
         activeMetric="wellness"
         days={days}
         onChangeMetric={jest.fn()}
-        targets={{ calories: 2200, hydration: 8, protein: 150 }}
+        targets={{ calories: 2200, carbs: 250, fat: 70, hydration: 8, protein: 150 }}
       />
     );
 
@@ -57,13 +69,13 @@ describe("WeeklyTrendChart", () => {
     expect(getByTestId("weekly-trend-chart-fill-wellness-0")).toBeTruthy();
   });
 
-  it("uses target progress for calories instead of wellness score math", () => {
+  it("uses target progress semantics for calories instead of closeness scoring", () => {
     const { getByTestId } = render(
       <WeeklyTrendChart
         activeMetric="calories"
         days={days}
         onChangeMetric={jest.fn()}
-        targets={{ calories: 2200, hydration: 8, protein: 150 }}
+        targets={{ calories: 2200, carbs: 250, fat: 70, hydration: 8, protein: 150 }}
       />
     );
 
@@ -80,9 +92,101 @@ describe("WeeklyTrendChart", () => {
     );
   });
 
+  it("supports macro-first carbs and fat modes using target progress", () => {
+    const { getByTestId } = render(
+      <WeeklyTrendChart
+        activeMetric="carbs"
+        days={days}
+        onChangeMetric={jest.fn()}
+        targets={{ calories: 2200, carbs: 250, fat: 70, hydration: 8, protein: 150 }}
+      />
+    );
+
+    expect(getByTestId("weekly-trend-chart-mode-carbs")).toBeTruthy();
+    expect(getByTestId("weekly-trend-chart-fill-carbs-0").props.style).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          height: "72%",
+        }),
+      ])
+    );
+  });
+
+  it("shows partial macro progress for in-progress days instead of zero closeness scores", () => {
+    const inProgressDay = [
+      {
+        calories: 900,
+        caloriesScore: 0,
+        carbs: 110,
+        carbsScore: 0,
+        fat: 34,
+        fatScore: 0,
+        hydrationCups: 0,
+        hydrationScore: 0,
+        isFuture: false,
+        nutritionCoveragePercent: 0,
+        protein: 0,
+        proteinScore: 0,
+        shortLabel: "Thu",
+        wellnessScore: 0,
+      },
+    ];
+    const { getByTestId, getByText, rerender } = render(
+      <WeeklyTrendChart
+        activeMetric="calories"
+        days={inProgressDay}
+        onChangeMetric={jest.fn()}
+        targets={{ calories: 2200, carbs: 250, fat: 70, hydration: 8, protein: 150 }}
+      />
+    );
+
+    expect(getByTestId("weekly-trend-chart-fill-calories-0").props.style).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          height: "41%",
+        }),
+      ])
+    );
+    expect(getByText("41%")).toBeTruthy();
+
+    rerender(
+      <WeeklyTrendChart
+        activeMetric="carbs"
+        days={inProgressDay}
+        onChangeMetric={jest.fn()}
+        targets={{ calories: 2200, carbs: 250, fat: 70, hydration: 8, protein: 150 }}
+      />
+    );
+
+    expect(getByTestId("weekly-trend-chart-fill-carbs-0").props.style).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          height: "44%",
+        }),
+      ])
+    );
+
+    rerender(
+      <WeeklyTrendChart
+        activeMetric="fat"
+        days={inProgressDay}
+        onChangeMetric={jest.fn()}
+        targets={{ calories: 2200, carbs: 250, fat: 70, hydration: 8, protein: 150 }}
+      />
+    );
+
+    expect(getByTestId("weekly-trend-chart-fill-fat-0").props.style).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          height: "49%",
+        }),
+      ])
+    );
+  });
+
   it("renders inactive future days as outlined cells with dash labels", () => {
     const { getByTestId, getByText } = render(
-      <WeeklyTrendChart activeMetric="nutrition" days={days} onChangeMetric={jest.fn()} targets={{ calories: 2200, hydration: 8, protein: 150 }} />
+      <WeeklyTrendChart activeMetric="nutrition" days={days} onChangeMetric={jest.fn()} targets={{ calories: 2200, carbs: 250, fat: 70, hydration: 8, protein: 150 }} />
     );
 
     expect(getByTestId("weekly-trend-chart-mode-nutrition")).toBeTruthy();
@@ -93,7 +197,7 @@ describe("WeeklyTrendChart", () => {
 
   it("fills every metric from the bottom using the displayed percentage", () => {
     const { getByTestId, queryByTestId } = render(
-      <WeeklyTrendChart activeMetric="hydration" days={days} onChangeMetric={jest.fn()} targets={{ calories: 2200, hydration: 8, protein: 150 }} />
+      <WeeklyTrendChart activeMetric="hydration" days={days} onChangeMetric={jest.fn()} targets={{ calories: 2200, carbs: 250, fat: 70, hydration: 8, protein: 150 }} />
     );
 
     const activeFill = getByTestId("weekly-trend-chart-fill-hydration-0");
@@ -122,6 +226,10 @@ describe("WeeklyTrendChart", () => {
           {
             calories: 1800,
             caloriesScore: 44,
+            carbs: 180,
+            carbsScore: 83,
+            fat: 62,
+            fatScore: 92,
             hydrationCups: 8,
             hydrationScore: 100,
             isFuture: false,
@@ -134,7 +242,7 @@ describe("WeeklyTrendChart", () => {
           ...days,
         ]}
         onChangeMetric={jest.fn()}
-        targets={{ calories: 2200, hydration: 8, protein: 150 }}
+        targets={{ calories: 2200, carbs: 250, fat: 70, hydration: 8, protein: 150 }}
       />
     );
 

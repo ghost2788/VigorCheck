@@ -20,6 +20,7 @@ import type * as hydration from "../hydration.js";
 import type * as hydrationShortcuts from "../hydrationShortcuts.js";
 import type * as lib_aiObservability from "../lib/aiObservability.js";
 import type * as lib_devIdentity from "../lib/devIdentity.js";
+import type * as lib_internalTools from "../lib/internalTools.js";
 import type * as lib_rememberedEntries from "../lib/rememberedEntries.js";
 import type * as lib_supplements from "../lib/supplements.js";
 import type * as lib_validators from "../lib/validators.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   hydrationShortcuts: typeof hydrationShortcuts;
   "lib/aiObservability": typeof lib_aiObservability;
   "lib/devIdentity": typeof lib_devIdentity;
+  "lib/internalTools": typeof lib_internalTools;
   "lib/rememberedEntries": typeof lib_rememberedEntries;
   "lib/supplements": typeof lib_supplements;
   "lib/validators": typeof lib_validators;

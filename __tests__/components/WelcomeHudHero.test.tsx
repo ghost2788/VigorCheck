@@ -1,30 +1,25 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { render } from "../../lib/test-utils";
 import { WelcomeHudHero } from "../../components/auth/WelcomeHudHero";
 
-const FLAGSHIP_HEART_SOURCE = require("../../assets/branding/vigorcheck-heart-flagship.png");
-
 describe("WelcomeHudHero", () => {
-  it("renders the shared PNG-backed hero image", () => {
+  it("renders the shared ring mark instead of the old aperture logo layers", () => {
     const { getByTestId, queryByTestId } = render(<WelcomeHudHero testID="welcome-hud-hero" />);
 
     expect(getByTestId("welcome-hud-hero")).toBeTruthy();
-    expect(getByTestId("welcome-heart-image")).toBeTruthy();
-    expect(getByTestId("welcome-heart-image").props.source).toBe(FLAGSHIP_HEART_SOURCE);
-    expect(queryByTestId("welcome-heart-svg")).toBeNull();
-    expect(queryByTestId("welcome-hud-svg")).toBeNull();
-    expect(queryByTestId("welcome-hud-frame-core")).toBeNull();
-    expect(getByTestId("welcome-hud-top-rail")).toBeTruthy();
-    expect(getByTestId("welcome-hud-bottom-rail")).toBeTruthy();
-    expect(getByTestId("welcome-hud-left-bracket")).toBeTruthy();
-    expect(getByTestId("welcome-hud-right-bracket")).toBeTruthy();
+    expect(getByTestId("welcome-ring-layer-calories")).toBeTruthy();
+    expect(getByTestId("welcome-ring-layer-protein")).toBeTruthy();
+    expect(queryByTestId("welcome-logo-static")).toBeNull();
+    expect(queryByTestId("welcome-logo-aperture")).toBeNull();
+    expect(queryByTestId("welcome-heart-image")).toBeNull();
   });
 
-  it("uses an override heart image when one is provided", () => {
-    const { getByTestId } = render(
-      <WelcomeHudHero heartImageSource={FLAGSHIP_HEART_SOURCE} testID="welcome-hud-hero" />
-    );
+  it("uses the compact sizing contract when requested", () => {
+    const { getByTestId } = render(<WelcomeHudHero testID="welcome-hud-hero" variant="compact" />);
 
-    expect(getByTestId("welcome-heart-image").props.source).toBe(FLAGSHIP_HEART_SOURCE);
+    const stageStyle = StyleSheet.flatten(getByTestId("welcome-ring-stage").props.style);
+    expect(stageStyle.height).toBe(184);
+    expect(stageStyle.width).toBe(184);
   });
 });

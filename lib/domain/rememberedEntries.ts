@@ -3,6 +3,7 @@ import { NutritionFields } from "./scan";
 
 export type RememberedEntryReplayKind = "meal_only" | "hydration_only" | "meal_and_hydration";
 export type RememberedEntryPortionUnit = "g" | "ml" | "oz" | "serving";
+export const PINNED_FAVORITES_MIGRATION_VERSION = 2;
 
 export type RememberedMealItemSnapshot = {
   barcodeValue?: string;
@@ -130,6 +131,26 @@ function normalizeHydration(hydration: RememberedHydrationSnapshot) {
   };
 }
 
+function formatRememberedMealTypeLabel(mealType?: MealType) {
+  if (!mealType) {
+    return "Meal";
+  }
+
+  return `${mealType[0].toUpperCase()}${mealType.slice(1)}`;
+}
+
+function formatRememberedMetric(
+  value: number | undefined,
+  suffix: string,
+  separator = " "
+) {
+  if (value === undefined || !Number.isFinite(value)) {
+    return undefined;
+  }
+
+  return `${Math.round(value)}${separator}${suffix}`;
+}
+
 export function buildRememberedEntryFingerprint(snapshot: RememberedEntrySnapshot) {
   const normalized =
     snapshot.replayKind === "meal_only"
@@ -197,23 +218,106 @@ export function getLegacyHydrationShortcutInitialFavoritedState() {
   return false;
 }
 
+export function shouldUsePinnedFavoriteOrdering(migrationVersion?: number) {
+  return (migrationVersion ?? 0) >= PINNED_FAVORITES_MIGRATION_VERSION;
+}
+
+export function getRememberedEntryFavoritedAtSeed(args: {
+  favorited: boolean;
+  favoritedAt?: number;
+  lastUsedAt: number;
+}) {
+  if (!args.favorited) {
+    return undefined;
+  }
+
+  return args.favoritedAt ?? args.lastUsedAt;
+}
+
+export function buildRememberedEntryFavoriteTogglePatch(args: {
+  currentFavorited: boolean;
+  migrationVersion?: number;
+  now: number;
+}) {
+  const nextFavorited = !args.currentFavorited;
+
+  if (!nextFavorited) {
+    return {
+      favorited: false,
+    };
+  }
+
+  if (shouldUsePinnedFavoriteOrdering(args.migrationVersion)) {
+    return {
+      favorited: true,
+      favoritedAt: args.now,
+    };
+  }
+
+  return {
+    favorited: true,
+    favoritedAt: args.now,
+    lastUsedAt: args.now,
+  };
+}
+
+export function getRememberedMealSummaryTotals(
+  meal?:
+    | RememberedMealSnapshot
+    | {
+        items: Array<{
+          nutrition: {
+            calories?: number;
+            protein?: number;
+          };
+        }>;
+        mealType?: MealType;
+      }
+    | null
+) {
+  if (!meal) {
+    return {
+      totalCalories: undefined,
+      totalProtein: undefined,
+    };
+  }
+
+  return meal.items.reduce(
+    (totals, item) => ({
+      totalCalories: totals.totalCalories + (item.nutrition.calories ?? 0),
+      totalProtein: totals.totalProtein + (item.nutrition.protein ?? 0),
+    }),
+    {
+      totalCalories: 0,
+      totalProtein: 0,
+    }
+  );
+}
+
 export function getRememberedEntrySummary(args: {
-  amountOz?: number;
+  beverageKind?: RememberedHydrationSnapshot["beverageKind"];
   mealType?: MealType;
   replayKind: RememberedEntryReplayKind;
+  totalCalories?: number;
+  totalProtein?: number;
 }) {
+  const separator = " \u2022 ";
+
   if (args.replayKind === "hydration_only") {
-    return `Hydration${args.amountOz ? ` • ${Math.round(args.amountOz)} oz` : ""}`;
+    return args.beverageKind === "drink" ? "Drink" : "Hydration";
   }
 
-  if (args.replayKind === "meal_and_hydration") {
-    const mealLabel = args.mealType ? `${args.mealType[0].toUpperCase()}${args.mealType.slice(1)}` : "Meal";
-    return `${mealLabel} + hydration${args.amountOz ? ` • ${Math.round(args.amountOz)} oz` : ""}`;
+  const summaryParts = [formatRememberedMealTypeLabel(args.mealType)];
+  const caloriesLabel = formatRememberedMetric(args.totalCalories, "cal");
+  const proteinLabel = formatRememberedMetric(args.totalProtein, "g protein", "");
+
+  if (caloriesLabel) {
+    summaryParts.push(caloriesLabel);
   }
 
-  if (!args.mealType) {
-    return "Meal";
+  if (proteinLabel) {
+    summaryParts.push(proteinLabel);
   }
 
-  return `${args.mealType[0].toUpperCase()}${args.mealType.slice(1)}`;
+  return summaryParts.join(separator);
 }

@@ -3,6 +3,7 @@ import { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { findCurrentUser, requireCurrentUser } from "./lib/devIdentity";
 import { getLocalDateKey, getRelativeLocalDateKey } from "../lib/domain/dayWindow";
+import { isInternalToolsUnlockTokenValid } from "./lib/internalTools";
 
 const RAW_EVENT_RETENTION_DAYS = 30;
 const RAW_EVENT_PRUNE_BATCH_SIZE = 50;
@@ -210,12 +211,26 @@ export const recordRequest = internalMutation({
 });
 
 export const currentUserDiagnostics = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    unlockToken: v.string(),
+  },
+  handler: async (ctx, args) => {
     const user = await findCurrentUser(ctx);
 
     if (!user) {
       return null;
+    }
+
+    const isUnlocked = await isInternalToolsUnlockTokenValid({
+      expectedTokenHash: user.internalToolsUnlockTokenHash,
+      expiresAt: user.internalToolsUnlockExpiresAt,
+      unlockToken: args.unlockToken,
+    });
+
+    if (!isUnlocked) {
+      return {
+        status: "locked" as const,
+      };
     }
 
     const now = Date.now();
@@ -267,6 +282,7 @@ export const currentUserDiagnostics = query({
       .take(5);
 
     return {
+      status: "ready" as const,
       breakdown: [
         breakdownByKind.photo_scan,
         breakdownByKind.supplement_scan,

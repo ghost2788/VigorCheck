@@ -85,7 +85,7 @@ const TARGETS = {
 
 describe("HistoryTimelineEntryCard", () => {
   it("renders collapsed state with title and calories", () => {
-    const { getByText, queryByText } = render(
+    const { getByTestId, getByText, queryByText } = render(
       <HistoryTimelineEntryCard
         entry={MEAL_ENTRY}
         isExpanded={false}
@@ -98,13 +98,16 @@ describe("HistoryTimelineEntryCard", () => {
 
     expect(getByText("Breakfast scan (2 items)")).toBeTruthy();
     expect(getByText("320 cal")).toBeTruthy();
+    expect(getByText("FoodScan")).toBeTruthy();
+    expect(getByTestId("history-timeline-quantity-chip-meal")).toBeTruthy();
+    expect(getByTestId("history-timeline-title").props.numberOfLines).toBe(1);
     // Edit/Delete should NOT be visible when collapsed
     expect(queryByText("Edit meal")).toBeNull();
     expect(queryByText("Delete")).toBeNull();
   });
 
   it("renders expanded state with unified nutrition rows and actions", () => {
-    const { getByText, queryByTestId, queryByText } = render(
+    const { getByTestId, getByText, queryByTestId, queryByText } = render(
       <HistoryTimelineEntryCard
         entry={MEAL_ENTRY}
         isExpanded={true}
@@ -115,6 +118,8 @@ describe("HistoryTimelineEntryCard", () => {
       />
     );
 
+    expect(getByText("Meal impact")).toBeTruthy();
+    expect(getByTestId("history-timeline-detail-panel")).toBeTruthy();
     expect(getByText("Calories")).toBeTruthy();
     expect(getByText("Protein")).toBeTruthy();
     expect(getByText("Carbs")).toBeTruthy();
@@ -166,7 +171,7 @@ describe("HistoryTimelineEntryCard", () => {
   });
 
   it("renders hydration entry with oz and cups", () => {
-    const { getByText, queryByText } = render(
+    const { getByTestId, getByText, queryByText } = render(
       <HistoryTimelineEntryCard
         entry={{
           amountCups: 2.0,
@@ -188,12 +193,13 @@ describe("HistoryTimelineEntryCard", () => {
     expect(getByText("16 oz")).toBeTruthy();
     expect(getByText("2.0 cups")).toBeTruthy();
     expect(getByText("Hydration")).toBeTruthy();
+    expect(getByTestId("history-timeline-quantity-chip-hydration")).toBeTruthy();
     // No progress bars for hydration
     expect(queryByText("Calories")).toBeNull();
   });
 
   it("renders hydration expanded state with Edit (not Edit meal)", () => {
-    const { getByText, queryByText } = render(
+    const { getByTestId, getByText, queryByText } = render(
       <HistoryTimelineEntryCard
         entry={{
           amountCups: 2.0,
@@ -211,6 +217,8 @@ describe("HistoryTimelineEntryCard", () => {
       />
     );
 
+    expect(getByText("Hydration log")).toBeTruthy();
+    expect(getByTestId("history-timeline-detail-panel")).toBeTruthy();
     expect(getByText("Edit")).toBeTruthy();
     expect(getByText("Delete")).toBeTruthy();
     expect(queryByText("Edit meal")).toBeNull();
@@ -219,7 +227,7 @@ describe("HistoryTimelineEntryCard", () => {
   });
 
   it("renders supplement entries with serving copy and a delete-only expanded state", () => {
-    const { getByText, queryByTestId, queryByText } = render(
+    const { getByTestId, getByText, queryByTestId, queryByText } = render(
       <HistoryTimelineEntryCard
         entry={{
           calories: 10,
@@ -260,11 +268,91 @@ describe("HistoryTimelineEntryCard", () => {
 
     expect(getByText("Vitamin D3")).toBeTruthy();
     expect(getByText("1 softgel")).toBeTruthy();
+    expect(getByText("Supplement")).toBeTruthy();
+    expect(getByText("Supplement details")).toBeTruthy();
+    expect(getByText("10 cal")).toBeTruthy();
     expect(getByText("Vitamin D")).toBeTruthy();
+    expect(getByTestId("history-timeline-quantity-chip-supplement")).toBeTruthy();
     expect(getByText("Delete")).toBeTruthy();
     expect(queryByText("Edit")).toBeNull();
     expect(queryByText("Edit meal")).toBeNull();
     expect(queryByTestId("history-timeline-edit-button")).toBeNull();
+  });
+
+  it("omits zero-calorie supplement meta copy while keeping the serving-label chip", () => {
+    const { getByTestId, getByText, queryByText } = render(
+      <HistoryTimelineEntryCard
+        entry={{
+          calories: 0,
+          carbs: 0,
+          fat: 0,
+          id: "supplement-log-2",
+          kind: "supplement",
+          label: "Magnesium glycinate",
+          nutritionRows: [
+            buildNutritionRow({
+              key: "magnesium",
+              label: "Magnesium",
+              percent: 48,
+              target: 420,
+              unit: "mg",
+              value: 200,
+            }),
+          ],
+          protein: 0,
+          servingLabel: "2 capsules",
+          timestamp: Date.parse("2026-03-29T15:00:00.000Z"),
+        }}
+        isExpanded={false}
+        onDelete={jest.fn()}
+        onEdit={undefined}
+        onToggle={jest.fn()}
+        targets={TARGETS}
+      />
+    );
+
+    expect(getByText("2 capsules")).toBeTruthy();
+    expect(getByText("Supplement")).toBeTruthy();
+    expect(getByTestId("history-timeline-quantity-chip-supplement")).toBeTruthy();
+    expect(queryByText("0 cal")).toBeNull();
+  });
+
+  it("keeps long titles and supplement chip copy constrained to one line", () => {
+    const { getByTestId } = render(
+      <HistoryTimelineEntryCard
+        entry={{
+          calories: 10,
+          carbs: 0,
+          fat: 1,
+          id: "supplement-log-3",
+          kind: "supplement",
+          label: "Long label meal title that should still truncate cleanly beside the chip",
+          nutritionRows: [
+            buildNutritionRow({
+              key: "vitaminD",
+              label: "Vitamin D",
+              percent: 167,
+              target: 15,
+              unit: "mcg",
+              value: 25,
+            }),
+          ],
+          protein: 0,
+          servingLabel: "Very long serving label that should truncate inside the compact chip",
+          timestamp: Date.parse("2026-03-29T14:00:00.000Z"),
+        }}
+        isExpanded={false}
+        onDelete={jest.fn()}
+        onEdit={undefined}
+        onToggle={jest.fn()}
+        targets={TARGETS}
+      />
+    );
+
+    expect(getByTestId("history-timeline-title").props.numberOfLines).toBe(1);
+    expect(getByTestId("history-timeline-quantity-chip-label-supplement").props.numberOfLines).toBe(
+      1
+    );
   });
 
   it("hides the action row when neither edit nor delete is provided", () => {

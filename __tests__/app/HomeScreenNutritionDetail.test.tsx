@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet } from "react-native";
+import { Alert, StyleSheet } from "react-native";
 import { fireEvent, render } from "../../lib/test-utils";
 import HomeScreen from "../../app/(tabs)/index";
 import { buildTodayDashboard } from "../../lib/domain/dashboard";
@@ -33,6 +33,10 @@ jest.mock("../../lib/onboarding/OnboardingFlowProvider", () => ({
   }),
 }));
 
+jest.mock("../../lib/ui/useReducedMotionPreference", () => ({
+  useReducedMotionPreference: () => false,
+}));
+
 describe("HomeScreen nutrition detail", () => {
   beforeEach(() => {
     mockUseQuery.mockReset();
@@ -43,6 +47,11 @@ describe("HomeScreen nutrition detail", () => {
     mockUseSubscription.mockReturnValue({
       accessState: null,
     });
+    jest.spyOn(Alert, "alert").mockImplementation(jest.fn());
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("shows the expanded nutrient progress rows in the nutrition accordion", () => {
@@ -130,7 +139,7 @@ describe("HomeScreen nutrition detail", () => {
 
     const { getAllByText, getByText, queryByTestId, queryByText } = render(<HomeScreen />);
 
-    fireEvent.press(getAllByText("Nutrition")[1]);
+    fireEvent.press(getAllByText("Nutrition")[0]);
 
     expect(getByText("Vitamin A")).toBeTruthy();
     expect(getByText("Omega-3")).toBeTruthy();
@@ -235,7 +244,7 @@ describe("HomeScreen nutrition detail", () => {
     expect(getByTestId("wellness-accordion-shell-ember-calories")).toBeTruthy();
     expect(getByTestId("wellness-accordion-shell-warning-field-calories")).toBeTruthy();
 
-    fireEvent.press(getAllByText("Calories")[1]);
+    fireEvent.press(getAllByText("Calories")[0]);
 
     expect(getByText("Over target")).toBeTruthy();
     expect(queryByTestId("home-accordion-summary-row-calories")).toBeNull();
@@ -487,16 +496,16 @@ describe("HomeScreen nutrition detail", () => {
     expect(getByTestId("wellness-accordion-shell-heat-band-hydration")).toBeTruthy();
     expect(getByTestId("wellness-accordion-shell-ember-hydration")).toBeTruthy();
     expect(queryByTestId("wellness-accordion-shell-heat-sweep-hydration")).toBeNull();
-    expect(hydrationCardStyle.backgroundColor).toBe("rgba(120, 160, 200, 0.045)");
-    expect(hydrationCardStyle.borderColor).toBe("rgba(120, 160, 200, 0.16)");
+    expect(hydrationCardStyle.backgroundColor).toBe("rgba(94, 167, 198, 0.045)");
+    expect(hydrationCardStyle.borderColor).toBe("rgba(94, 167, 198, 0.16)");
 
     expect(getByTestId("wellness-accordion-shell-layer-nutrition")).toBeTruthy();
     expect(getByTestId("wellness-accordion-shell-chamber-core-nutrition")).toBeTruthy();
     expect(getByTestId("wellness-accordion-shell-heat-band-nutrition")).toBeTruthy();
     expect(getByTestId("wellness-accordion-shell-ember-nutrition")).toBeTruthy();
     expect(getByTestId("wellness-accordion-shell-heat-sweep-nutrition")).toBeTruthy();
-    expect(nutritionCardStyle.backgroundColor).toBe("rgba(211, 138, 58, 0.06)");
-    expect(nutritionCardStyle.borderColor).toBe("rgba(211, 138, 58, 0.22)");
+    expect(nutritionCardStyle.backgroundColor).toBe("rgba(165, 154, 99, 0.06)");
+    expect(nutritionCardStyle.borderColor).toBe("rgba(165, 154, 99, 0.22)");
 
     expect(queryByTestId("home-calories-header-badge")).toBeNull();
     expect(queryByText("Over target")).toBeNull();
@@ -590,16 +599,16 @@ describe("HomeScreen nutrition detail", () => {
 
     const { getAllByText, queryByTestId } = render(<HomeScreen />);
 
-    fireEvent.press(getAllByText("Calories")[1]);
+    fireEvent.press(getAllByText("Calories")[0]);
     expect(queryByTestId("home-accordion-summary-row-calories")).toBeNull();
 
-    fireEvent.press(getAllByText("Protein")[1]);
+    fireEvent.press(getAllByText("Protein")[0]);
     expect(queryByTestId("home-accordion-summary-row-protein")).toBeNull();
 
-    fireEvent.press(getAllByText("Hydration")[1]);
+    fireEvent.press(getAllByText("Hydration")[0]);
     expect(queryByTestId("home-accordion-summary-row-hydration")).toBeNull();
 
-    fireEvent.press(getAllByText("Nutrition")[1]);
+    fireEvent.press(getAllByText("Nutrition")[0]);
     expect(queryByTestId("home-accordion-summary-row-nutrition")).toBeNull();
   });
 
@@ -799,7 +808,14 @@ describe("HomeScreen nutrition detail", () => {
     ).toBeTruthy();
   });
 
-  it("shows supplement rows in today's entries while leaving Home supplement actions read-only", () => {
+  it("shows supplement rows in today's entries with delete available from Home", () => {
+    const deleteSupplementLog = jest.fn();
+    let mutationCallIndex = 0;
+    mockUseMutation.mockImplementation(() => {
+      mutationCallIndex += 1;
+      return mutationCallIndex % 3 === 0 ? deleteSupplementLog : jest.fn();
+    });
+
     mockUseQuery.mockReturnValue({
       dateKey: "2026-04-04",
       displayName: "Ari",
@@ -890,9 +906,22 @@ describe("HomeScreen nutrition detail", () => {
 
     expect(getByText("1 scoop")).toBeTruthy();
     expect(queryByText("Edit meal")).toBeNull();
-    expect(queryByText("Delete")).toBeNull();
+    expect(getByText("Delete")).toBeTruthy();
     expect(queryByTestId("history-timeline-edit-button")).toBeNull();
-    expect(queryByTestId("history-timeline-delete-button")).toBeNull();
+    expect(queryByTestId("history-timeline-delete-button")).toBeTruthy();
+
+    fireEvent.press(getByText("Delete"));
+
+    expect(Alert.alert).toHaveBeenCalledWith(
+      "Delete supplement log",
+      "This will remove the saved supplement entry.",
+      expect.any(Array)
+    );
+
+    const deleteAction = (Alert.alert as jest.Mock).mock.calls[0][2][1];
+    deleteAction.onPress();
+
+    expect(deleteSupplementLog).toHaveBeenCalledWith({ logId: "supplement-log-1" });
   });
 
   it("renders drink entries inside today's entries", () => {

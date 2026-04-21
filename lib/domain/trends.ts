@@ -12,6 +12,7 @@ import {
 import { NutritionAmounts, NutritionKey, getNutritionKeys, ouncesToCups } from "./wellness";
 import { MealType } from "./meals";
 import { SupplementLogSnapshot } from "./supplements";
+import type { GoalType } from "./targets";
 
 type TrendMealInput = {
   entryMethod: MealTimelineEntryMethod;
@@ -37,8 +38,12 @@ type TrendHydrationLogInput = {
 export type TrendDay = {
   calories: number;
   caloriesScore: number;
+  carbs: number;
+  carbsScore: number;
   dateKey: string;
   didLogAnything: boolean;
+  fat: number;
+  fatScore: number;
   hydrationCups: number;
   hydrationScore: number;
   isFuture: boolean;
@@ -96,6 +101,7 @@ function average(values: number[]) {
 
 export function buildTrendDay({
   dateKey,
+  goalType = "energy_balance",
   hydrationLogs,
   isFuture,
   meals,
@@ -103,6 +109,7 @@ export function buildTrendDay({
   targets,
 }: {
   dateKey: string;
+  goalType?: GoalType;
   hydrationLogs: TrendHydrationLogInput[];
   isFuture: boolean;
   meals: TrendMealInput[];
@@ -110,6 +117,7 @@ export function buildTrendDay({
   targets: DashboardTargets;
 }): TrendDay {
   const dashboard = buildTodayDashboard({
+    goalType,
     hydrationLogs,
     mealItems: [],
     meals,
@@ -120,8 +128,12 @@ export function buildTrendDay({
   return {
     calories: dashboard.totals.calories,
     caloriesScore: dashboard.cards.calories.score,
+    carbs: dashboard.totals.carbs,
+    carbsScore: dashboard.cards.carbs.score,
     dateKey,
     didLogAnything: meals.length > 0 || hydrationLogs.length > 0 || supplementLogs.length > 0,
+    fat: dashboard.totals.fat,
+    fatScore: dashboard.cards.fat.score,
     hydrationCups: dashboard.cards.hydration.consumedCups,
     hydrationScore: dashboard.cards.hydration.score,
     isFuture,
@@ -237,16 +249,20 @@ export function buildWeeklyOverview({
 }) {
   const elapsedDays = days.filter((day) => !day.isFuture);
   const averageCalories = Math.round(average(elapsedDays.map((day) => day.calories)));
-  const proteinGoalDays = elapsedDays.filter((day) => day.proteinScore >= 100).length;
+  const averageProtein = Math.round(average(elapsedDays.map((day) => day.protein)));
+  const averageCarbs = Math.round(average(elapsedDays.map((day) => day.carbs)));
+  const averageFat = Math.round(average(elapsedDays.map((day) => day.fat)));
   const onTrackDays = elapsedDays.filter((day) => day.wellnessScore >= 70).length;
-  const gapCopy = recurringGaps.map(formatNutritionLabel).join(" and ");
+  const gapCopy = recurringGaps.length
+    ? recurringGaps.map(formatNutritionLabel).join(" and ")
+    : "none";
 
   return {
     onTrackDays,
     summaryText:
       elapsedDays.length === 0
         ? "No data logged yet this week."
-        : `This week you're averaging ${averageCalories.toLocaleString()} kcal/day. Protein was on track ${proteinGoalDays} of ${elapsedDays.length} days. Lowest coverage: ${gapCopy}.`,
+        : `This week you're averaging ${averageCalories.toLocaleString()} kcal/day, ${averageProtein}g protein/day, ${averageCarbs}g carbs/day, and ${averageFat}g fat/day. Lowest coverage: ${gapCopy}.`,
     weeklyWellnessScore: Math.round(average(elapsedDays.map((day) => day.wellnessScore))),
   };
 }

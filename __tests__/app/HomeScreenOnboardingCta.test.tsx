@@ -26,6 +26,10 @@ jest.mock("../../lib/billing/SubscriptionProvider", () => ({
   useSubscription: () => mockUseSubscription(),
 }));
 
+jest.mock("../../lib/ui/useReducedMotionPreference", () => ({
+  useReducedMotionPreference: () => false,
+}));
+
 function HomeHarness() {
   const [visible, setVisible] = React.useState(true);
 
@@ -39,6 +43,43 @@ function HomeHarness() {
 }
 
 describe("HomeScreen onboarding CTA", () => {
+  const dashboardPayload = {
+    dateKey: "2026-03-29",
+    targets: {
+      calories: 2200,
+      carbs: 240,
+      fat: 75,
+      hydration: 8,
+      protein: 140,
+    },
+    timeZone: "Pacific/Honolulu",
+    ...buildTodayDashboard({
+      hydrationLogs: [],
+      mealItems: [],
+      meals: [],
+      targets: {
+        calories: 2200,
+        carbs: 240,
+        hydration: 8,
+        nutrition: {
+          calcium: 100,
+          fiber: 20,
+          iron: 10,
+          potassium: 1000,
+          vitaminC: 100,
+          vitaminD: 10,
+        },
+        detailedNutrition: getDetailedNutrientTargets({
+          age: 30,
+          sex: "male",
+          targetFiber: 20,
+        }),
+        fat: 75,
+        protein: 140,
+      },
+    }),
+  };
+
   beforeEach(() => {
     mockUseQuery.mockReset();
     mockUseMutation.mockReset();
@@ -51,42 +92,7 @@ describe("HomeScreen onboarding CTA", () => {
 
   it("shows the post-onboarding CTA once and routes to Log", async () => {
     mockUseMutation.mockReturnValue(jest.fn());
-    mockUseQuery.mockReturnValue({
-      dateKey: "2026-03-29",
-      targets: {
-        calories: 2200,
-        carbs: 240,
-        fat: 75,
-        hydration: 8,
-        protein: 140,
-      },
-      timeZone: "Pacific/Honolulu",
-      ...buildTodayDashboard({
-        hydrationLogs: [],
-        mealItems: [],
-        meals: [],
-        targets: {
-          calories: 2200,
-          carbs: 240,
-          hydration: 8,
-          nutrition: {
-            calcium: 100,
-            fiber: 20,
-            iron: 10,
-            potassium: 1000,
-            vitaminC: 100,
-            vitaminD: 10,
-          },
-          detailedNutrition: getDetailedNutrientTargets({
-            age: 30,
-            sex: "male",
-            targetFiber: 20,
-          }),
-          fat: 75,
-          protein: 140,
-        },
-      }),
-    });
+    mockUseQuery.mockReturnValue(dashboardPayload);
 
     const { getByText, queryByText } = render(
       <OnboardingFlowProvider initialShowPostOnboardingHomeCTA>
@@ -94,7 +100,7 @@ describe("HomeScreen onboarding CTA", () => {
       </OnboardingFlowProvider>
     );
 
-    expect(getByText("Daily Vigor")).toBeTruthy();
+    expect(getByText("Daily Score")).toBeTruthy();
     expect(
       getByText("Your plan is ready. Log your first meal to start filling today's rings.")
     ).toBeTruthy();
@@ -110,5 +116,29 @@ describe("HomeScreen onboarding CTA", () => {
         queryByText("Your plan is ready. Log your first meal to start filling today's rings.")
       ).toBeNull();
     });
+  });
+
+  it("does not show the free-trial card on Home even during a trial", () => {
+    mockUseMutation.mockReturnValue(jest.fn());
+    mockUseQuery.mockReturnValue(dashboardPayload);
+    mockUseSubscription.mockReturnValue({
+      accessState: {
+        daysRemaining: 7,
+        status: "trial",
+      },
+    });
+
+    const { getByText, queryByText } = render(
+      <OnboardingFlowProvider>
+        <HomeHarness />
+      </OnboardingFlowProvider>
+    );
+
+    expect(getByText("Daily Score")).toBeTruthy();
+    expect(queryByText("Today at a glance")).toBeNull();
+    expect(queryByText("7 days left in your free trial")).toBeNull();
+    expect(
+      queryByText("Keep logging now. You can subscribe any time in Profile before the trial ends.")
+    ).toBeNull();
   });
 });

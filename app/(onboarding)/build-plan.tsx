@@ -9,8 +9,6 @@ import { useOnboardingFlow } from "../../lib/onboarding/OnboardingFlowProvider";
 import { ONBOARDING_PATHS } from "../../lib/onboarding/flow";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 
-const FLAGSHIP_HEART_IMAGE = require("../../assets/branding/vigorcheck-heart-flagship.png");
-
 const BUILD_STEPS = [
   "Calculating your targets...",
   "Building your nutrition plan...",
@@ -80,12 +78,7 @@ export default function BuildPlanScreen() {
       title={`${draft.displayName ?? "Your"} plan is being built`}
     >
       <View style={styles.stack}>
-        <WelcomeHudHero
-          heartImageSource={FLAGSHIP_HEART_IMAGE}
-          style={styles.hero}
-          testID="welcome-hud-hero"
-          variant="compact"
-        />
+        <WelcomeHudHero style={styles.hero} testID="welcome-hud-hero" variant="compact" />
         <Card style={[styles.card, { borderColor: theme.accent1 }]}>
           <View style={[styles.progressTrack, { backgroundColor: theme.ringTrack }]}>
             <Animated.View

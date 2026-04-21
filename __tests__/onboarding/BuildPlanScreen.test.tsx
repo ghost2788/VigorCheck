@@ -5,12 +5,15 @@ import BuildPlanScreen from "../../app/(onboarding)/build-plan";
 import { OnboardingFlowProvider } from "../../lib/onboarding/OnboardingFlowProvider";
 
 const mockReplace = jest.fn();
-const FLAGSHIP_HEART_SOURCE = require("../../assets/branding/vigorcheck-heart-flagship.png");
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     replace: mockReplace,
   }),
+}));
+
+jest.mock("../../lib/ui/useReducedMotionPreference", () => ({
+  useReducedMotionPreference: () => true,
 }));
 
 describe("BuildPlanScreen", () => {
@@ -26,7 +29,7 @@ describe("BuildPlanScreen", () => {
     jest.useRealTimers();
   });
 
-  it("uses the flagship heart and keeps the slower build sequence onscreen for at least 5 seconds", async () => {
+  it("uses the rebranded ring hero and keeps the slower build sequence onscreen for at least 5 seconds", async () => {
     const { getByTestId, getByText, queryByText } = render(
       <OnboardingFlowProvider
         initialDraft={{
@@ -46,8 +49,8 @@ describe("BuildPlanScreen", () => {
     );
 
     expect(getByTestId("welcome-hud-hero")).toBeTruthy();
-    expect(getByTestId("welcome-heart-image")).toBeTruthy();
-    expect(getByTestId("welcome-heart-image").props.source).toBe(FLAGSHIP_HEART_SOURCE);
+    expect(getByTestId("welcome-ring-layer-calories")).toBeTruthy();
+    expect(getByTestId("welcome-ring-layer-carbs")).toBeTruthy();
     expect(getByText("Setting up your personalized plan...")).toBeTruthy();
     expect(queryByText("Building...")).toBeNull();
     expect(getByText("Calculating your targets...")).toBeTruthy();

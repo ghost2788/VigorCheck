@@ -3,9 +3,12 @@ import { MutationCtx } from "../_generated/server";
 import {
   buildRememberedEntryFingerprint,
   buildRememberedWaterLabel,
+  getRememberedEntryFavoritedAtSeed,
+  getRememberedMealSummaryTotals,
   getLegacyHydrationShortcutInitialFavoritedState,
   getRememberedEntrySummary,
   isSeededHydrationShortcutSignature,
+  PINNED_FAVORITES_MIGRATION_VERSION,
   RememberedEntryReplayKind,
   RememberedEntrySnapshot,
   RememberedHydrationSnapshot,
@@ -476,10 +479,19 @@ async function createOrUpdateRememberedEntry(
   });
 
   if (existing) {
+    const nextFavorited =
+      args.preserveExistingFavorited === false ? args.favorited : existing.favorited || args.favorited;
+    const nextLastUsedAt = Math.max(existing.lastUsedAt, args.timestamp);
+
     await ctx.db.patch(existing._id, {
       ...toStoredSnapshot(args.snapshot),
-      favorited: args.preserveExistingFavorited === false ? args.favorited : existing.favorited || args.favorited,
-      lastUsedAt: Math.max(existing.lastUsedAt, args.timestamp),
+      favorited: nextFavorited,
+      favoritedAt: getRememberedEntryFavoritedAtSeed({
+        favorited: nextFavorited,
+        favoritedAt: existing.favoritedAt,
+        lastUsedAt: nextLastUsedAt,
+      }),
+      lastUsedAt: nextLastUsedAt,
     });
 
     return existing._id;
@@ -488,6 +500,10 @@ async function createOrUpdateRememberedEntry(
   return ctx.db.insert("rememberedEntries", {
     ...toStoredSnapshot(args.snapshot),
     favorited: args.favorited,
+    favoritedAt: getRememberedEntryFavoritedAtSeed({
+      favorited: args.favorited,
+      lastUsedAt: args.timestamp,
+    }),
     fingerprint: args.fingerprint,
     lastUsedAt: args.timestamp,
     userId: args.userId,
@@ -653,55 +669,56 @@ export async function refreshRememberedEntryFromReplaySources(
 export async function migrateLegacyHydrationShortcuts(ctx: MutationCtx) {
   const user = await requireCurrentUser(ctx);
 
-  if (user.rememberedEntriesMigrationVersion === 1) {
-    return { migrated: 0, normalizedFavorites: 0, skipped: true };
+  if (user.rememberedEntriesMigrationVersion === PINNED_FAVORITES_MIGRATION_VERSION) {
+    return { migrated: 0, normalizedFavorites: 0, pinnedFavoritesBackfilled: 0, skipped: true };
   }
 
-  const shortcuts = await ctx.db
-    .query("hydrationShortcuts")
-    .withIndex("by_user", (queryBuilder) => queryBuilder.eq("userId", user._id))
-    .take(100);
   let migrated = 0;
   let normalizedFavorites = 0;
-
-  for (const shortcut of shortcuts) {
-    const hydrationLogs = await ctx.db
-      .query("hydrationLogs")
-      .withIndex("by_shortcut_id", (queryBuilder) => queryBuilder.eq("shortcutId", shortcut._id))
+  if ((user.rememberedEntriesMigrationVersion ?? 0) < 1) {
+    const shortcuts = await ctx.db
+      .query("hydrationShortcuts")
+      .withIndex("by_user", (queryBuilder) => queryBuilder.eq("userId", user._id))
       .take(100);
-    const hasUsage = hydrationLogs.length > 0;
 
-    if (!hasUsage && isSeededHydrationShortcutSignature({
-      calories: shortcut.calories,
-      carbs: shortcut.carbs,
-      category: shortcut.category,
-      defaultAmountOz: shortcut.defaultAmountOz,
-      fat: shortcut.fat,
-      label: shortcut.label,
-      logMode: shortcut.logMode,
-      mealType: shortcut.mealType,
-      pinned: shortcut.pinned,
-      protein: shortcut.protein,
-    })) {
-      continue;
-    }
+    for (const shortcut of shortcuts) {
+      const hydrationLogs = await ctx.db
+        .query("hydrationLogs")
+        .withIndex("by_shortcut_id", (queryBuilder) => queryBuilder.eq("shortcutId", shortcut._id))
+        .take(100);
+      const hasUsage = hydrationLogs.length > 0;
 
-    const snapshot: RememberedEntrySnapshot =
-      shortcut.logMode === "hydration_and_nutrition"
-        ? {
-            displayLabel: shortcut.label,
-            hydration: buildHydrationSnapshotFromShortcut(shortcut),
-            meal: buildMealSnapshotFromShortcut(shortcut),
-            replayKind: "meal_and_hydration",
-          }
-        : {
-            displayLabel: shortcut.label,
-            hydration: buildHydrationSnapshotFromShortcut(shortcut),
-            replayKind: "hydration_only",
-          };
+      if (!hasUsage && isSeededHydrationShortcutSignature({
+        calories: shortcut.calories,
+        carbs: shortcut.carbs,
+        category: shortcut.category,
+        defaultAmountOz: shortcut.defaultAmountOz,
+        fat: shortcut.fat,
+        label: shortcut.label,
+        logMode: shortcut.logMode,
+        mealType: shortcut.mealType,
+        pinned: shortcut.pinned,
+        protein: shortcut.protein,
+      })) {
+        continue;
+      }
+
+      const snapshot: RememberedEntrySnapshot =
+        shortcut.logMode === "hydration_and_nutrition"
+          ? {
+              displayLabel: shortcut.label,
+              hydration: buildHydrationSnapshotFromShortcut(shortcut),
+              meal: buildMealSnapshotFromShortcut(shortcut),
+              replayKind: "meal_and_hydration",
+            }
+          : {
+              displayLabel: shortcut.label,
+              hydration: buildHydrationSnapshotFromShortcut(shortcut),
+              replayKind: "hydration_only",
+            };
 
       const rememberedEntryId = await createOrUpdateRememberedEntry(ctx, {
-      favorited: getLegacyHydrationShortcutInitialFavoritedState(),
+        favorited: getLegacyHydrationShortcutInitialFavoritedState(),
         fingerprint: buildRememberedEntryFingerprint(snapshot),
         preserveExistingFavorited: false,
         snapshot,
@@ -709,53 +726,77 @@ export async function migrateLegacyHydrationShortcuts(ctx: MutationCtx) {
         userId: user._id,
       });
 
-    const rememberedEntry = await ctx.db.get(rememberedEntryId);
+      const rememberedEntry = await ctx.db.get(rememberedEntryId);
 
-    if (rememberedEntry?.favorited) {
-      normalizedFavorites += 1;
-    }
-
-    for (const hydrationLog of hydrationLogs) {
-      const replayId = hydrationLog.rememberedReplayId ?? `legacy_${hydrationLog._id}`;
-
-      await ctx.db.patch(hydrationLog._id, {
-        rememberedEntryId,
-        rememberedReplayId: replayId,
-      });
-
-      if (shortcut.logMode !== "hydration_and_nutrition") {
-        continue;
+      if (rememberedEntry?.favorited) {
+        normalizedFavorites += 1;
       }
 
-      const matchingMeals = await ctx.db
-        .query("meals")
-        .withIndex("by_user_date", (queryBuilder) =>
-          queryBuilder.eq("userId", user._id).eq("timestamp", hydrationLog.timestamp)
-        )
-        .take(10);
-      const pairedMeal = matchingMeals.filter(
-        (meal) =>
-          meal.entryMethod === "saved_meal" &&
-          meal.label === shortcut.label &&
-          meal.timestamp === hydrationLog.timestamp
-      );
+      for (const hydrationLog of hydrationLogs) {
+        const replayId = hydrationLog.rememberedReplayId ?? `legacy_${hydrationLog._id}`;
 
-      if (pairedMeal.length === 1) {
-        await ctx.db.patch(pairedMeal[0]._id, {
+        await ctx.db.patch(hydrationLog._id, {
           rememberedEntryId,
           rememberedReplayId: replayId,
         });
+
+        if (shortcut.logMode !== "hydration_and_nutrition") {
+          continue;
+        }
+
+        const matchingMeals = await ctx.db
+          .query("meals")
+          .withIndex("by_user_date", (queryBuilder) =>
+            queryBuilder.eq("userId", user._id).eq("timestamp", hydrationLog.timestamp)
+          )
+          .take(10);
+        const pairedMeal = matchingMeals.filter(
+          (meal) =>
+            meal.entryMethod === "saved_meal" &&
+            meal.label === shortcut.label &&
+            meal.timestamp === hydrationLog.timestamp
+        );
+
+        if (pairedMeal.length === 1) {
+          await ctx.db.patch(pairedMeal[0]._id, {
+            rememberedEntryId,
+            rememberedReplayId: replayId,
+          });
+        }
       }
+
+      migrated += 1;
+    }
+  }
+
+  let pinnedFavoritesBackfilled = 0;
+
+  for await (const rememberedEntry of ctx.db
+    .query("rememberedEntries")
+    .withIndex("by_user_and_favorited_and_last_used_at", (queryBuilder) =>
+      queryBuilder.eq("userId", user._id).eq("favorited", true)
+    )) {
+    const favoritedAt = getRememberedEntryFavoritedAtSeed({
+      favorited: rememberedEntry.favorited,
+      favoritedAt: rememberedEntry.favoritedAt,
+      lastUsedAt: rememberedEntry.lastUsedAt,
+    });
+
+    if (favoritedAt === undefined || rememberedEntry.favoritedAt === favoritedAt) {
+      continue;
     }
 
-    migrated += 1;
+    await ctx.db.patch(rememberedEntry._id, {
+      favoritedAt,
+    });
+    pinnedFavoritesBackfilled += 1;
   }
 
   await ctx.db.patch(user._id, {
-    rememberedEntriesMigrationVersion: 1,
+    rememberedEntriesMigrationVersion: PINNED_FAVORITES_MIGRATION_VERSION,
   });
 
-  return { migrated, normalizedFavorites, skipped: false };
+  return { migrated, normalizedFavorites, pinnedFavoritesBackfilled, skipped: false };
 }
 
 export async function replayRememberedEntry(
@@ -876,14 +917,18 @@ export async function replayRememberedEntry(
 }
 
 export function buildRememberedEntryListItem(rememberedEntry: RememberedEntryDoc) {
+  const mealSummaryTotals = getRememberedMealSummaryTotals(rememberedEntry.mealSnapshot);
+
   return {
     id: rememberedEntry._id,
     label: rememberedEntry.displayLabel,
     replayKind: rememberedEntry.replayKind,
     summary: getRememberedEntrySummary({
-      amountOz: rememberedEntry.hydrationSnapshot?.amountOz,
+      beverageKind: rememberedEntry.hydrationSnapshot?.beverageKind,
       mealType: rememberedEntry.mealSnapshot?.mealType as MealType | undefined,
       replayKind: rememberedEntry.replayKind as RememberedEntryReplayKind,
+      totalCalories: mealSummaryTotals.totalCalories,
+      totalProtein: mealSummaryTotals.totalProtein,
     }),
   };
 }

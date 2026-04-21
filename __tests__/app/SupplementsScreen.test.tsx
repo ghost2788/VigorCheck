@@ -1,9 +1,11 @@
 import React from "react";
-import { fireEvent, waitFor } from "@testing-library/react-native";
+import { fireEvent, waitFor, within } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { api } from "../../convex/_generated/api";
 import { render } from "../../lib/test-utils";
 import SupplementsScreen from "../../app/supplements";
 
+const mockBack = jest.fn();
 const mockPush = jest.fn();
 const mockUseAction = jest.fn();
 const mockUseMutation = jest.fn();
@@ -12,7 +14,7 @@ const mockPrepareSupplementPhoto = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
-    back: jest.fn(),
+    back: mockBack,
     push: mockPush,
   }),
 }));
@@ -29,6 +31,7 @@ jest.mock("../../lib/supplements/prepareSupplementPhoto", () => ({
 
 describe("SupplementsScreen", () => {
   beforeEach(() => {
+    mockBack.mockReset();
     mockPush.mockReset();
     mockUseAction.mockReset();
     mockUseMutation.mockReset();
@@ -146,6 +149,35 @@ describe("SupplementsScreen", () => {
     expect(getByText("Front label")).toBeTruthy();
     expect(getByText("Supplement facts")).toBeTruthy();
     expect(getByText("Skip second photo")).toBeTruthy();
+  });
+
+  it("uses the approved detail scaffold and stronger section hierarchy", () => {
+    const { getByText, getByTestId, queryByText } = render(<SupplementsScreen />);
+    const headerRow = getByTestId("supplements-header-row");
+    const stackCard = getByTestId("supplements-stack-card");
+
+    expect(getByText("Supplement stack")).toBeTruthy();
+    expect(queryByText("chevron-back")).toBeTruthy();
+    expect(StyleSheet.flatten(headerRow.props.style).alignItems).toBe("center");
+    expect(within(headerRow).getByText("Supplement stack")).toBeTruthy();
+    expect(within(headerRow).getByText("chevron-back")).toBeTruthy();
+    expect(within(headerRow).queryByText("Manage supplements")).toBeNull();
+    expect(StyleSheet.flatten(getByTestId("supplements-manage-title").props.style).fontSize).toBe(15);
+    expect(StyleSheet.flatten(stackCard.props.style).marginTop).toBe(12);
+    expect(StyleSheet.flatten(getByText("Create custom supplement").props.style).textAlign).toBe("center");
+
+    fireEvent.press(getByText("Scan supplement"));
+
+    expect(StyleSheet.flatten(getByTestId("supplements-capture-title").props.style).fontSize).toBe(15);
+
+    fireEvent.press(getByText("Cancel"));
+    fireEvent.press(getByText("Create custom supplement"));
+
+    expect(StyleSheet.flatten(getByTestId("supplements-editor-title").props.style).fontSize).toBe(15);
+
+    fireEvent.press(getByTestId("supplements-back-button"));
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
   });
 
   it("shows a ready-state checkmark after a supplement photo is selected", async () => {

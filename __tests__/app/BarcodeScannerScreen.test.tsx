@@ -1,6 +1,8 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { render } from "../../lib/test-utils";
 import BarcodeScannerScreen from "../../app/scan/barcode";
+import { colors } from "../../lib/theme/colors";
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
@@ -39,5 +41,24 @@ describe("BarcodeScannerScreen", () => {
     expect(getByTestId("barcode-scan-frame")).toBeTruthy();
     expect(getByText("Scan barcode")).toBeTruthy();
     expect(queryByText("Packaged foods only. Works best with major brands.")).toBeNull();
+  });
+
+  it("derives overlay and frame colors from the active theme", () => {
+    const darkScreen = render(<BarcodeScannerScreen />, { initialThemePreference: "dark" });
+    const lightScreen = render(<BarcodeScannerScreen />, { initialThemePreference: "light" });
+
+    expect(StyleSheet.flatten(darkScreen.getByTestId("barcode-scan-frame").props.style).borderColor).toBe(
+      colors.dark.textTertiary
+    );
+    expect(
+      StyleSheet.flatten(darkScreen.getByTestId("barcode-overlay-card").props.style).backgroundColor
+    ).toBe("rgba(26, 24, 20, 0.9)");
+
+    expect(StyleSheet.flatten(lightScreen.getByTestId("barcode-scan-frame").props.style).borderColor).toBe(
+      colors.light.textTertiary
+    );
+    expect(
+      StyleSheet.flatten(lightScreen.getByTestId("barcode-overlay-card").props.style).backgroundColor
+    ).toBe("rgba(236, 231, 223, 0.92)");
   });
 });

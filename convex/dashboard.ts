@@ -148,6 +148,7 @@ export const today = query({
       )
     ).flat();
     const dashboard = buildTodayDashboard({
+      goalType: user.goalType,
       hydrationLogs: orderedHydrationLogs.map((entry) => ({
         amountOz: entry.amountOz,
         id: entry._id,
@@ -206,6 +207,7 @@ export const reminderSnapshot = query({
       user,
     });
     const dashboard = buildTodayDashboard({
+      goalType: user.goalType,
       hydrationLogs: orderedHydrationLogs.map((entry) => ({
         amountOz: entry.amountOz,
         id: entry._id,
@@ -238,9 +240,18 @@ export const reminderSnapshot = query({
       mealCount: orderedMeals.length,
       progress: {
         caloriesPercent: dashboard.cards.calories.rawProgressPercent,
+        caloriesScore: dashboard.cards.calories.score,
+        caloriesOnTarget: dashboard.cards.calories.score >= 100,
+        carbsPercent: dashboard.cards.carbs.rawProgressPercent,
+        carbsScore: dashboard.cards.carbs.score,
+        carbsOnTarget: dashboard.cards.carbs.score >= 100,
+        fatPercent: dashboard.cards.fat.rawProgressPercent,
+        fatScore: dashboard.cards.fat.score,
+        fatOnTarget: dashboard.cards.fat.score >= 100,
         hydrationPercent: dashboard.cards.hydration.rawProgressPercent,
         nutritionPercent: dashboard.cards.nutrition.coveragePercent,
         proteinPercent: dashboard.cards.protein.rawProgressPercent,
+        proteinOnTarget: dashboard.cards.protein.rawProgressPercent >= 100,
       },
       timeZone: user.timeZone,
     };

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>Utility Card Title Hierarchy Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1a1814;
+    --text: #e8e0d4;
+    --textSecondary: rgba(255,255,255,0.45);
+    --textTertiary: rgba(255,255,255,0.28);
+    --card: rgba(255,255,255,0.035);
+    --cardBorder: rgba(255,255,255,0.08);
+    --surfaceSoft: rgba(255,255,255,0.025);
+    --surfaceStrong: rgba(255,255,255,0.06);
+    --accent1: #5ebaa9;
+    --shadow: rgba(0,0,0,0.42);
+  }
+  body.light {
+    --bg: #ece7df;
+    --text: #2a2520;
+    --textSecondary: rgba(42,37,32,0.56);
+    --textTertiary: rgba(42,37,32,0.38);
+    --card: rgba(255,255,255,0.82);
+    --cardBorder: rgba(68,55,37,0.12);
+    --surfaceSoft: rgba(255,255,255,0.82);
+    --surfaceStrong: rgba(255,255,255,0.92);
+    --accent1: #3a9e8a;
+    --shadow: rgba(91,71,44,0.12);
+  }
+  body {
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent 18%), var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 56px 20px 42px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    color: var(--textSecondary);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .eyebrow {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.8px;
+    margin-bottom: 10px;
+  }
+  .lead {
+    color: var(--textSecondary);
+    font-size: 13px;
+    line-height: 20px;
+    margin-bottom: 24px;
+  }
+  .stack {
+    display: grid;
+    gap: 18px;
+  }
+  .panel {
+    border-radius: 28px;
+    border: 1px solid var(--cardBorder);
+    overflow: hidden;
+    box-shadow: 0 18px 40px var(--shadow);
+    background: var(--bg);
+  }
+  .panel-label {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--cardBorder);
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .panel-label strong {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .panel-label span {
+    font-size: 11px;
+    color: var(--textSecondary);
+  }
+  .screen {
+    padding: 22px 18px 24px;
+  }
+  .screen-title {
+    font-size: 28px;
+    line-height: 32px;
+    letter-spacing: -0.8px;
+    font-weight: 300;
+    margin-bottom: 16px;
+  }
+  .card {
+    border-radius: 20px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card:last-child {
+    margin-bottom: 0;
+  }
+  .title-sm {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .title-md {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .body {
+    color: var(--textSecondary);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  .field-label {
+    color: var(--textTertiary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .pill-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .pill {
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--cardBorder);
+    background: var(--surfaceSoft);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--textSecondary);
+  }
+  .pill.active {
+    border-color: rgba(94,186,169,0.24);
+    background: rgba(94,186,169,0.16);
+    color: var(--accent1);
+  }
+  body.light .pill.active {
+    border-color: rgba(58,158,138,0.2);
+    background: rgba(58,158,138,0.12);
+  }
+  .input {
+    min-height: 52px;
+    border-radius: 16px;
+    border: 1px solid var(--cardBorder);
+    background: var(--surfaceSoft);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    font-size: 13px;
+    color: var(--textSecondary);
+    margin-bottom: 14px;
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .action-link {
+    color: var(--accent1);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .subheading {
+    font-size: 12px;
+    font-weight: 600;
+    margin: 14px 0 10px;
+  }
+  .row {
+    border-radius: 16px;
+    border: 1px solid var(--cardBorder);
+    background: var(--surfaceSoft);
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .row:last-child {
+    margin-bottom: 0;
+  }
+  .row-copy strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .row-copy span {
+    color: var(--textSecondary);
+    font-size: 12px;
+  }
+  .cta {
+    min-width: 56px;
+    min-height: 36px;
+    border-radius: 999px;
+    border: 1px solid var(--cardBorder);
+    background: var(--card);
+    color: var(--accent1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" type="button" onclick="document.body.classList.toggle('light')">Toggle theme</button>
+
+<div class="eyebrow">Hierarchy cleanup</div>
+<h1>Utility cards</h1>
+<p class="lead">Proposed narrow batch: promote actual card and form titles from <code>sm</code> to <code>md</code>, while leaving compact list subheads like <code>Daily stack</code>, <code>As needed</code>, and <code>Favorites</code> alone.</p>
+
+<div class="stack">
+  <section class="panel">
+    <div class="panel-label">
+      <strong>Log fallback</strong>
+      <span>empty state title promoted</span>
+    </div>
+    <div class="screen">
+      <div class="screen-title">Log</div>
+      <div class="card">
+        <div class="title-md">Finish setup first</div>
+        <div class="body">Logging is ready, but it needs your profile and targets before meals can be saved.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-label">
+      <strong>Manual meal form</strong>
+      <span>section title promoted</span>
+    </div>
+    <div class="screen">
+      <div class="card">
+        <div class="title-md">Quick add meal</div>
+        <div class="pill-row">
+          <div class="pill">Breakfast</div>
+          <div class="pill active">Lunch</div>
+          <div class="pill">Dinner</div>
+        </div>
+        <div class="field-label">Meal label (optional)</div>
+        <div class="input">Chicken bowl</div>
+        <div class="field-label">Calories</div>
+        <div class="input">700</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-label">
+      <strong>My Supplements</strong>
+      <span>card title promoted, subheads unchanged</span>
+    </div>
+    <div class="screen">
+      <div class="card">
+        <div class="header-row">
+          <div class="title-md" style="margin-bottom: 0;">My Supplements</div>
+          <div class="action-link">Manage supplements</div>
+        </div>
+        <div class="subheading">Daily stack</div>
+        <div class="row">
+          <div class="row-copy">
+            <strong>Vitamin D3</strong>
+            <span>1 softgel</span>
+          </div>
+          <div class="cta">Taken</div>
+        </div>
+        <div class="subheading">As needed</div>
+        <div class="row">
+          <div class="row-copy">
+            <strong>Protein powder</strong>
+            <span>1 scoop</span>
+          </div>
+          <div class="cta">Log</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-label">
+      <strong>Profile empty states</strong>
+      <span>fallback titles promoted</span>
+    </div>
+    <div class="screen">
+      <div class="card">
+        <div class="title-md">No profile yet</div>
+        <div class="body">Finish onboarding once and your plan settings will live here.</div>
+      </div>
+      <div class="card">
+        <div class="title-md">No profile yet</div>
+        <div class="body">Finish onboarding once and your reminder settings will live here.</div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

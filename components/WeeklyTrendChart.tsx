@@ -4,11 +4,22 @@ import { useTheme } from "../lib/theme/ThemeProvider";
 import { Card } from "./Card";
 import { ThemedText } from "./ThemedText";
 
-export type TrendChartMetric = "calories" | "hydration" | "nutrition" | "protein" | "wellness";
+export type TrendChartMetric =
+  | "calories"
+  | "protein"
+  | "carbs"
+  | "fat"
+  | "wellness"
+  | "hydration"
+  | "nutrition";
 
 type TrendChartDay = {
   calories: number;
   caloriesScore: number;
+  carbs: number;
+  carbsScore: number;
+  fat: number;
+  fatScore: number;
   hydrationCups: number;
   hydrationScore: number;
   isFuture: boolean;
@@ -25,6 +36,8 @@ type WeeklyTrendChartProps = {
   onChangeMetric: (metric: TrendChartMetric) => void;
   targets: {
     calories: number;
+    carbs: number;
+    fat: number;
     hydration: number;
     protein: number;
   };
@@ -45,6 +58,14 @@ function clampPercent(value: number) {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
+function getTargetProgressPercent(value: number, target: number) {
+  if (!target) {
+    return 0;
+  }
+
+  return clampPercent((value / target) * 100);
+}
+
 function getDisplayPercent(
   day: TrendChartDay,
   metric: TrendChartMetric,
@@ -55,19 +76,23 @@ function getDisplayPercent(
   }
 
   if (metric === "calories") {
-    if (!targets.calories) {
-      return 0;
-    }
-
-    return clampPercent((day.calories / targets.calories) * 100);
+    return getTargetProgressPercent(day.calories, targets.calories);
   }
 
   if (metric === "protein") {
-    return clampPercent(day.proteinScore);
+    return getTargetProgressPercent(day.protein, targets.protein);
+  }
+
+  if (metric === "carbs") {
+    return getTargetProgressPercent(day.carbs, targets.carbs);
+  }
+
+  if (metric === "fat") {
+    return getTargetProgressPercent(day.fat, targets.fat);
   }
 
   if (metric === "hydration") {
-    return clampPercent(day.hydrationScore);
+    return getTargetProgressPercent(day.hydrationCups, targets.hydration);
   }
 
   if (metric === "nutrition") {
@@ -86,9 +111,11 @@ export function WeeklyTrendChart({
   const { theme } = useTheme();
   const metrics = useMemo(
     () => [
-      { key: "wellness" as const, label: "Wellness" },
       { key: "calories" as const, label: "Calories" },
       { key: "protein" as const, label: "Protein" },
+      { key: "carbs" as const, label: "Carbs" },
+      { key: "fat" as const, label: "Fat" },
+      { key: "wellness" as const, label: "Wellness" },
       { key: "hydration" as const, label: "Hydration" },
       { key: "nutrition" as const, label: "Nutrition" },
     ],
@@ -98,7 +125,7 @@ export function WeeklyTrendChart({
     if (activeMetric === "calories") {
       return {
         color: theme.metricCalories,
-        hint: "Target balance %",
+        hint: "Goal progress %",
         label: "Calories",
       };
     }
@@ -111,9 +138,25 @@ export function WeeklyTrendChart({
       };
     }
 
+    if (activeMetric === "carbs") {
+      return {
+        color: theme.metricCarbs,
+        hint: "Goal progress %",
+        label: "Carbs",
+      };
+    }
+
+    if (activeMetric === "fat") {
+      return {
+        color: theme.metricFat,
+        hint: "Goal progress %",
+        label: "Fat",
+      };
+    }
+
     if (activeMetric === "hydration") {
       return {
-        color: theme.metricHydration,
+        color: theme.metricHydrationSupport,
         hint: "Goal progress %",
         label: "Hydration",
       };
@@ -121,7 +164,7 @@ export function WeeklyTrendChart({
 
     if (activeMetric === "nutrition") {
       return {
-        color: theme.metricNutrition,
+        color: theme.metricNutritionSupport,
         hint: "Daily coverage %",
         label: "Nutrition",
         target: null,

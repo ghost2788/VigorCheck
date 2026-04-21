@@ -1,8 +1,10 @@
 import {
+  getWellnessWeights,
   getNutritionTargets,
   ouncesToCups,
   rankMealNutritionContribution,
   scoreCaloriesTargetCloseness,
+  scoreWeightedWellness,
 } from "../../lib/domain/wellness";
 
 describe("wellness helpers", () => {
@@ -73,5 +75,54 @@ describe("wellness helpers", () => {
     });
 
     expect(ranking).toBeCloseTo(1.07, 2);
+  });
+
+  it("returns the exact goal-aware wellness weights and weighted composite score", () => {
+    expect(getWellnessWeights("general_health")).toEqual({
+      calories: 0.18,
+      carbs: 0.14,
+      fat: 0.12,
+      hydration: 0.18,
+      nutrition: 0.22,
+      protein: 0.16,
+    });
+    expect(getWellnessWeights("fat_loss")).toEqual({
+      calories: 0.3,
+      carbs: 0.18,
+      fat: 0.12,
+      hydration: 0.1,
+      nutrition: 0.1,
+      protein: 0.2,
+    });
+    expect(getWellnessWeights("muscle_gain")).toEqual({
+      calories: 0.25,
+      carbs: 0.2,
+      fat: 0.12,
+      hydration: 0.1,
+      nutrition: 0.1,
+      protein: 0.23,
+    });
+    expect(getWellnessWeights("energy_balance")).toEqual({
+      calories: 0.24,
+      carbs: 0.17,
+      fat: 0.16,
+      hydration: 0.13,
+      nutrition: 0.12,
+      protein: 0.18,
+    });
+
+    const scores = {
+      calories: 100,
+      protein: 80,
+      carbs: 70,
+      fat: 60,
+      hydration: 50,
+      nutrition: 50,
+    } as const;
+
+    expect(scoreWeightedWellness("general_health", scores)).toBe(68);
+    expect(scoreWeightedWellness("fat_loss", scores)).toBe(76);
+    expect(scoreWeightedWellness("muscle_gain", scores)).toBe(75);
+    expect(scoreWeightedWellness("energy_balance", scores)).toBe(72);
   });
 });

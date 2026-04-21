@@ -68,9 +68,18 @@ type MockReminderSnapshot = {
   mealCount: number;
   progress: {
     caloriesPercent: number;
+    caloriesScore: number;
+    caloriesOnTarget: boolean;
+    carbsPercent: number;
+    carbsScore: number;
+    carbsOnTarget: boolean;
+    fatPercent: number;
+    fatScore: number;
+    fatOnTarget: boolean;
     hydrationPercent: number;
     nutritionPercent: number;
     proteinPercent: number;
+    proteinOnTarget: boolean;
   };
   timeZone: string;
 };
@@ -113,9 +122,18 @@ function buildSnapshot(overrides: Partial<MockReminderSnapshot> = {}): MockRemin
     mealCount: 0,
     progress: {
       caloriesPercent: 25,
+      caloriesScore: 25,
+      caloriesOnTarget: false,
+      carbsPercent: 25,
+      carbsScore: 25,
+      carbsOnTarget: false,
+      fatPercent: 25,
+      fatScore: 25,
+      fatOnTarget: false,
       hydrationPercent: 10,
       nutritionPercent: 20,
       proteinPercent: 15,
+      proteinOnTarget: false,
     },
     timeZone: "UTC",
     ...overrides,
@@ -164,9 +182,18 @@ describe("ReminderSyncProvider", () => {
         : buildSnapshot({
             progress: {
               caloriesPercent: 100,
+              caloriesScore: 100,
+              caloriesOnTarget: true,
+              carbsPercent: 100,
+              carbsScore: 100,
+              carbsOnTarget: true,
+              fatPercent: 100,
+              fatScore: 100,
+              fatOnTarget: true,
               hydrationPercent: 100,
               nutritionPercent: 40,
               proteinPercent: 100,
+              proteinOnTarget: true,
             },
           });
     });
@@ -203,9 +230,18 @@ describe("ReminderSyncProvider", () => {
         : buildSnapshot({
             progress: {
               caloriesPercent: 100,
+              caloriesScore: 100,
+              caloriesOnTarget: true,
+              carbsPercent: 100,
+              carbsScore: 100,
+              carbsOnTarget: true,
+              fatPercent: 100,
+              fatScore: 100,
+              fatOnTarget: true,
               hydrationPercent: 100,
               nutritionPercent: 40,
               proteinPercent: 100,
+              proteinOnTarget: true,
             },
           });
     });

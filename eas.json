@@ -11,6 +11,9 @@
     "preview": {
       "distribution": "internal"
     },
+    "internaltesting": {
+      "extends": "production"
+    },
     "closedtesting": {
       "extends": "production"
     },

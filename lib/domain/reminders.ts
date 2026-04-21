@@ -18,9 +18,18 @@ export type ReminderSnapshot = {
   mealCount: number;
   progress: {
     caloriesPercent: number;
+    caloriesScore: number;
+    caloriesOnTarget: boolean;
+    carbsPercent: number;
+    carbsScore: number;
+    carbsOnTarget: boolean;
+    fatPercent: number;
+    fatScore: number;
+    fatOnTarget: boolean;
     hydrationPercent: number;
     nutritionPercent: number;
     proteinPercent: number;
+    proteinOnTarget: boolean;
   };
   timeZone: string;
 };
@@ -162,18 +171,19 @@ export function buildReminderSchedule({
   if (
     settings.notifyGoalCompletion &&
     lastGoalCompletionReminderDate !== snapshot.dateKey &&
-    snapshot.progress.caloriesPercent >= 100 &&
-    snapshot.progress.proteinPercent >= 100 &&
-    snapshot.progress.hydrationPercent >= 100
+    snapshot.progress.caloriesOnTarget &&
+    snapshot.progress.proteinOnTarget &&
+    snapshot.progress.carbsOnTarget &&
+    snapshot.progress.fatOnTarget
   ) {
     notifications.push(
       createNotification({
-        body: "Calories, protein, and hydration are all on target today.",
+        body: "Calories, protein, carbs, and fat are all on target today.",
         dateKey: snapshot.dateKey,
         id: `${snapshot.dateKey}-goal-completion`,
         kind: "goal_completion",
         slot: "goal-completion",
-        title: "Core goals complete",
+        title: "Macro goals complete",
         triggerAt: null,
       })
     );
@@ -413,7 +423,9 @@ function createNotification({
 
 function getEndOfDayBody(biggestGapKey: WellnessKey) {
   const gapCopy: Record<WellnessKey, string> = {
-    calories: "Calories are still short of your target today.",
+    calories: "Calories are still off target today.",
+    carbs: "Carbs are still off target today.",
+    fat: "Fat is still off target today.",
     hydration: "Hydration is still trailing today.",
     nutrition: "Nutrition coverage is still lagging today.",
     protein: "Protein is still behind target today.",
@@ -494,8 +506,10 @@ function getTimestampForLocalMinutes({
 
 function isDayComplete(progress: ReminderSnapshot["progress"]) {
   return (
-    progress.caloriesPercent >= 100 &&
-    progress.proteinPercent >= 100 &&
+    progress.caloriesOnTarget &&
+    progress.proteinOnTarget &&
+    progress.carbsOnTarget &&
+    progress.fatOnTarget &&
     progress.hydrationPercent >= 100 &&
     progress.nutritionPercent >= 100
   );
