@@ -20,7 +20,7 @@ function installDevClient() {
   const npmCommand = "npm";
   const result = spawnSync(
     npmCommand,
-    ["install", DEV_CLIENT_SPEC, "--no-save", "--package-lock=false"],
+    ["install", DEV_CLIENT_SPEC, "--no-save", "--package-lock=false", "--legacy-peer-deps"],
     {
       cwd: process.cwd(),
       env: process.env,
