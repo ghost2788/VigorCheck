@@ -1,0 +1,254 @@
+import { v } from "convex/values";
+import {
+  getLocalDateKey,
+  getWeekDateKeysForOffset,
+  getWeekWindowForOffset,
+} from "../lib/domain/dayWindow";
+import {
+  buildTrendDay,
+  buildWeeklyOverview,
+  summarizeWeeklyNutrition,
+} from "../lib/domain/trends";
+import { getDetailedNutrientTargets } from "../lib/domain/nutrients";
+import { resolveEffectiveTargets } from "../lib/domain/targets";
+import { getNutritionTargets } from "../lib/domain/wellness";
+import { query } from "./_generated/server";
+import { findCurrentUser } from "./lib/devIdentity";
+import { buildSupplementLogSnapshot } from "./lib/supplements";
+const WEEK_STARTS_ON = 0 as const;
+
+function buildMealNutrients(meal: {
+  b12: number;
+  b6: number;
+  calcium: number;
+  folate: number;
+  iron: number;
+  magnesium: number;
+  manganese?: number;
+  niacin: number;
+  omega3?: number;
+  phosphorus: number;
+  potassium: number;
+  riboflavin: number;
+  selenium?: number;
+  thiamin: number;
+  totalFiber: number;
+  totalSodium: number;
+  totalSugar: number;
+  vitaminA: number;
+  vitaminC: number;
+  vitaminD: number;
+  vitaminE: number;
+  vitaminK: number;
+  zinc: number;
+  choline?: number;
+  copper?: number;
+}) {
+  return {
+    b12: meal.b12,
+    b6: meal.b6,
+    calcium: meal.calcium,
+    choline: meal.choline ?? 0,
+    copper: meal.copper ?? 0,
+    fiber: meal.totalFiber,
+    folate: meal.folate,
+    iron: meal.iron,
+    magnesium: meal.magnesium,
+    manganese: meal.manganese ?? 0,
+    niacin: meal.niacin,
+    omega3: meal.omega3 ?? 0,
+    phosphorus: meal.phosphorus,
+    potassium: meal.potassium,
+    riboflavin: meal.riboflavin,
+    selenium: meal.selenium ?? 0,
+    sodium: meal.totalSodium,
+    sugar: meal.totalSugar,
+    thiamin: meal.thiamin,
+    vitaminA: meal.vitaminA,
+    vitaminC: meal.vitaminC,
+    vitaminD: meal.vitaminD,
+    vitaminE: meal.vitaminE,
+    vitaminK: meal.vitaminK,
+    zinc: meal.zinc,
+  };
+}
+
+function groupByLocalDateKey<T extends { timestamp: number }>(entries: T[], timeZone: string) {
+  const grouped = new Map<string, T[]>();
+
+  for (const entry of entries) {
+    const dateKey = getLocalDateKey(entry.timestamp, timeZone);
+    const current = grouped.get(dateKey) ?? [];
+    current.push(entry);
+    grouped.set(dateKey, current);
+  }
+
+  return grouped;
+}
+
+function formatRangeLabel(startDateKey: string, endDateKey: string) {
+  const format = (dateKey: string) =>
+    new Date(`${dateKey}T00:00:00.000Z`).toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    });
+
+  return `${format(startDateKey)} - ${format(endDateKey)}`;
+}
+
+function getWeekOffsetCap({
+  currentWeekStartDateKey,
+  earliestWeekStartDateKey,
+}: {
+  currentWeekStartDateKey: string;
+  earliestWeekStartDateKey: string;
+}) {
+  const currentUtc = Date.parse(`${currentWeekStartDateKey}T00:00:00.000Z`);
+  const earliestUtc = Date.parse(`${earliestWeekStartDateKey}T00:00:00.000Z`);
+
+  return Math.max(0, Math.floor((currentUtc - earliestUtc) / (7 * 24 * 60 * 60 * 1000)));
+}
+
+export const weekly = query({
+  args: {
+    weekOffset: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await findCurrentUser(ctx);
+
+    if (!user) {
+      return null;
+    }
+
+    const requestedOffset = Math.max(0, Math.floor(args.weekOffset));
+    const now = Date.now();
+    const currentWeekWindow = getWeekWindowForOffset({
+      timeZone: user.timeZone,
+      timestamp: now,
+      weekOffset: 0,
+      weekStartsOn: WEEK_STARTS_ON,
+    });
+    const earliestWeekWindow = getWeekWindowForOffset({
+      timeZone: user.timeZone,
+      timestamp: user._creationTime,
+      weekOffset: 0,
+      weekStartsOn: WEEK_STARTS_ON,
+    });
+    const maxWeekOffset = getWeekOffsetCap({
+      currentWeekStartDateKey: currentWeekWindow.startDateKey,
+      earliestWeekStartDateKey: earliestWeekWindow.startDateKey,
+    });
+    const weekOffset = Math.min(requestedOffset, maxWeekOffset);
+    const weekDateKeys = getWeekDateKeysForOffset({
+      timeZone: user.timeZone,
+      timestamp: now,
+      weekOffset,
+      weekStartsOn: WEEK_STARTS_ON,
+    });
+    const selectedWeekWindow = getWeekWindowForOffset({
+      timeZone: user.timeZone,
+      timestamp: now,
+      weekOffset,
+      weekStartsOn: WEEK_STARTS_ON,
+    });
+    const selectedMeals = await ctx.db
+      .query("meals")
+      .withIndex("by_user_date", (query) =>
+        query.eq("userId", user._id).gte("timestamp", selectedWeekWindow.start).lt("timestamp", selectedWeekWindow.end)
+      )
+      .collect();
+    const selectedHydrationLogs = await ctx.db
+      .query("hydrationLogs")
+      .withIndex("by_user_date", (query) =>
+        query.eq("userId", user._id).gte("timestamp", selectedWeekWindow.start).lt("timestamp", selectedWeekWindow.end)
+      )
+      .collect();
+    const selectedSupplementLogs = await ctx.db
+      .query("supplementLogs")
+      .withIndex("by_user_date", (query) =>
+        query.eq("userId", user._id).gte("timestamp", selectedWeekWindow.start).lt("timestamp", selectedWeekWindow.end)
+      )
+      .collect();
+    const mealsByDate = groupByLocalDateKey(selectedMeals, user.timeZone);
+    const hydrationByDate = groupByLocalDateKey(selectedHydrationLogs, user.timeZone);
+    const supplementsByDate = groupByLocalDateKey(selectedSupplementLogs, user.timeZone);
+    const macroTargets = resolveEffectiveTargets(user);
+    const targets = {
+      calories: macroTargets.calories,
+      carbs: macroTargets.carbs,
+      detailedNutrition: getDetailedNutrientTargets({
+        age: user.age,
+        sex: user.sex,
+        targetFiber: user.targetFiber,
+      }),
+      hydration: user.targetHydration,
+      nutrition: getNutritionTargets({
+        age: user.age,
+        sex: user.sex,
+        targetFiber: user.targetFiber,
+      }),
+      fat: macroTargets.fat,
+      protein: macroTargets.protein,
+    };
+    const todayDateKey = getLocalDateKey(now, user.timeZone);
+    const days = weekDateKeys.map((dateKey) =>
+      buildTrendDay({
+        dateKey,
+        goalType: user.goalType,
+        hydrationLogs: dateKey > todayDateKey ? [] : (hydrationByDate.get(dateKey) ?? []).map((entry) => ({
+          amountOz: entry.amountOz,
+          id: entry._id,
+          timestamp: entry.timestamp,
+        })),
+        isFuture: weekOffset === 0 && dateKey > todayDateKey,
+        meals: dateKey > todayDateKey ? [] : (mealsByDate.get(dateKey) ?? []).map((meal) => ({
+          entryMethod: meal.entryMethod,
+          id: meal._id,
+          label: meal.label,
+          mealType: meal.mealType,
+          nutrients: buildMealNutrients(meal),
+          timestamp: meal.timestamp,
+          totals: {
+            calories: meal.totalCalories,
+            carbs: meal.totalCarbs,
+            fat: meal.totalFat,
+            protein: meal.totalProtein,
+          },
+        })),
+        supplementLogs:
+          dateKey > todayDateKey
+            ? []
+            : (supplementsByDate.get(dateKey) ?? []).map((log) => buildSupplementLogSnapshot(log)),
+        targets,
+      })
+    );
+    const nutrition = summarizeWeeklyNutrition({ days });
+    const overview = buildWeeklyOverview({
+      days,
+      recurringGaps: nutrition.recurringGaps,
+    });
+    return {
+      days,
+      nutrition,
+      overview,
+      targets: {
+        calories: macroTargets.calories,
+        carbs: macroTargets.carbs,
+        fat: macroTargets.fat,
+        hydration: user.targetHydration,
+        protein: macroTargets.protein,
+      },
+      week: {
+        canGoNewer: weekOffset > 0,
+        canGoOlder: weekOffset < maxWeekOffset,
+        elapsedDays: days.filter((day) => !day.isFuture).length,
+        endDateKey: weekDateKeys[6],
+        isCurrentWeek: weekOffset === 0,
+        label: formatRangeLabel(weekDateKeys[0], weekDateKeys[6]),
+        startDateKey: weekDateKeys[0],
+        weekOffset,
+      },
+    };
+  },
+});

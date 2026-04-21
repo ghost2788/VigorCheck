@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VigorCheck Icon Reference Board</title>
+    <style>
+      :root {
+        --bg: #171412;
+        --panel: rgba(255, 255, 255, 0.045);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --text: #f0e7d7;
+        --text-dim: rgba(240, 231, 215, 0.62);
+        --text-soft: rgba(240, 231, 215, 0.45);
+        --accent: #d85a63;
+        --accent2: #f0ba74;
+        --accent3: #8aaaf0;
+        --shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at top, rgba(216, 90, 99, 0.08), transparent 28%),
+          radial-gradient(circle at 80% 0%, rgba(138, 170, 240, 0.08), transparent 24%),
+          var(--bg);
+        color: var(--text);
+        font-family:
+          "Segoe UI",
+          "Helvetica Neue",
+          Arial,
+          sans-serif;
+      }
+
+      .page {
+        margin: 0 auto;
+        max-width: 1480px;
+        padding: 28px 22px 48px;
+      }
+
+      .eyebrow {
+        color: var(--accent2);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        margin: 0 0 14px;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        font-size: clamp(38px, 6vw, 64px);
+        font-weight: 300;
+        letter-spacing: -0.06em;
+        line-height: 0.96;
+        margin: 0;
+        max-width: 880px;
+      }
+
+      .intro {
+        color: var(--text-dim);
+        font-size: 18px;
+        line-height: 1.5;
+        margin: 18px 0 28px;
+        max-width: 760px;
+      }
+
+      .hint {
+        align-items: center;
+        border: 1px solid var(--panel-border);
+        border-radius: 18px;
+        color: var(--text-soft);
+        display: inline-flex;
+        gap: 10px;
+        margin-bottom: 28px;
+        padding: 12px 16px;
+      }
+
+      .hint b {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .grid {
+        display: grid;
+        gap: 22px;
+        grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      }
+
+      .card {
+        backdrop-filter: blur(10px);
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .art {
+        align-items: center;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)),
+          radial-gradient(circle at 50% 28%, rgba(216, 90, 99, 0.08), transparent 44%),
+          #120f0d;
+        display: flex;
+        justify-content: center;
+        min-height: 260px;
+        padding: 28px;
+      }
+
+      .art img {
+        display: block;
+        filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.32));
+        image-rendering: auto;
+        max-height: 190px;
+        max-width: 100%;
+        object-fit: contain;
+      }
+
+      .art img.pixel {
+        image-rendering: pixelated;
+      }
+
+      .copy {
+        display: grid;
+        gap: 14px;
+        padding: 18px 18px 20px;
+      }
+
+      .kicker {
+        color: var(--accent2);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        margin: 0;
+        text-transform: uppercase;
+      }
+
+      .title-row {
+        align-items: baseline;
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+      }
+
+      h2 {
+        font-size: 26px;
+        font-weight: 400;
+        letter-spacing: -0.05em;
+        line-height: 1.05;
+        margin: 0;
+      }
+
+      .game {
+        color: var(--text-soft);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .note {
+        color: var(--text-dim);
+        font-size: 15px;
+        line-height: 1.5;
+        margin: 0;
+        min-height: 68px;
+      }
+
+      .signal {
+        color: var(--text);
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+      }
+
+      .signal li {
+        color: var(--text-dim);
+        font-size: 14px;
+        line-height: 1.35;
+        list-style: none;
+        padding-left: 14px;
+        position: relative;
+      }
+
+      .signal li::before {
+        background: var(--accent);
+        border-radius: 999px;
+        content: "";
+        height: 6px;
+        left: 0;
+        position: absolute;
+        top: 7px;
+        width: 6px;
+      }
+
+      .source {
+        color: var(--accent3);
+        font-size: 14px;
+        text-decoration: none;
+      }
+
+      .source:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+
+        .art {
+          min-height: 220px;
+        }
+
+        .note {
+          min-height: auto;
+        }
+
+        .title-row {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <p class="eyebrow">VigorCheck icon references</p>
+      <h1>Pick the game direction first, then we design the app heart around it.</h1>
+      <p class="intro">
+        This board is not “what the icon should be.” It is six visual lanes from actual games, so
+        you can point at the vibe you want: premium fantasy, sci-fi medical, iconic silhouette,
+        raw heart read, or something more graphic.
+      </p>
+      <div class="hint"><b>What to judge:</b> heart readability, game feel, and whether it can evolve into a wellness icon without looking childish.</div>
+
+      <section class="grid">
+        <article class="card">
+          <div class="art">
+            <img
+              alt="Kingdom Hearts curled heart symbol"
+              src="https://kh.wiki.gallery/images/5/54/Symbol_-_Heart3.png"
+            />
+          </div>
+          <div class="copy">
+            <p class="kicker">Elegant emblem</p>
+            <div class="title-row">
+              <h2>Curled heart symbol</h2>
+              <span class="game">Kingdom Hearts</span>
+            </div>
+            <p class="note">
+              Smooth, ornamental, and unmistakably “game icon” without feeling retro. This is the cleanest reference if you want a red heart that still feels premium.
+            </p>
+            <ul class="signal">
+              <li>Strong heart read at a glance</li>
+              <li>Can pair well with HUD brackets</li>
+              <li>Feels branded, not medical-logo generic</li>
+            </ul>
+            <a class="source" href="https://www.khwiki.com/Symbols_in_the_Kingdom_Hearts_series" target="_blank" rel="noreferrer">Source reference</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="art">
+            <img
+              alt="Halo ODST Optican first aid station"
+              src="https://halo.wiki.gallery/images/thumb/a/a4/Optican_First_Aid_Station.png/600px-Optican_First_Aid_Station.png"
+            />
+          </div>
+          <div class="copy">
+            <p class="kicker">Sci-fi medical</p>
+            <div class="title-row">
+              <h2>Optican HUD kiosk</h2>
+              <span class="game">Halo 3: ODST</span>
+            </div>
+            <p class="note">
+              This is less about the heart and more about the surrounding language: scan brackets, utility, kiosks, hard sci-fi health UX.
+            </p>
+            <ul class="signal">
+              <li>Best reference for the frame, not the icon</li>
+              <li>Feels like a game UI system instead of a logo</li>
+              <li>Could make VigorCheck feel more tactical</li>
+            </ul>
+            <a class="source" href="https://www.halopedia.org/Optican" target="_blank" rel="noreferrer">Source reference</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="art">
+            <img
+              alt="Diablo health globe"
+              src="https://www.diablowiki.net/images/f/f1/Newhealthglobe.png"
+            />
+          </div>
+          <div class="copy">
+            <p class="kicker">Material-rich</p>
+            <div class="title-row">
+              <h2>Health globe</h2>
+              <span class="game">Diablo</span>
+            </div>
+            <p class="note">
+              A good lane if you want the app to feel powerful and dramatic. Less “heart icon,” more premium health vessel with weight and glow.
+            </p>
+            <ul class="signal">
+              <li>High drama, high polish</li>
+              <li>Feels expensive and game-like</li>
+              <li>Might be too fantasy-heavy for wellness</li>
+            </ul>
+            <a class="source" href="https://www.diablowiki.net/Health_Globe" target="_blank" rel="noreferrer">Source reference</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="art">
+            <img
+              alt="Hollow Knight ancient mask"
+              src="https://cdn.wikimg.net/en/hkwiki/images/2/20/Ancient_Mask.png"
+            />
+          </div>
+          <div class="copy">
+            <p class="kicker">Iconic silhouette</p>
+            <div class="title-row">
+              <h2>Ancient mask</h2>
+              <span class="game">Hollow Knight</span>
+            </div>
+            <p class="note">
+              Not a heart, but a great example of a health symbol with real identity. Very clean silhouette, very memorable, very little clutter.
+            </p>
+            <ul class="signal">
+              <li>Best lesson here is shape simplicity</li>
+              <li>Calm, iconic, and not noisy</li>
+              <li>Could inspire a stronger VigorCheck mark than a literal heart</li>
+            </ul>
+            <a class="source" href="https://hollowknight.wiki/w/Mask_Shard_(Hollow_Knight)" target="_blank" rel="noreferrer">Source reference</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="art">
+            <img
+              alt="Terraria player heart"
+              class="pixel"
+              src="https://terraria.wiki.gg/images/PlayerHeart.png?24beae"
+            />
+          </div>
+          <div class="copy">
+            <p class="kicker">Classic game heart</p>
+            <div class="title-row">
+              <h2>Player heart</h2>
+              <span class="game">Terraria</span>
+            </div>
+            <p class="note">
+              Very clear and instantly readable, but this is the danger lane too. It goes “video game” immediately, which may be too literal for the app.
+            </p>
+            <ul class="signal">
+              <li>Best if you want a direct health-heart read</li>
+              <li>Useful as a shape reference only</li>
+              <li>Probably too retro to copy closely</li>
+            </ul>
+            <a class="source" href="https://terraria.wiki.gg/wiki/Life_Crystal" target="_blank" rel="noreferrer">Source reference</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="art">
+            <img
+              alt="Binding of Isaac red HUD heart"
+              src="https://bindingofisaacrebirth.wiki.gg/images/HUD_heart_red_full.png?5ed71c"
+            />
+          </div>
+          <div class="copy">
+            <p class="kicker">Raw heart read</p>
+            <div class="title-row">
+              <h2>HUD red heart</h2>
+              <span class="game">The Binding of Isaac</span>
+            </div>
+            <p class="note">
+              Strong read, immediate, slightly gross, very visceral. Good for deciding how literal or organic you want the VigorCheck heart to feel.
+            </p>
+            <ul class="signal">
+              <li>Most literal heart in the set</li>
+              <li>Shows the edge of “too fleshy” fast</li>
+              <li>Helpful as a boundary marker, maybe not the destination</li>
+            </ul>
+            <a class="source" href="https://bindingofisaacrebirth.wiki.gg/wiki/Hearts" target="_blank" rel="noreferrer">Source reference</a>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
