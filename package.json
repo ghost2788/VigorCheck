@@ -6,6 +6,7 @@
     "start": "expo start",
     "devclient:install": "node scripts/dev-client/install-dev-client.js",
     "start:dev": "npm run devclient:install && expo start --dev-client",
+    "postinstall": "node scripts/dev-client/eas-install-dev-client.js",
     "eas-build-post-install": "node scripts/dev-client/eas-install-dev-client.js",
     "release:android-native-audit": "node scripts/release/assert-production-android-native.js",
     "android": "expo start --android",
