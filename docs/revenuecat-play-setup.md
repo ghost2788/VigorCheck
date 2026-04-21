@@ -94,15 +94,16 @@ Publish these pages from the repository itself:
 4. Choose your main branch and the `/docs` folder.
 5. Save and wait for the Pages deployment to finish.
 
-If this repository stays at `ghost2788/Caltracker`, the Pages site will typically publish at:
+If this repository stays at `ghost2788/VigorCheck`, the Pages site will typically publish at:
 
-- `https://ghost2788.github.io/Caltracker/`
+- `https://ghost2788.github.io/VigorCheck/`
 
 That gives you these public links:
 
-- Privacy: `https://ghost2788.github.io/Caltracker/privacy/`
-- Terms: `https://ghost2788.github.io/Caltracker/terms/`
-- Support: `https://ghost2788.github.io/Caltracker/support/`
+- Privacy: `https://ghost2788.github.io/VigorCheck/privacy/`
+- Terms: `https://ghost2788.github.io/VigorCheck/terms/`
+- Support: `https://ghost2788.github.io/VigorCheck/support/`
+- Account deletion: `https://ghost2788.github.io/VigorCheck/account-deletion/`
 
 ## Play Console data safety reminder
 

@@ -1,6 +1,6 @@
 import { Linking } from "react-native";
 
-const PUBLIC_SITE_BASE_URL = "https://ghost2788.github.io/Caltracker";
+export const PUBLIC_SITE_BASE_URL = "https://ghost2788.github.io/VigorCheck";
 
 export const legalLinks = {
   accountDeletion: {

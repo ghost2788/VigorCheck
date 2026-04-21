@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "expo-router";
-import { Animated, Pressable, StyleSheet, View } from "react-native";
+import { Animated, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WelcomeHudHero } from "../../components/auth/WelcomeHudHero";
 import { Button } from "../../components/Button";
@@ -13,7 +13,9 @@ export default function AuthWelcomeScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const reduceMotion = useReducedMotionPreference();
+  const useCompactLayout = width <= 360;
   const heroOpacity = React.useRef(new Animated.Value(0)).current;
   const heroTranslateY = React.useRef(new Animated.Value(18)).current;
   const copyOpacity = React.useRef(new Animated.Value(0)).current;
@@ -93,7 +95,7 @@ export default function AuthWelcomeScreen() {
         styles.screen,
         {
           backgroundColor: theme.background,
-          paddingBottom: Math.max(insets.bottom + 42, 72),
+          paddingBottom: Math.max(insets.bottom + 24, 48),
           paddingTop: Math.max(insets.top, 18) + 18,
         },
       ]}
@@ -112,7 +114,7 @@ export default function AuthWelcomeScreen() {
             VigorCheck
           </ThemedText>
         </View>
-        <View style={styles.heroWrap}>
+        <View style={[styles.heroWrap, useCompactLayout ? styles.heroWrapCompact : null]}>
           <WelcomeHudHero testID="welcome-hud-hero" />
         </View>
       </Animated.View>
@@ -127,17 +129,22 @@ export default function AuthWelcomeScreen() {
         ]}
         testID="welcome-copy"
       >
-        <ThemedText size="xl" style={styles.title}>
+        <ThemedText size="xl" style={[styles.title, useCompactLayout ? styles.titleCompact : null]}>
           Hit your macros without the logging grind.
         </ThemedText>
-        <ThemedText style={styles.subtitle} variant="secondary">
+        <ThemedText
+          style={[styles.subtitle, useCompactLayout ? styles.subtitleCompact : null]}
+          variant="secondary"
+        >
           Build your plan in minutes. Track calories, protein, carbs, and fat faster with AI.
         </ThemedText>
       </Animated.View>
 
       <Animated.View
+        testID="welcome-actions"
         style={[
           styles.actionWrap,
+          useCompactLayout ? styles.actionWrapCompact : null,
           {
             opacity: actionsOpacity,
             transform: [{ translateY: actionsTranslateY }],
@@ -151,7 +158,7 @@ export default function AuthWelcomeScreen() {
             <ThemedText style={{ color: theme.accent1 }}>Sign in</ThemedText>
           </Pressable>
         </View>
-        <LegalLinksRow testID="welcome-legal-links" textVariant="tertiary" />
+        <LegalLinksRow style={styles.legalLinks} testID="welcome-legal-links" textVariant="tertiary" />
       </Animated.View>
     </View>
   );
@@ -161,6 +168,10 @@ const styles = StyleSheet.create({
   actionWrap: {
     gap: 16,
     paddingTop: 24,
+  },
+  actionWrapCompact: {
+    gap: 14,
+    paddingTop: 18,
   },
   brandWrap: {
     paddingTop: 18,
@@ -190,6 +201,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     minHeight: 250,
   },
+  heroWrapCompact: {
+    minHeight: 206,
+  },
+  legalLinks: {
+    marginBottom: 12,
+  },
   screen: {
     flex: 1,
     justifyContent: "space-between",
@@ -200,6 +217,10 @@ const styles = StyleSheet.create({
     lineHeight: 25,
     maxWidth: 340,
   },
+  subtitleCompact: {
+    fontSize: 16,
+    lineHeight: 23,
+  },
   topStack: {
     gap: 18,
   },
@@ -208,5 +229,9 @@ const styles = StyleSheet.create({
     letterSpacing: -1.4,
     lineHeight: 52,
     maxWidth: 320,
+  },
+  titleCompact: {
+    fontSize: 38,
+    lineHeight: 44,
   },
 });

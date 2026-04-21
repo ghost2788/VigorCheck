@@ -27,10 +27,10 @@ export default function PaywallScreen() {
     offerings,
     purchaseMonthly,
     restorePurchases,
-    statusLabel,
     supportMessage,
   } = useSubscription();
   const [error, setError] = React.useState<string | null>(null);
+  const [isManageOpen, setIsManageOpen] = React.useState(false);
 
   if (currentUser === undefined) {
     return (
@@ -68,11 +68,12 @@ export default function PaywallScreen() {
         contentContainerStyle={[
           styles.content,
           {
-            paddingBottom: Math.max(insets.bottom + 140, 164),
+            paddingBottom: Math.max(insets.bottom + 24, 48),
             paddingTop: Math.max(insets.top + 24, 40),
           },
         ]}
         showsVerticalScrollIndicator={false}
+        testID="paywall-scroll"
       >
         <View style={styles.heroStack}>
           <ThemedText size="xs" variant="accent1">
@@ -80,29 +81,20 @@ export default function PaywallScreen() {
           </ThemedText>
           <WelcomeHudHero variant="compact" />
           <ThemedText size="xl" style={styles.title}>
-            Keep your full VigorCheck plan running
-          </ThemedText>
-          <ThemedText variant="secondary" style={styles.body}>
-            Continue with AI meal scans, full nutrient insight, and the daily progress systems
-            you set up during onboarding. AI features include fair-use limits.
+            Keep VigorCheck running
           </ThemedText>
         </View>
 
-        <Card style={styles.statusCard}>
-          <ThemedText size="sm">Account status</ThemedText>
-          <ThemedText variant="secondary">{statusLabel ?? "Subscription required"}</ThemedText>
-        </Card>
-
         <Card style={styles.offerCard}>
           <View style={styles.offerHeader}>
-            <ThemedText size="sm">Monthly access</ThemedText>
+            <ThemedText size="sm">Monthly plan</ThemedText>
             <ThemedText size="lg" style={{ color: theme.accent1 }}>
               {monthlyPackage?.product.priceString ?? "$6.99 / month"}
             </ThemedText>
           </View>
           <ThemedText variant="secondary" style={styles.offerBody}>
-            Your 7-day free trial starts when onboarding is saved. After that, the monthly plan
-            keeps AI features and progress tools available with monthly fair-use limits.
+            Your 7-day free trial starts when onboarding is saved. Subscribe to continue
+            using your saved plan, AI scans, history, reminders, and progress tracking.
           </ThemedText>
           {supportMessage ? (
             <ThemedText size="sm" style={{ color: theme.accent3 }}>
@@ -111,87 +103,11 @@ export default function PaywallScreen() {
           ) : null}
         </Card>
 
-        <Card style={styles.bulletsCard}>
-          <ThemedText size="sm">What stays unlocked</ThemedText>
-          <View style={styles.bulletList}>
-            <ThemedText variant="secondary">
-              - AI meal scans and text entries with fair-use limits
-            </ThemedText>
-            <ThemedText variant="secondary">- Full vitamin and mineral coverage</ThemedText>
-            <ThemedText variant="secondary">- Daily progress, trends, and history</ThemedText>
-            <ThemedText variant="secondary">- Plan updates tied to your targets</ThemedText>
-          </View>
-        </Card>
-      </ScrollView>
-
-      <View
-        style={[
-          styles.footer,
-          {
-            backgroundColor: theme.background,
-            borderTopColor: theme.cardBorder,
-            paddingBottom: Math.max(insets.bottom + 16, 32),
-          },
-        ]}
-      >
         {error ? (
           <ThemedText size="sm" style={styles.footerError} variant="accent3">
             {error}
           </ThemedText>
         ) : null}
-
-        <View style={styles.utilityActions} testID="paywall-utility-actions">
-          <View style={styles.utilityRow} testID="paywall-billing-actions">
-            <Pressable
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={() => void runAction(restorePurchases)}
-              testID="paywall-restore-link"
-            >
-              <ThemedText size="sm" variant="tertiary">
-                Restore purchases
-              </ThemedText>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={() => void runAction(manageSubscription)}
-              testID="paywall-manage-link"
-            >
-              <ThemedText size="sm" variant="tertiary">
-                Manage subscription
-              </ThemedText>
-            </Pressable>
-          </View>
-          <View style={styles.accountAction} testID="paywall-account-action">
-            <Pressable
-              accessibilityRole="link"
-              hitSlop={8}
-              onPress={() => void runAction(() => openLegalLink("accountDeletion"))}
-              testID="paywall-account-deletion-link"
-            >
-              <ThemedText size="sm" variant="tertiary">
-                Account deletion
-              </ThemedText>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={() =>
-                void runAction(async () => {
-                  await authClient.signOut();
-                  router.replace("/(auth)/welcome");
-                })
-              }
-              testID="paywall-signout-link"
-            >
-              <ThemedText size="sm" variant="secondary">
-                Sign out
-              </ThemedText>
-            </Pressable>
-          </View>
-          <LegalLinksRow testID="paywall-legal-links" textVariant="tertiary" />
-        </View>
 
         <Button
           disabled={isLoading || !isConfigured}
@@ -199,22 +115,97 @@ export default function PaywallScreen() {
           onPress={() => void runAction(purchaseMonthly)}
           testID="paywall-primary-cta"
         />
-      </View>
+
+        <Card style={styles.manageCard} testID="paywall-manage-card">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: isManageOpen }}
+            hitSlop={8}
+            onPress={() => setIsManageOpen((value) => !value)}
+            testID="paywall-manage-toggle"
+          >
+            <View style={styles.manageHeader}>
+              <ThemedText size="sm" style={styles.manageTitle}>
+                Manage account
+              </ThemedText>
+              <View style={styles.chevronButton}>
+                <View
+                  style={[
+                    styles.chevron,
+                    {
+                      borderColor: theme.accent1,
+                      transform: [{ rotate: isManageOpen ? "-135deg" : "45deg" }],
+                    },
+                  ]}
+                  testID="paywall-manage-chevron"
+                />
+              </View>
+            </View>
+          </Pressable>
+
+          {isManageOpen ? (
+            <View style={styles.manageContent} testID="paywall-manage-content">
+              <View style={styles.utilityRow} testID="paywall-billing-actions">
+                <Pressable
+                  accessibilityRole="button"
+                  hitSlop={8}
+                  onPress={() => void runAction(restorePurchases)}
+                  testID="paywall-restore-link"
+                >
+                  <ThemedText size="sm" variant="tertiary">
+                    Restore purchases
+                  </ThemedText>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  hitSlop={8}
+                  onPress={() => void runAction(manageSubscription)}
+                  testID="paywall-manage-link"
+                >
+                  <ThemedText size="sm" variant="tertiary">
+                    Manage subscription
+                  </ThemedText>
+                </Pressable>
+              </View>
+
+              <View style={styles.accountAction} testID="paywall-account-action">
+                <Pressable
+                  accessibilityRole="link"
+                  hitSlop={8}
+                  onPress={() => void runAction(() => openLegalLink("accountDeletion"))}
+                  testID="paywall-account-deletion-link"
+                >
+                  <ThemedText size="sm" variant="tertiary">
+                    Account deletion
+                  </ThemedText>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  hitSlop={8}
+                  onPress={() =>
+                    void runAction(async () => {
+                      await authClient.signOut();
+                      router.replace("/(auth)/welcome");
+                    })
+                  }
+                  testID="paywall-signout-link"
+                >
+                  <ThemedText size="sm" variant="tertiary">
+                    Sign out
+                  </ThemedText>
+                </Pressable>
+              </View>
+
+              <LegalLinksRow testID="paywall-legal-links" textVariant="tertiary" />
+            </View>
+          ) : null}
+        </Card>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  body: {
-    lineHeight: 22,
-    maxWidth: 320,
-  },
-  bulletList: {
-    gap: 8,
-  },
-  bulletsCard: {
-    gap: 12,
-  },
   centered: {
     alignItems: "center",
     flex: 1,
@@ -222,14 +213,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   content: {
-    gap: 16,
+    gap: 14,
     paddingHorizontal: 24,
-  },
-  footer: {
-    borderTopWidth: 1,
-    gap: 16,
-    paddingHorizontal: 24,
-    paddingTop: 14,
   },
   footerError: {
     textAlign: "center",
@@ -244,9 +229,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 18,
     justifyContent: "center",
-  },
-  utilityActions: {
-    gap: 10,
   },
   utilityRow: {
     alignItems: "center",
@@ -269,8 +251,40 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  statusCard: {
+  manageCard: {
+    gap: 0,
+    overflow: "hidden",
+    padding: 0,
+  },
+  manageContent: {
+    gap: 14,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
+  manageHeader: {
+    alignItems: "center",
+    flexDirection: "row",
     gap: 8,
+    justifyContent: "space-between",
+    minHeight: 58,
+    paddingHorizontal: 16,
+  },
+  manageTitle: {
+    flex: 1,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  chevron: {
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    height: 10,
+    width: 10,
+  },
+  chevronButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+    minWidth: 32,
   },
   title: {
     lineHeight: 36,

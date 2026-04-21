@@ -93,7 +93,15 @@ describe("AuthWelcomeScreen", () => {
 
     const screenStyle = StyleSheet.flatten(getByTestId("welcome-screen").props.style);
 
-    expect(screenStyle.paddingBottom).toBe(72);
+    expect(screenStyle.paddingBottom).toBe(48);
+  });
+
+  it("adds bottom clearance directly to the legal link row", () => {
+    const { getByTestId } = render(<AuthWelcomeScreen />);
+
+    const legalStyle = StyleSheet.flatten(getByTestId("welcome-legal-links").props.style);
+
+    expect(legalStyle.marginBottom).toBe(12);
   });
 
   it("uses a taller headline line-height so descenders are not clipped on wrapped lines", () => {
