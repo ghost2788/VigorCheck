@@ -3,7 +3,11 @@
 .windsurf/
 .gstack/
 .superpowers/
+mockups/
+output/
 previews/
+tmp/
+my screenshots/
 docs/
 skills/
 skills-lock.json
@@ -22,6 +26,7 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 .metro-health-check*
+.tmp-*
 npm-debug.*
 yarn-debug.*
 yarn-error.*
