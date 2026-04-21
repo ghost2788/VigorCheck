@@ -103,7 +103,7 @@ That gives you these public links:
 - Privacy: `https://ghost2788.github.io/VigorCheck/privacy/`
 - Terms: `https://ghost2788.github.io/VigorCheck/terms/`
 - Support: `https://ghost2788.github.io/VigorCheck/support/`
-- Account deletion: `https://ghost2788.github.io/VigorCheck/account-deletion/`
+- Account deletion: `https://ghost2788.github.io/VigorCheck/account-deletion.html`
 
 ## Play Console data safety reminder
 
