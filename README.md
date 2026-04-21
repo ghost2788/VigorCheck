@@ -39,12 +39,18 @@ npx convex dev
 npm run start:dev
 ```
 
+`start:dev` installs `expo-dev-client` into local `node_modules` without saving it to
+`package.json` or `package-lock.json`, then starts Expo in dev-client mode. Store-bound
+builds intentionally use the committed dependency set, which excludes dev-client native
+modules.
+
 Useful commands:
 
 ```bash
 npm test
 npx tsc --noEmit
 npx convex dev --once
+npm run release:android-native-audit
 ```
 
 ## Project highlights

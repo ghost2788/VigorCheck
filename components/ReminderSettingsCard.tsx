@@ -45,7 +45,7 @@ const TOGGLE_ROWS: Array<{
     label: "Meal logging",
   },
   {
-    helper: "A one-time nudge when calories, protein, and hydration are complete.",
+    helper: "A one-time nudge when calories, protein, carbs, and fat are complete.",
     key: "notifyGoalCompletion",
     label: "Goal completion",
   },

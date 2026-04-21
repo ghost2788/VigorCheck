@@ -1,4 +1,3 @@
-import "expo-dev-client";
 import "react-native-gesture-handler";
 
 import React from "react";
@@ -14,6 +13,7 @@ import { getAuthBaseUrl, getConvexUrl, useWarmUpBrowser } from "../lib/auth/auth
 import { SubscriptionProvider } from "../lib/billing/SubscriptionProvider";
 import { OnboardingFlowProvider } from "../lib/onboarding/OnboardingFlowProvider";
 import { ReminderSyncProvider } from "../lib/reminders/ReminderSyncProvider";
+import { AppAccessGate } from "../lib/routing/AppAccessGate";
 import { ScanFlowProvider } from "../lib/scan/ScanFlowProvider";
 import { ThemeProvider, useTheme } from "../lib/theme/ThemeProvider";
 
@@ -75,7 +75,9 @@ function AppProviders() {
 
   return (
     <AuthProviders>
-      <RootNavigator />
+      <AppAccessGate>
+        <RootNavigator />
+      </AppAccessGate>
     </AuthProviders>
   );
 }
