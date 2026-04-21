@@ -10,7 +10,10 @@ const FORBIDDEN_PATTERNS = [
 ];
 
 const FORBIDDEN_MODULE_PATTERNS = FORBIDDEN_PATTERNS;
-const SYSTEM_ALERT_WINDOW = "android.permission.SYSTEM_ALERT_WINDOW";
+const FORBIDDEN_PERMISSIONS = [
+  "android.permission.SYSTEM_ALERT_WINDOW",
+  "android.permission.RECORD_AUDIO",
+];
 
 const EXCLUDED_ROOTS = new Set([
   ".agents",
@@ -115,11 +118,11 @@ function isDebugOnlyAndroidFile(relativeFile) {
   return normalized.startsWith("app/src/debug/") || normalized.startsWith("app/src/debugOptimized/");
 }
 
-function hasUnblockedSystemAlertWindowPermission(content) {
+function hasUnblockedForbiddenPermission(content, permission) {
   const permissionTags = content.match(/<uses-permission\b[^>]*>/gi) ?? [];
 
   return permissionTags.some((tag) => {
-    if (!tag.includes(SYSTEM_ALERT_WINDOW)) {
+    if (!tag.includes(permission)) {
       return false;
     }
 
@@ -141,8 +144,12 @@ function scanAndroidProject(androidDir) {
       }
     }
 
-    if (!isDebugOnlyAndroidFile(relativeFile) && hasUnblockedSystemAlertWindowPermission(content)) {
-      violations.push(`${relativeFile}: ${SYSTEM_ALERT_WINDOW}`);
+    if (!isDebugOnlyAndroidFile(relativeFile)) {
+      for (const permission of FORBIDDEN_PERMISSIONS) {
+        if (hasUnblockedForbiddenPermission(content, permission)) {
+          violations.push(`${relativeFile}: ${permission}`);
+        }
+      }
     }
   }
 

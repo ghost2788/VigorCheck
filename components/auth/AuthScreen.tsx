@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 import { Card } from "../Card";
+import { LegalLinksRow } from "../LegalLinksRow";
 import { ThemedText } from "../ThemedText";
 
 export function AuthScreen({
@@ -52,6 +53,8 @@ export function AuthScreen({
           </Pressable>
         </View>
       ) : null}
+
+      <LegalLinksRow style={styles.legalLinks} testID="auth-screen-legal-links" textVariant="tertiary" />
     </ScrollView>
   );
 }
@@ -74,6 +77,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     justifyContent: "center",
+    marginTop: 18,
+  },
+  legalLinks: {
     marginTop: 18,
   },
   header: {

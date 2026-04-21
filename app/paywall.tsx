@@ -5,11 +5,13 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "reac
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
+import { LegalLinksRow } from "../components/LegalLinksRow";
 import { ThemedText } from "../components/ThemedText";
 import { WelcomeHudHero } from "../components/auth/WelcomeHudHero";
 import { api } from "../convex/_generated/api";
 import { authClient } from "../lib/auth/authClient";
 import { useSubscription } from "../lib/billing/SubscriptionProvider";
+import { openLegalLink } from "../lib/config/legalLinks";
 import { useTheme } from "../lib/theme/ThemeProvider";
 
 export default function PaywallScreen() {
@@ -138,15 +140,37 @@ export default function PaywallScreen() {
           </ThemedText>
         ) : null}
 
-        <View style={styles.inlineActions}>
-          <Pressable accessibilityRole="button" onPress={() => void runAction(restorePurchases)}>
-            <ThemedText style={{ color: theme.accent1 }}>Restore purchases</ThemedText>
-          </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => void runAction(manageSubscription)}>
-            <ThemedText style={{ color: theme.accent1 }}>Manage subscription</ThemedText>
+        <View style={styles.utilityActions} testID="paywall-utility-actions">
+          <Pressable
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => void runAction(restorePurchases)}
+          >
+            <ThemedText size="sm" variant="tertiary">
+              Restore purchases
+            </ThemedText>
           </Pressable>
           <Pressable
             accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => void runAction(manageSubscription)}
+          >
+            <ThemedText size="sm" variant="tertiary">
+              Manage subscription
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            accessibilityRole="link"
+            hitSlop={8}
+            onPress={() => void runAction(() => openLegalLink("accountDeletion"))}
+          >
+            <ThemedText size="sm" variant="tertiary">
+              Account deletion
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            hitSlop={8}
             onPress={() =>
               void runAction(async () => {
                 await authClient.signOut();
@@ -154,9 +178,13 @@ export default function PaywallScreen() {
               })
             }
           >
-            <ThemedText style={{ color: theme.textSecondary }}>Sign out</ThemedText>
+            <ThemedText size="sm" variant="secondary">
+              Sign out
+            </ThemedText>
           </Pressable>
         </View>
+
+        <LegalLinksRow testID="paywall-legal-links" textVariant="tertiary" />
 
         <Button
           disabled={isLoading || !isConfigured}
@@ -200,12 +228,12 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 14,
   },
-  inlineActions: {
+  utilityActions: {
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 14,
-    justifyContent: "space-between",
+    gap: 18,
+    justifyContent: "center",
   },
   offerBody: {
     lineHeight: 20,

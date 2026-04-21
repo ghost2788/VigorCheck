@@ -4,6 +4,7 @@ import { Animated, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WelcomeHudHero } from "../../components/auth/WelcomeHudHero";
 import { Button } from "../../components/Button";
+import { LegalLinksRow } from "../../components/LegalLinksRow";
 import { ThemedText } from "../../components/ThemedText";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 import { useReducedMotionPreference } from "../../lib/ui/useReducedMotionPreference";
@@ -151,6 +152,7 @@ export default function AuthWelcomeScreen() {
             <ThemedText style={{ color: theme.accent1 }}>Sign in</ThemedText>
           </Pressable>
         </View>
+        <LegalLinksRow testID="welcome-legal-links" textVariant="tertiary" />
       </Animated.View>
     </View>
   );

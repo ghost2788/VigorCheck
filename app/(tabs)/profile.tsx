@@ -11,6 +11,7 @@ import { ThemedText } from "../../components/ThemedText";
 import { authClient } from "../../lib/auth/authClient";
 import { useSubscription } from "../../lib/billing/SubscriptionProvider";
 import { isInternalTestingToolsEnabled } from "../../lib/config/internalTesting";
+import { openLegalLink } from "../../lib/config/legalLinks";
 import {
   buildBodyAndPreferencesSummary,
   buildGoalsAndTargetsSummary,
@@ -480,23 +481,35 @@ export default function ProfileScreen() {
       ) : null}
 
       <Card style={styles.accountCard}>
-        <View style={styles.accountCopy}>
-          <ThemedText size="sm">{accountName}</ThemedText>
-          <ThemedText size="sm" variant="secondary">
-            {accountEmail}
-          </ThemedText>
+        <View style={styles.accountHeaderRow}>
+          <View style={styles.accountCopy}>
+            <ThemedText size="sm">{accountName}</ThemedText>
+            <ThemedText size="sm" variant="secondary">
+              {accountEmail}
+            </ThemedText>
+          </View>
+          <Pressable
+            hitSlop={8}
+            onPress={() =>
+              void runAccountAction(async () => {
+                await authClient.signOut();
+                router.replace("/(auth)/welcome");
+              })
+            }
+          >
+            <ThemedText size="sm" variant="tertiary">
+              Sign out
+            </ThemedText>
+          </Pressable>
         </View>
         <Pressable
+          accessibilityRole="link"
           hitSlop={8}
-          onPress={() =>
-            void runAccountAction(async () => {
-              await authClient.signOut();
-              router.replace("/(auth)/welcome");
-            })
-          }
+          onPress={() => void runAccountAction(() => openLegalLink("accountDeletion"))}
+          style={styles.accountDeletionLink}
         >
           <ThemedText size="sm" variant="tertiary">
-            Sign out
+            Request account deletion
           </ThemedText>
         </Pressable>
       </Card>
@@ -615,6 +628,13 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   accountCard: {
+    gap: 12,
+  },
+  accountDeletionLink: {
+    alignSelf: "flex-start",
+    paddingVertical: 4,
+  },
+  accountHeaderRow: {
     alignItems: "center",
     flexDirection: "row",
     gap: 14,
