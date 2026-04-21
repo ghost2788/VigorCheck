@@ -11,7 +11,7 @@ describe("legal link configuration", () => {
     expect(legalLinks.terms.url).toBe("https://ghost2788.github.io/VigorCheck/terms/");
     expect(legalLinks.support.url).toBe("https://ghost2788.github.io/VigorCheck/support/");
     expect(legalLinks.accountDeletion.url).toBe(
-      "https://ghost2788.github.io/VigorCheck/account-deletion/"
+      "https://ghost2788.github.io/VigorCheck/account-deletion.html"
     );
   });
 });

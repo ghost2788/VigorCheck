@@ -5,7 +5,7 @@ export const PUBLIC_SITE_BASE_URL = "https://ghost2788.github.io/VigorCheck";
 export const legalLinks = {
   accountDeletion: {
     label: "Account deletion",
-    url: `${PUBLIC_SITE_BASE_URL}/account-deletion/`,
+    url: `${PUBLIC_SITE_BASE_URL}/account-deletion.html`,
   },
   privacy: {
     label: "Privacy",
