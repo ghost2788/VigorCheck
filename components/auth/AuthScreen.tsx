@@ -1,9 +1,11 @@
 import React from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LegalLinksRow } from "../LegalLinksRow";
 import { useTheme } from "../../lib/theme/ThemeProvider";
 import { Card } from "../Card";
 import { ThemedText } from "../ThemedText";
+import { WelcomeHudHero } from "./WelcomeHudHero";
 
 export function AuthScreen({
   children,
@@ -11,6 +13,7 @@ export function AuthScreen({
   footerActionLabel,
   footerLabel,
   onFooterActionPress,
+  showBrandHeader = false,
   subtitle,
   title,
 }: {
@@ -19,16 +22,39 @@ export function AuthScreen({
   footerActionLabel?: string;
   footerLabel?: string;
   onFooterActionPress?: () => void;
+  showBrandHeader?: boolean;
   subtitle: string;
   title: string;
 }) {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
-      contentContainerStyle={[styles.content, { backgroundColor: theme.background }]}
+      contentContainerStyle={[
+        styles.content,
+        {
+          paddingBottom: Math.max(insets.bottom + 34, 58),
+          paddingTop: Math.max(insets.top + 34, 58),
+        },
+      ]}
       showsVerticalScrollIndicator={false}
+      style={[styles.scroll, { backgroundColor: theme.background }]}
+      testID="auth-screen"
     >
+      {showBrandHeader ? (
+        <View style={styles.brandHeader} testID="auth-screen-brand-header">
+          <ThemedText style={styles.brandText} testID="auth-screen-brand-text" variant="accent2">
+            VigorCheck
+          </ThemedText>
+          <WelcomeHudHero
+            style={styles.brandMark}
+            testID="auth-screen-brand-mark"
+            variant="brand"
+          />
+        </View>
+      ) : null}
+
       <View style={styles.header}>
         {eyebrow ? (
           <ThemedText size="xs" variant="accent2" style={styles.eyebrow}>
@@ -60,6 +86,19 @@ export function AuthScreen({
 }
 
 const styles = StyleSheet.create({
+  brandHeader: {
+    gap: 12,
+    marginBottom: 26,
+  },
+  brandMark: {
+    alignSelf: "center",
+  },
+  brandText: {
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+  },
   card: {
     gap: 14,
   },
@@ -67,7 +106,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 20,
-    paddingVertical: 28,
   },
   eyebrow: {
     marginBottom: 10,
@@ -81,6 +119,9 @@ const styles = StyleSheet.create({
   },
   legalLinks: {
     marginTop: 18,
+  },
+  scroll: {
+    flex: 1,
   },
   header: {
     marginBottom: 18,

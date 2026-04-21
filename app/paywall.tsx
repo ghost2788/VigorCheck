@@ -130,7 +130,7 @@ export default function PaywallScreen() {
           {
             backgroundColor: theme.background,
             borderTopColor: theme.cardBorder,
-            paddingBottom: Math.max(insets.bottom, 12),
+            paddingBottom: Math.max(insets.bottom + 16, 32),
           },
         ]}
       >
@@ -141,7 +141,7 @@ export default function PaywallScreen() {
         ) : null}
 
         <View style={styles.utilityActions} testID="paywall-utility-actions">
-          <View style={styles.utilityRow}>
+          <View style={styles.utilityRow} testID="paywall-billing-actions">
             <Pressable
               accessibilityRole="button"
               hitSlop={8}
@@ -162,6 +162,8 @@ export default function PaywallScreen() {
                 Manage subscription
               </ThemedText>
             </Pressable>
+          </View>
+          <View style={styles.accountAction} testID="paywall-account-action">
             <Pressable
               accessibilityRole="link"
               hitSlop={8}
@@ -172,26 +174,23 @@ export default function PaywallScreen() {
                 Account deletion
               </ThemedText>
             </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() =>
+                void runAction(async () => {
+                  await authClient.signOut();
+                  router.replace("/(auth)/welcome");
+                })
+              }
+              testID="paywall-signout-link"
+            >
+              <ThemedText size="sm" variant="secondary">
+                Sign out
+              </ThemedText>
+            </Pressable>
           </View>
           <LegalLinksRow testID="paywall-legal-links" textVariant="tertiary" />
-        </View>
-
-        <View style={styles.accountAction} testID="paywall-account-action">
-          <Pressable
-            accessibilityRole="button"
-            hitSlop={8}
-            onPress={() =>
-              void runAction(async () => {
-                await authClient.signOut();
-                router.replace("/(auth)/welcome");
-              })
-            }
-            testID="paywall-signout-link"
-          >
-            <ThemedText size="sm" variant="secondary">
-              Sign out
-            </ThemedText>
-          </Pressable>
         </View>
 
         <Button
@@ -228,7 +227,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     borderTopWidth: 1,
-    gap: 14,
+    gap: 16,
     paddingHorizontal: 24,
     paddingTop: 14,
   },
@@ -241,9 +240,13 @@ const styles = StyleSheet.create({
   },
   accountAction: {
     alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 18,
+    justifyContent: "center",
   },
   utilityActions: {
-    gap: 12,
+    gap: 10,
   },
   utilityRow: {
     alignItems: "center",

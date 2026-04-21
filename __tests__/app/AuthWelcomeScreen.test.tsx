@@ -88,6 +88,14 @@ describe("AuthWelcomeScreen", () => {
     expect(copyStyle.gap).toBe(14);
   });
 
+  it("keeps the bottom action cluster above Android navigation space", () => {
+    const { getByTestId } = render(<AuthWelcomeScreen />);
+
+    const screenStyle = StyleSheet.flatten(getByTestId("welcome-screen").props.style);
+
+    expect(screenStyle.paddingBottom).toBe(72);
+  });
+
   it("uses a taller headline line-height so descenders are not clipped on wrapped lines", () => {
     const { getByText } = render(<AuthWelcomeScreen />);
 

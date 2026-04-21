@@ -34,6 +34,7 @@ export default function SignInScreen() {
       footerActionLabel="Create account"
       footerLabel="New here?"
       onFooterActionPress={() => router.replace("/(auth)/create-account")}
+      showBrandHeader
       subtitle="Sign in to resume your saved plan, reminders, history, and analytics."
       title="Sign in"
     >

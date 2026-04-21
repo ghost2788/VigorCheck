@@ -5,7 +5,7 @@ import { WelcomeRingHero } from "./WelcomeRingHero";
 type WelcomeHudHeroProps = {
   style?: ViewStyle;
   testID?: string;
-  variant?: "hero" | "compact";
+  variant?: "hero" | "compact" | "brand";
 };
 
 export function WelcomeHudHero({

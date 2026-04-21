@@ -82,7 +82,7 @@ describe("PaywallScreen", () => {
     openLegalLinkSpy.mockRestore();
   });
 
-  it("renders restore and manage as shared billing utilities with sign out separated", () => {
+  it("renders billing, account, and legal links as separate footer groups", () => {
     const { getByTestId } = render(<PaywallScreen />);
 
     const utilityActions = getByTestId("paywall-utility-actions");
@@ -90,8 +90,11 @@ describe("PaywallScreen", () => {
 
     expect(within(utilityActions).getByText("Restore purchases")).toBeTruthy();
     expect(within(utilityActions).getByText("Manage subscription")).toBeTruthy();
-    expect(within(utilityActions).getByText("Account deletion")).toBeTruthy();
+    expect(within(accountAction).getByText("Account deletion")).toBeTruthy();
     expect(within(accountAction).getByText("Sign out")).toBeTruthy();
+    expect(within(utilityActions).getByText("Privacy")).toBeTruthy();
+    expect(within(utilityActions).getByText("Terms")).toBeTruthy();
+    expect(within(utilityActions).getByText("Support")).toBeTruthy();
   });
 
   it("runs restore, manage, and sign-out actions from their respective controls", async () => {

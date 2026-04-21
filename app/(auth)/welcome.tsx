@@ -88,11 +88,12 @@ export default function AuthWelcomeScreen() {
 
   return (
     <View
+      testID="welcome-screen"
       style={[
         styles.screen,
         {
           backgroundColor: theme.background,
-          paddingBottom: Math.max(insets.bottom, 18) + 18,
+          paddingBottom: Math.max(insets.bottom + 42, 72),
           paddingTop: Math.max(insets.top, 18) + 18,
         },
       ]}
@@ -158,8 +159,8 @@ export default function AuthWelcomeScreen() {
 
 const styles = StyleSheet.create({
   actionWrap: {
-    gap: 18,
-    paddingTop: 28,
+    gap: 16,
+    paddingTop: 24,
   },
   brandWrap: {
     paddingTop: 18,

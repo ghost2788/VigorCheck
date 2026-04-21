@@ -34,6 +34,7 @@ export default function CreateAccountScreen() {
       footerActionLabel="Sign in"
       footerLabel="Already have an account?"
       onFooterActionPress={() => router.replace("/(auth)/sign-in")}
+      showBrandHeader
       subtitle="Create your account to start a 7-day free trial and save your targets, reminders, history, and trends."
       title="Create your account"
     >

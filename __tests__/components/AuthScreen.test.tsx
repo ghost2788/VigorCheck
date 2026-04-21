@@ -29,4 +29,22 @@ describe("AuthScreen", () => {
     expect(openLegalLinkSpy).toHaveBeenNthCalledWith(2, "terms");
     expect(openLegalLinkSpy).toHaveBeenNthCalledWith(3, "support");
   });
+
+  it("renders the shared brand header only when requested", () => {
+    const plain = render(
+      <AuthScreen subtitle="Use Google to continue." title="Welcome back">
+        <></>
+      </AuthScreen>
+    );
+    const branded = render(
+      <AuthScreen showBrandHeader subtitle="Use Google to continue." title="Welcome back">
+        <></>
+      </AuthScreen>
+    );
+
+    expect(plain.queryByTestId("auth-screen-brand-header")).toBeNull();
+    expect(branded.getByTestId("auth-screen-brand-header")).toBeTruthy();
+    expect(branded.getByTestId("auth-screen-brand-text")).toBeTruthy();
+    expect(branded.getByTestId("auth-screen-brand-mark")).toBeTruthy();
+  });
 });

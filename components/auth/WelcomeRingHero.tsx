@@ -5,10 +5,11 @@ import { buildAppIconRingLayouts } from "../../lib/branding/appIconSpec";
 type WelcomeRingHeroProps = {
   style?: ViewStyle;
   testID?: string;
-  variant?: "hero" | "compact";
+  variant?: "hero" | "compact" | "brand";
 };
 
 const HERO_SIZES = {
+  brand: 96,
   compact: 184,
   hero: 272,
 } as const;

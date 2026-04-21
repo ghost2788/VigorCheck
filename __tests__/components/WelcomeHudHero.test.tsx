@@ -22,4 +22,12 @@ describe("WelcomeHudHero", () => {
     expect(stageStyle.height).toBe(184);
     expect(stageStyle.width).toBe(184);
   });
+
+  it("uses the shared brand mark sizing contract when requested", () => {
+    const { getByTestId } = render(<WelcomeHudHero testID="welcome-hud-hero" variant="brand" />);
+
+    const stageStyle = StyleSheet.flatten(getByTestId("welcome-ring-stage").props.style);
+    expect(stageStyle.height).toBe(96);
+    expect(stageStyle.width).toBe(96);
+  });
 });

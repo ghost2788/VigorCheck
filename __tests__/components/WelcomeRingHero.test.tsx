@@ -22,13 +22,17 @@ describe("WelcomeRingHero", () => {
   it("uses the approved hero and compact mark sizes", () => {
     const hero = render(<WelcomeRingHero testID="hero-ring" />);
     const compact = render(<WelcomeRingHero testID="compact-ring" variant="compact" />);
+    const brand = render(<WelcomeRingHero testID="brand-ring" variant="brand" />);
 
     const heroStageStyle = StyleSheet.flatten(hero.getByTestId("welcome-ring-stage").props.style);
     const compactStageStyle = StyleSheet.flatten(compact.getByTestId("welcome-ring-stage").props.style);
+    const brandStageStyle = StyleSheet.flatten(brand.getByTestId("welcome-ring-stage").props.style);
 
     expect(heroStageStyle.height).toBe(272);
     expect(heroStageStyle.width).toBe(272);
     expect(compactStageStyle.height).toBe(184);
     expect(compactStageStyle.width).toBe(184);
+    expect(brandStageStyle.height).toBe(96);
+    expect(brandStageStyle.width).toBe(96);
   });
 });

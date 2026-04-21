@@ -36,8 +36,12 @@ describe("Auth entry screens", () => {
   });
 
   it("renders provider-only create-account auth and routes to onboarding after Google sign-up", async () => {
-    const { getByText, queryByPlaceholderText, queryByText } = render(<CreateAccountScreen />);
+    const { getByTestId, getByText, queryByPlaceholderText, queryByText } = render(
+      <CreateAccountScreen />
+    );
 
+    expect(getByTestId("auth-screen-brand-header")).toBeTruthy();
+    expect(getByText("VigorCheck")).toBeTruthy();
     expect(getByText("Continue with Google")).toBeTruthy();
     expect(queryByText("Continue with Apple")).toBeNull();
     expect(queryByText("Use email code")).toBeNull();
@@ -52,8 +56,12 @@ describe("Auth entry screens", () => {
   });
 
   it("renders provider-only sign-in auth and keeps the create-account footer action", async () => {
-    const { getByText, queryByPlaceholderText, queryByText } = render(<SignInScreen />);
+    const { getByTestId, getByText, queryByPlaceholderText, queryByText } = render(
+      <SignInScreen />
+    );
 
+    expect(getByTestId("auth-screen-brand-header")).toBeTruthy();
+    expect(getByText("VigorCheck")).toBeTruthy();
     expect(getByText("Continue with Google")).toBeTruthy();
     expect(queryByText("Continue with Apple")).toBeNull();
     expect(queryByText("Use email code")).toBeNull();
