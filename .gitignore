@@ -14,6 +14,13 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 .metro-health-check*
+.tmp-*
+mockups/
+output/
+tmp/
+my screenshots/
+previews/
+docs/superpowers/
 npm-debug.*
 yarn-debug.*
 yarn-error.*

@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
 import { act, fireEvent, render, waitFor } from "../../lib/test-utils";
 import ProfileScreen from "../../app/(tabs)/profile";
+import * as legalLinks from "../../lib/config/legalLinks";
 import { THEME_PREFERENCE_STORAGE_KEY } from "../../lib/theme/ThemeProvider";
 
 const mockPush = jest.fn();
@@ -180,6 +181,8 @@ jest.mock("../../lib/billing/SubscriptionProvider", () => ({
 }));
 
 describe("ProfileScreen", () => {
+  let openLegalLinkSpy: jest.SpyInstance;
+
   function mockTestingMutations() {
     const unlockInternalTools = jest.fn().mockResolvedValue({
       unlockToken: "dev-unlock-token",
@@ -231,6 +234,7 @@ describe("ProfileScreen", () => {
     mockUseQuery.mockReset();
     mockUseSession.mockReset();
     mockUseSubscription.mockReset();
+    openLegalLinkSpy = jest.spyOn(legalLinks, "openLegalLink").mockResolvedValue(undefined);
     mockUseSession.mockReturnValue({
       data: {
         user: {
@@ -275,6 +279,10 @@ describe("ProfileScreen", () => {
 
       return diagnosticsSnapshot;
     });
+  });
+
+  afterEach(() => {
+    openLegalLinkSpy.mockRestore();
   });
 
   it("renders summary cards and pushes into dedicated settings screens", async () => {
@@ -359,6 +367,20 @@ describe("ProfileScreen", () => {
 
     await waitFor(() => {
       expect(asyncStorage.setItem).toHaveBeenCalledWith(THEME_PREFERENCE_STORAGE_KEY, "light");
+    });
+  });
+
+  it("opens the public account deletion request path from the account card", async () => {
+    mockTestingMutations();
+
+    const { getByText } = render(<ProfileScreen />, { hydrateTheme: true });
+
+    await flushThemeHydration();
+
+    fireEvent.press(getByText("Request account deletion"));
+
+    await waitFor(() => {
+      expect(openLegalLinkSpy).toHaveBeenCalledWith("accountDeletion");
     });
   });
 

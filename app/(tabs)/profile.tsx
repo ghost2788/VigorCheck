@@ -18,6 +18,7 @@ import { ThemedText } from "../../components/ThemedText";
 import { authClient } from "../../lib/auth/authClient";
 import { useSubscription } from "../../lib/billing/SubscriptionProvider";
 import { isInternalTestingToolsEnabled } from "../../lib/config/internalTesting";
+import { openLegalLink } from "../../lib/config/legalLinks";
 import {
   DEV_TOOLS_REVEAL_HOLD_DURATION_MS,
   INTERNAL_TOOLS_RELOCK_MESSAGE,
@@ -644,6 +645,18 @@ export default function ProfileScreen() {
               </ThemedText>
             </Pressable>
           ) : null}
+
+          <Pressable
+            accessibilityRole="link"
+            hitSlop={8}
+            onPress={() => void runAccountAction(() => openLegalLink("accountDeletion"))}
+            style={styles.accountDeletionLink}
+            testID="profile-account-deletion-link"
+          >
+            <ThemedText size="sm" variant="tertiary">
+              Request account deletion
+            </ThemedText>
+          </Pressable>
         </Card>
 
         {showDevToolsEntryPoint && isUnlockCardVisible ? (
@@ -856,6 +869,10 @@ const styles = StyleSheet.create({
   accountCopy: {
     flex: 1,
     gap: 2,
+  },
+  accountDeletionLink: {
+    alignSelf: "flex-start",
+    paddingVertical: 4,
   },
   accountHeaderRow: {
     alignItems: "center",

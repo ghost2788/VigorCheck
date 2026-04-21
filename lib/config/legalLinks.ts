@@ -3,6 +3,10 @@ import { Linking } from "react-native";
 const PUBLIC_SITE_BASE_URL = "https://ghost2788.github.io/Caltracker";
 
 export const legalLinks = {
+  accountDeletion: {
+    label: "Account deletion",
+    url: `${PUBLIC_SITE_BASE_URL}/account-deletion/`,
+  },
   privacy: {
     label: "Privacy",
     url: `${PUBLIC_SITE_BASE_URL}/privacy/`,

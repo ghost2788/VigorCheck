@@ -90,6 +90,7 @@ describe("PaywallScreen", () => {
 
     expect(within(utilityActions).getByText("Restore purchases")).toBeTruthy();
     expect(within(utilityActions).getByText("Manage subscription")).toBeTruthy();
+    expect(within(utilityActions).getByText("Account deletion")).toBeTruthy();
     expect(within(accountAction).getByText("Sign out")).toBeTruthy();
   });
 
@@ -115,11 +116,13 @@ describe("PaywallScreen", () => {
 
     fireEvent.press(getByTestId("paywall-restore-link"));
     fireEvent.press(getByTestId("paywall-manage-link"));
+    fireEvent.press(getByTestId("paywall-account-deletion-link"));
     fireEvent.press(getByTestId("paywall-signout-link"));
 
     await waitFor(() => {
       expect(restorePurchases).toHaveBeenCalledTimes(1);
       expect(manageSubscription).toHaveBeenCalledTimes(1);
+      expect(openLegalLinkSpy).toHaveBeenCalledWith("accountDeletion");
       expect(mockSignOut).toHaveBeenCalledTimes(1);
       expect(mockReplace).toHaveBeenCalledWith("/(auth)/welcome");
     });

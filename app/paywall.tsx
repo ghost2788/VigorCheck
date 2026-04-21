@@ -11,6 +11,7 @@ import { WelcomeHudHero } from "../components/auth/WelcomeHudHero";
 import { api } from "../convex/_generated/api";
 import { authClient } from "../lib/auth/authClient";
 import { useSubscription } from "../lib/billing/SubscriptionProvider";
+import { openLegalLink } from "../lib/config/legalLinks";
 import { useTheme } from "../lib/theme/ThemeProvider";
 
 export default function PaywallScreen() {
@@ -159,6 +160,16 @@ export default function PaywallScreen() {
             >
               <ThemedText size="sm" variant="tertiary">
                 Manage subscription
+              </ThemedText>
+            </Pressable>
+            <Pressable
+              accessibilityRole="link"
+              hitSlop={8}
+              onPress={() => void runAction(() => openLegalLink("accountDeletion"))}
+              testID="paywall-account-deletion-link"
+            >
+              <ThemedText size="sm" variant="tertiary">
+                Account deletion
               </ThemedText>
             </Pressable>
           </View>
