@@ -189,7 +189,20 @@ export default function ProfileScreen() {
     unlockToken,
   } = useDevToolsAccess();
   const currentUser = useQuery(api.users.current);
-  const aiUsage = useQuery(api.aiUsage.currentStatus);
+  const {
+    accessState,
+    isConfigured,
+    isLoading: billingBusy,
+    manageSubscription,
+    purchaseMonthly,
+    restorePurchases,
+    statusLabel,
+    supportMessage,
+  } = useSubscription();
+  const aiUsage = useQuery(
+    api.aiUsage.currentStatus,
+    accessState?.status === "trial" ? {} : "skip"
+  );
   const devToolsAvailability = useQuery(
     api.testing.devToolsAvailability,
     clientInternalTestingEnabled ? {} : "skip"
@@ -204,16 +217,6 @@ export default function ProfileScreen() {
   const forceTrialExpired = useMutation(api.testing.forceTrialExpired);
   const restoreTrial = useMutation(api.testing.restoreTrial);
   const { data: session } = authClient.useSession();
-  const {
-    accessState,
-    isConfigured,
-    isLoading: billingBusy,
-    manageSubscription,
-    purchaseMonthly,
-    restorePurchases,
-    statusLabel,
-    supportMessage,
-  } = useSubscription();
   const [accountActionError, setAccountActionError] = React.useState<string | null>(null);
   const [isUnlockCardVisible, setIsUnlockCardVisible] = React.useState(false);
   const [isUnlocking, setIsUnlocking] = React.useState(false);
@@ -505,7 +508,7 @@ export default function ProfileScreen() {
           )}
         />
 
-        {aiUsage ? (
+        {subscriptionStatus === "trial" && aiUsage ? (
           <Card
             style={[
               styles.usageCard,

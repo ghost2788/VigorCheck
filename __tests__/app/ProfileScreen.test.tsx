@@ -307,6 +307,32 @@ describe("ProfileScreen", () => {
     expect(mockPush).toHaveBeenCalledWith("/profile/reminder-settings");
   });
 
+  it("hides AI usage for active subscribers", async () => {
+    mockTestingMutations();
+    mockUseSubscription.mockReturnValue({
+      accessState: {
+        daysRemaining: 0,
+        status: "active",
+      },
+      isConfigured: true,
+      isLoading: false,
+      manageSubscription: jest.fn(),
+      purchaseMonthly: jest.fn(),
+      restorePurchases: jest.fn(),
+      statusLabel: "Pro active",
+      supportMessage: null,
+    });
+
+    const { getAllByText, queryByText } = render(<ProfileScreen />, { hydrateTheme: true });
+
+    await flushThemeHydration();
+
+    expect(getAllByText("Pro active").length).toBeGreaterThan(0);
+    expect(queryByText("AI usage")).toBeNull();
+    expect(queryByText("AI text entries")).toBeNull();
+    expect(mockUseQuery.mock.calls[1]?.[1]).toBe("skip");
+  });
+
   it("hides the unused pace summary row for goals that do not use pace", async () => {
     mockTestingMutations();
     let queryCall = 0;
