@@ -248,15 +248,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       return null;
     }
 
-    const hasActiveLocalEntitlement = customerInfo
-      ? getRevenueCatCustomerSnapshot(customerInfo).hasActiveEntitlement
-      : false;
+    const hasActiveLocalEntitlement =
+      isAndroidDevelopmentPackage ||
+      (customerInfo ? getRevenueCatCustomerSnapshot(customerInfo).hasActiveEntitlement : false);
 
     return resolveSubscriptionAccess({
       hasActiveLocalEntitlement,
       subscription: currentUser.subscription,
     });
-  }, [currentUser, customerInfo]);
+  }, [currentUser, customerInfo, isAndroidDevelopmentPackage]);
 
   const value = useMemo<SubscriptionContextValue>(
     () => ({

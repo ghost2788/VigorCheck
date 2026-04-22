@@ -26,12 +26,14 @@ jest.mock("expo-constants", () => ({
 }));
 
 function SubscriptionProbe() {
-  const { isConfigured, isLoading, supportMessage } = useSubscription();
+  const { accessState, isConfigured, isLoading, statusLabel, supportMessage } = useSubscription();
 
   return (
     <>
       <Text>{isLoading ? "loading" : "idle"}</Text>
       <Text>{isConfigured ? "configured" : "not configured"}</Text>
+      <Text>{accessState?.shouldShowPaywall ? "paywall" : "unlocked"}</Text>
+      {statusLabel ? <Text>{statusLabel}</Text> : null}
       {supportMessage ? <Text>{supportMessage}</Text> : null}
     </>
   );
@@ -130,7 +132,7 @@ describe("SubscriptionProvider", () => {
     expect(Purchases.getOfferings).toHaveBeenCalledTimes(1);
   });
 
-  it("does not fetch RevenueCat offerings in the separate Android development package", () => {
+  it("unlocks the separate Android development package without fetching RevenueCat offerings", () => {
     (Constants as unknown as { expoConfig: { android: { package: string } } }).expoConfig = {
       android: {
         package: "com.vigorcheck.app.dev",
@@ -153,6 +155,8 @@ describe("SubscriptionProvider", () => {
     );
 
     expect(getByText("not configured")).toBeTruthy();
+    expect(getByText("unlocked")).toBeTruthy();
+    expect(getByText("Subscription active")).toBeTruthy();
     expect(
       getByText(
         "Purchases are disabled in VigorCheck Dev. Use the Play-installed internal testing app to test subscriptions."
