@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import * as Application from "expo-application";
 import * as Linking from "expo-linking";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
@@ -35,6 +36,7 @@ const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)
 
 function getAndroidPackageName() {
   return (
+    Application.applicationId ??
     Constants.expoConfig?.android?.package ??
     Constants.manifest2?.extra?.expoClient?.android?.package ??
     "com.vigorcheck.app"

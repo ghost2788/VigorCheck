@@ -1,5 +1,6 @@
 import React from "react";
 import { Platform, Text } from "react-native";
+import * as Application from "expo-application";
 import Constants from "expo-constants";
 import Purchases from "react-native-purchases";
 import { render, waitFor } from "../../lib/test-utils";
@@ -11,6 +12,10 @@ const mockUseQuery = jest.fn();
 jest.mock("convex/react", () => ({
   useMutation: (...args: unknown[]) => mockUseMutation(...args),
   useQuery: (...args: unknown[]) => mockUseQuery(...args),
+}));
+
+jest.mock("expo-application", () => ({
+  applicationId: "com.vigorcheck.app",
 }));
 
 jest.mock("expo-constants", () => ({
@@ -53,6 +58,7 @@ describe("SubscriptionProvider", () => {
         package: "com.vigorcheck.app",
       },
     };
+    (Application as unknown as { applicationId: string }).applicationId = "com.vigorcheck.app";
 
     mockUseMutation.mockReset();
     mockUseQuery.mockReset();
@@ -135,9 +141,10 @@ describe("SubscriptionProvider", () => {
   it("unlocks the separate Android development package without fetching RevenueCat offerings", () => {
     (Constants as unknown as { expoConfig: { android: { package: string } } }).expoConfig = {
       android: {
-        package: "com.vigorcheck.app.dev",
+        package: "com.vigorcheck.app",
       },
     };
+    (Application as unknown as { applicationId: string }).applicationId = "com.vigorcheck.app.dev";
 
     mockUseQuery.mockReturnValue({
       _id: "user-1",
