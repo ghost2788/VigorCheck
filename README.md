@@ -40,9 +40,15 @@ npm run start:dev
 ```
 
 `start:dev` installs `expo-dev-client` into local `node_modules` without saving it to
-`package.json` or `package-lock.json`, then starts Expo in dev-client mode. Store-bound
-builds intentionally use the committed dependency set, which excludes dev-client native
-modules.
+`package.json` or `package-lock.json`, then starts Expo in dev-client mode through an
+Expo tunnel on port `8081`. Use the tunnel QR/direct link for Android development builds.
+Do not use LAN QR as the default workflow, because Windows firewall, VPN adapters, and
+router isolation can make the phone unable to reach Metro even when Metro is running.
+Store-bound builds intentionally use the committed dependency set, which excludes
+dev-client native modules.
+
+If Expo prompts to install its tunnel helper, accept the prompt once. If port `8081` is
+already in use, close the old Metro terminal and rerun `npm run start:dev`.
 
 Useful commands:
 
