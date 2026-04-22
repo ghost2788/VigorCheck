@@ -39,16 +39,23 @@ npx convex dev
 npm run start:dev
 ```
 
-`start:dev` installs `expo-dev-client` into local `node_modules` without saving it to
-`package.json` or `package-lock.json`, then starts Expo in dev-client mode through an
-Expo tunnel on port `8081`. Use the tunnel QR/direct link for Android development builds.
-Do not use LAN QR as the default workflow, because Windows firewall, VPN adapters, and
-router isolation can make the phone unable to reach Metro even when Metro is running.
-Store-bound builds intentionally use the committed dependency set, which excludes
-dev-client native modules.
+The `development` branch keeps `expo-dev-client` in its committed dependency graph, and
+`start:dev` starts Expo in dev-client mode through an Expo tunnel on port `8081`. Use the
+tunnel QR/direct link for Android development builds. Do not use LAN QR as the default
+workflow, because Windows firewall, VPN adapters, and router isolation can make the phone
+unable to reach Metro even when Metro is running. Store-bound builds should be created
+from `main`, where dev-client native modules are intentionally excluded.
 
 If Expo prompts to install its tunnel helper, accept the prompt once. If port `8081` is
 already in use, close the old Metro terminal and rerun `npm run start:dev`.
+
+Android development builds use the separate package `com.vigorcheck.app.dev` and display
+as `VigorCheck Dev`, so they can coexist with the Play/internal-testing app. Build them
+from the `development` branch with:
+
+```bash
+npx eas-cli@latest build --platform android --profile development --non-interactive
+```
 
 Useful commands:
 
