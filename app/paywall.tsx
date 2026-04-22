@@ -89,7 +89,7 @@ export default function PaywallScreen() {
           <View style={styles.offerHeader}>
             <ThemedText size="sm">Monthly plan</ThemedText>
             <ThemedText size="lg" style={{ color: theme.accent1 }}>
-              {monthlyPackage?.product.priceString ?? "$6.99 / month"}
+              {monthlyPackage?.product.priceString ?? "$7.99 / month"}
             </ThemedText>
           </View>
           <ThemedText variant="secondary" style={styles.offerBody}>

@@ -118,6 +118,12 @@ describe("PaywallScreen", () => {
     expect(getByTestId("paywall-manage-card")).toBeTruthy();
   });
 
+  it("uses the approved monthly fallback price when Play product details are unavailable", () => {
+    const { getByText } = render(<PaywallScreen />);
+
+    expect(getByText("$7.99 / month")).toBeTruthy();
+  });
+
   it("uses an accordion chevron affordance for the manage account card", () => {
     const { getByTestId } = render(<PaywallScreen />);
 
