@@ -1,6 +1,9 @@
 import { Platform } from "react-native";
 import type { CustomerInfo, PurchasesEntitlementInfo } from "react-native-purchases";
 
+export const ANDROID_PRODUCTION_PACKAGE_NAME = "com.vigorcheck.app";
+export const PAYWALL_FALLBACK_PRICE_LABEL = "$7.99 / month";
+
 export function getRevenueCatApiKey() {
   if (Platform.OS === "android") {
     return process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY ?? null;
@@ -77,7 +80,21 @@ export function getPaywallPackage(offerings: { current: { availablePackages: unk
   return offerings.current.monthly ?? offerings.current.availablePackages[0] ?? null;
 }
 
-export function getRevenueCatSupportMessage(hasApiKey: boolean) {
+export function isDevelopmentAndroidPackage(packageName: string | null | undefined) {
+  return packageName === `${ANDROID_PRODUCTION_PACKAGE_NAME}.dev`;
+}
+
+export function getRevenueCatSupportMessage({
+  hasApiKey,
+  isDevelopmentPackage = false,
+}: {
+  hasApiKey: boolean;
+  isDevelopmentPackage?: boolean;
+}) {
+  if (isDevelopmentPackage) {
+    return "Purchases are disabled in VigorCheck Dev. Use the Play-installed internal testing app to test subscriptions.";
+  }
+
   if (hasApiKey) {
     return null;
   }

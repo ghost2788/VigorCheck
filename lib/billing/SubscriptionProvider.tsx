@@ -6,12 +6,14 @@ import { useMutation, useQuery } from "convex/react";
 import Purchases, { CustomerInfo, LOG_LEVEL, PurchasesOfferings, PurchasesPackage } from "react-native-purchases";
 import { api } from "../../convex/_generated/api";
 import {
+  ANDROID_PRODUCTION_PACKAGE_NAME,
   formatSubscriptionStatusLabel,
   getManagementUrlFallback,
   getPaywallPackage,
   getRevenueCatApiKey,
   getRevenueCatCustomerSnapshot,
   getRevenueCatSupportMessage,
+  isDevelopmentAndroidPackage,
 } from "./revenueCat";
 import { resolveSubscriptionAccess, type ResolvedSubscriptionAccess } from "../domain/subscription";
 
@@ -43,7 +45,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const currentUser = useQuery(api.users.current);
   const syncCustomerInfo = useMutation(api.subscriptions.syncCustomerInfo);
   const apiKey = getRevenueCatApiKey();
-  const isConfigured = Boolean(apiKey) && Platform.OS !== "web";
+  const androidPackageName = getAndroidPackageName();
+  const isAndroidDevelopmentPackage =
+    Platform.OS === "android" && isDevelopmentAndroidPackage(androidPackageName);
+  const hasApiKey = Boolean(apiKey);
+  const isConfigured = hasApiKey && Platform.OS !== "web" && !isAndroidDevelopmentPackage;
   const revenueCatAppUserId = currentUser?.subscription.revenueCatAppUserId ?? null;
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
@@ -229,10 +235,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       return;
     }
 
-    const managementUrl = customerInfo?.managementURL ?? getManagementUrlFallback(getAndroidPackageName());
+    const packageName = isAndroidDevelopmentPackage
+      ? ANDROID_PRODUCTION_PACKAGE_NAME
+      : androidPackageName;
+    const managementUrl = customerInfo?.managementURL ?? getManagementUrlFallback(packageName);
 
     await Linking.openURL(managementUrl);
-  }, [customerInfo]);
+  }, [androidPackageName, customerInfo, isAndroidDevelopmentPackage]);
 
   const accessState = useMemo(() => {
     if (!currentUser) {
@@ -266,11 +275,16 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
             status: accessState.status,
           })
         : null,
-      supportMessage: getRevenueCatSupportMessage(isConfigured),
+      supportMessage: getRevenueCatSupportMessage({
+        hasApiKey,
+        isDevelopmentPackage: isAndroidDevelopmentPackage,
+      }),
     }),
     [
       accessState,
       customerInfo,
+      hasApiKey,
+      isAndroidDevelopmentPackage,
       isConfigured,
       isLoading,
       manageSubscription,

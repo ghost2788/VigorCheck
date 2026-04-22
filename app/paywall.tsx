@@ -11,6 +11,7 @@ import { WelcomeHudHero } from "../components/auth/WelcomeHudHero";
 import { api } from "../convex/_generated/api";
 import { authClient } from "../lib/auth/authClient";
 import { useSubscription } from "../lib/billing/SubscriptionProvider";
+import { PAYWALL_FALLBACK_PRICE_LABEL } from "../lib/billing/revenueCat";
 import { openLegalLink } from "../lib/config/legalLinks";
 import { useTheme } from "../lib/theme/ThemeProvider";
 
@@ -89,7 +90,7 @@ export default function PaywallScreen() {
           <View style={styles.offerHeader}>
             <ThemedText size="sm">Monthly plan</ThemedText>
             <ThemedText size="lg" style={{ color: theme.accent1 }}>
-              {monthlyPackage?.product.priceString ?? "$6.99 / month"}
+              {monthlyPackage?.product.priceString ?? PAYWALL_FALLBACK_PRICE_LABEL}
             </ThemedText>
           </View>
           <ThemedText variant="secondary" style={styles.offerBody}>

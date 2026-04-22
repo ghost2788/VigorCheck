@@ -1,5 +1,6 @@
 import React from "react";
-import { Text } from "react-native";
+import { Platform, Text } from "react-native";
+import Constants from "expo-constants";
 import Purchases from "react-native-purchases";
 import { render, waitFor } from "../../lib/test-utils";
 import { SubscriptionProvider, useSubscription } from "../../lib/billing/SubscriptionProvider";
@@ -12,16 +13,44 @@ jest.mock("convex/react", () => ({
   useQuery: (...args: unknown[]) => mockUseQuery(...args),
 }));
 
-function SubscriptionProbe() {
-  const { isLoading } = useSubscription();
+jest.mock("expo-constants", () => ({
+  __esModule: true,
+  default: {
+    expoConfig: {
+      android: {
+        package: "com.vigorcheck.app",
+      },
+    },
+    manifest2: null,
+  },
+}));
 
-  return <Text>{isLoading ? "loading" : "idle"}</Text>;
+function SubscriptionProbe() {
+  const { isConfigured, isLoading, supportMessage } = useSubscription();
+
+  return (
+    <>
+      <Text>{isLoading ? "loading" : "idle"}</Text>
+      <Text>{isConfigured ? "configured" : "not configured"}</Text>
+      {supportMessage ? <Text>{supportMessage}</Text> : null}
+    </>
+  );
 }
 
 describe("SubscriptionProvider", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY = "test-android-key";
     process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY = "test-ios-key";
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    (Constants as unknown as { expoConfig: { android: { package: string } } }).expoConfig = {
+      android: {
+        package: "com.vigorcheck.app",
+      },
+    };
 
     mockUseMutation.mockReset();
     mockUseQuery.mockReset();
@@ -99,5 +128,38 @@ describe("SubscriptionProvider", () => {
 
     expect(Purchases.getCustomerInfo).toHaveBeenCalledTimes(1);
     expect(Purchases.getOfferings).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not fetch RevenueCat offerings in the separate Android development package", () => {
+    (Constants as unknown as { expoConfig: { android: { package: string } } }).expoConfig = {
+      android: {
+        package: "com.vigorcheck.app.dev",
+      },
+    };
+
+    mockUseQuery.mockReturnValue({
+      _id: "user-1",
+      subscription: {
+        daysLeftInTrial: 7,
+        revenueCatAppUserId: "rc-user-1",
+        status: "trial",
+      },
+    });
+
+    const { getByText } = render(
+      <SubscriptionProvider>
+        <SubscriptionProbe />
+      </SubscriptionProvider>
+    );
+
+    expect(getByText("not configured")).toBeTruthy();
+    expect(
+      getByText(
+        "Purchases are disabled in VigorCheck Dev. Use the Play-installed internal testing app to test subscriptions."
+      )
+    ).toBeTruthy();
+    expect(Purchases.configure).not.toHaveBeenCalled();
+    expect(Purchases.getCustomerInfo).not.toHaveBeenCalled();
+    expect(Purchases.getOfferings).not.toHaveBeenCalled();
   });
 });
